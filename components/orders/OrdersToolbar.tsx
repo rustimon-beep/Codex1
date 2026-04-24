@@ -263,6 +263,7 @@ export function OrdersToolbar({
                   <option value="Отменен">Отменен</option>
                   <option value="Частично поставлен">Частично поставлен</option>
                   <option value="Частично отменен">Частично отменен</option>
+                  <option value="Без плановой даты">Без плановой даты</option>
                   <option value="Просрочено">Просрочено</option>
                 </select>
 
@@ -331,6 +332,7 @@ export function OrdersToolbar({
               <option value="Отменен">Отменен</option>
               <option value="Частично поставлен">Частично поставлен</option>
               <option value="Частично отменен">Частично отменен</option>
+              <option value="Без плановой даты">Без плановой даты</option>
               <option value="Просрочено">Просрочено</option>
             </select>
 

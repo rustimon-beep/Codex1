@@ -7,6 +7,7 @@ import { OrderFormModal } from "../components/orders/OrderFormModal";
 import { OrdersTable } from "../components/orders/OrdersTable";
 import { OrdersToolbar } from "../components/orders/OrdersToolbar";
 import { OrdersListMobile } from "../components/orders/OrdersListMobile";
+import { OrdersAttentionPanel } from "../components/orders/OrdersAttentionPanel";
 import { QuickDateDialog } from "../components/orders/QuickDateDialog";
 import { OrdersOverviewSkeleton } from "../components/orders/LoadingSkeletons";
 import { MobileLaunchReveal } from "../components/ui/MobileLaunchReveal";
@@ -51,7 +52,11 @@ import {
   canImportItems,
   canUseBulkActions,
 } from "../lib/orders/permissions";
-import { getFilteredAndSortedOrders, getOrdersStats } from "../lib/orders/selectors";
+import {
+  getFilteredAndSortedOrders,
+  getOrdersAttention,
+  getOrdersStats,
+} from "../lib/orders/selectors";
 import type {
   ItemForm,
   OrderItem,
@@ -181,6 +186,7 @@ export default function OrdersPage() {
   }, [orders, search, statusFilter, orderTypeFilter, sortField, sortDirection]);
 
   const stats = useMemo(() => getOrdersStats(orders), [orders]);
+  const attention = useMemo(() => getOrdersAttention(orders), [orders]);
 
   const { login, logout } = useOrdersAuthActions({
     loginForm,
@@ -226,6 +232,22 @@ export default function OrdersPage() {
   const handleRefresh = () => {
     void loadOrders();
   };
+
+  const applyFocusFilter = useCallback(
+    (params: {
+      statusFilter: string;
+      orderTypeFilter: string;
+      sortField: SortField;
+      sortDirection: SortDirection;
+    }) => {
+      setSearch("");
+      setStatusFilter(params.statusFilter);
+      setOrderTypeFilter(params.orderTypeFilter);
+      setSortField(params.sortField);
+      setSortDirection(params.sortDirection);
+    },
+    []
+  );
 
   const updateItemField = (
     index: number,
@@ -1122,6 +1144,16 @@ export default function OrdersPage() {
             </div>
           ) : filteredOrders.length === 0 ? (
             <>
+              {orders.length > 0 ? (
+                <div className="premium-enter premium-enter-delay-1 hidden md:block">
+                  <OrdersAttentionPanel
+                    cards={attention.cards}
+                    topAttentionOrders={attention.topAttentionOrders}
+                    onApplyFocus={applyFocusFilter}
+                  />
+                </div>
+              ) : null}
+
               <div className="premium-enter premium-enter-delay-1">
                 <OrdersToolbar
                   stats={stats}
@@ -1146,6 +1178,14 @@ export default function OrdersPage() {
             </>
           ) : (
             <>
+              <div className="premium-enter premium-enter-delay-1 hidden md:block">
+                <OrdersAttentionPanel
+                  cards={attention.cards}
+                  topAttentionOrders={attention.topAttentionOrders}
+                  onApplyFocus={applyFocusFilter}
+                />
+              </div>
+
               <div className="premium-enter premium-enter-delay-1">
                 <OrdersToolbar
                   stats={stats}
