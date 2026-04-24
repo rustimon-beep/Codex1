@@ -64,7 +64,7 @@ export function CreateOrderMethodDialog({
     <div className="fixed inset-0 z-[95] bg-slate-950/45 backdrop-blur-[2px]">
       <div className="flex min-h-screen items-end justify-center p-0 md:items-center md:p-4">
         <div className="premium-shell w-full max-h-[100dvh] overflow-y-auto overscroll-contain rounded-t-[24px] shadow-[0_24px_80px_rgba(15,23,42,0.18)] md:max-w-2xl md:max-h-[92dvh] md:rounded-[30px]">
-          <div className="px-4 py-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] md:px-6 md:py-6">
+          <div className="px-4 py-3 pb-[max(1rem,env(safe-area-inset-bottom))] md:px-6 md:py-6">
             <div className="mx-auto mb-2 h-1.5 w-10 rounded-full bg-slate-200 md:hidden" />
 
             <div className="flex items-start justify-between gap-4">
@@ -72,13 +72,13 @@ export function CreateOrderMethodDialog({
                 <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">
                   Новый заказ
                 </div>
-                <h3 className="premium-title mt-2 text-[18px] font-semibold tracking-tight text-slate-900 md:text-[28px]">
+                <h3 className="premium-title mt-1.5 text-[16px] font-semibold tracking-tight text-slate-900 md:mt-2 md:text-[28px]">
                   Как создать заказ?
                 </h3>
-                <p className="mt-1.5 text-[12px] leading-5 text-slate-500 md:text-sm md:leading-6">
+                <p className="mt-1 text-[11px] leading-4.5 text-slate-500 md:mt-1.5 md:text-sm md:leading-6">
                   Выбери удобный способ. Потом ты сможешь проверить и поправить позиции.
                 </p>
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-2 flex flex-wrap gap-1.5">
                   <div className="rounded-full border border-stone-200 bg-white/80 px-2.5 py-1 text-[11px] font-medium text-stone-600">
                     Телефон: фото
                   </div>
@@ -91,7 +91,7 @@ export function CreateOrderMethodDialog({
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-full border border-stone-200 bg-white p-2 text-stone-500 transition hover:bg-stone-50"
+                className="rounded-full border border-stone-200 bg-white p-2 text-stone-500 transition hover:bg-stone-50 md:p-2"
                 aria-label="Закрыть"
               >
                 <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -101,36 +101,36 @@ export function CreateOrderMethodDialog({
               </button>
             </div>
 
-            <div className="mt-4 rounded-[22px] border border-white/70 bg-white/70 px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] md:mt-5 md:px-4">
+            <div className="mt-3 rounded-[20px] border border-white/70 bg-white/70 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] md:mt-5 md:px-4 md:py-3">
               <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">
                 Подсказка
               </div>
-              <div className="mt-1 text-[12px] leading-5 text-slate-500 md:text-sm">
+              <div className="mt-1 text-[11px] leading-4.5 text-slate-500 md:text-sm md:leading-6">
                 На телефоне чаще всего удобнее начать с фото. На компьютере быстрее работать вручную или из Excel.
               </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-1 gap-2.5 md:mt-5 md:grid-cols-3 md:gap-3">
+            <div className="mt-3 grid grid-cols-1 gap-2 md:mt-5 md:grid-cols-3 md:gap-3">
               {OPTIONS.map((option) => (
                 <button
                   key={option.key}
                   type="button"
                   onClick={() => onSelect(option.key)}
-                  className={`premium-card-hover rounded-[22px] border p-3.5 text-left shadow-[0_12px_28px_rgba(15,23,42,0.05)] transition md:rounded-[24px] md:p-4 ${option.tone}`}
+                  className={`premium-card-hover rounded-[22px] border p-3 text-left shadow-[0_12px_28px_rgba(15,23,42,0.05)] transition md:rounded-[24px] md:p-4 ${option.tone}`}
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-[15px] border border-white/60 bg-white/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] md:h-11 md:w-11 md:rounded-[16px]">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-[14px] border border-white/60 bg-white/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] md:h-11 md:w-11 md:rounded-[16px]">
                     {option.icon}
                   </div>
-                  <div className="mt-3 text-[15px] font-semibold tracking-tight md:mt-4 md:text-[16px]">
+                  <div className="mt-2.5 text-[14px] font-semibold tracking-tight md:mt-4 md:text-[16px]">
                     {option.title}
                   </div>
                   <div className="mt-2 inline-flex rounded-full border border-white/60 bg-white/70 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] opacity-80">
                     {option.note}
                   </div>
-                  <div className="mt-2 text-[11px] font-medium opacity-70">
+                  <div className="mt-1.5 text-[10px] font-medium opacity-70">
                     {option.accent}
                   </div>
-                  <div className="mt-1.5 text-[12px] leading-5 opacity-80">
+                  <div className="mt-1 text-[11px] leading-4.5 opacity-80 md:mt-1.5 md:text-[12px] md:leading-5">
                     {option.description}
                   </div>
                 </button>
