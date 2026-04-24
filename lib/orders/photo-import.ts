@@ -40,19 +40,34 @@ function cleanCell(value: string) {
   return value.replace(/\s+/g, " ").trim();
 }
 
+function stripLineJunk(value: string) {
+  return cleanCell(
+    value
+      .replace(/^[#№\-\–\—•*\.\)\(]+/, "")
+      .replace(/[|]+/g, " ")
+      .replace(/\b(шт|штук|pcs|pc)\b/gi, "")
+  );
+}
+
 function looksLikeArticle(value: string) {
-  const normalized = cleanCell(value);
-  return /^[A-Za-z0-9][A-Za-z0-9\-_.]{2,}$/.test(normalized);
+  const normalized = stripLineJunk(value);
+  return /^[A-Za-zА-Яа-я0-9][A-Za-zА-Яа-я0-9\-_.\/]{1,}$/.test(normalized);
 }
 
 function looksLikeQuantity(value: string) {
-  const normalized = cleanCell(value).replace(",", ".");
+  const normalized = stripLineJunk(value).replace(",", ".");
   return /^\d+([.]\d+)?$/.test(normalized);
 }
 
 function lineToRecognizedItem(line: string): RecognizedOrderItem | null {
-  const normalized = cleanCell(line);
+  const normalized = stripLineJunk(line);
   if (!normalized) return null;
+
+  if (
+    /артикул|наименование|колич|кол-во|итого|сумма|цена|товар/i.test(normalized)
+  ) {
+    return null;
+  }
 
   const splitByColumns = normalized.split(/\s{2,}|\t+/).map(cleanCell).filter(Boolean);
 
@@ -77,6 +92,25 @@ function lineToRecognizedItem(line: string): RecognizedOrderItem | null {
       name: cleanCell(tailMatch[2]),
       quantity: cleanCell(tailMatch[3]),
     };
+  }
+
+  const tokens = normalized.split(" ").filter(Boolean);
+  if (tokens.length >= 3) {
+    const articleIndex = tokens.findIndex((token) => looksLikeArticle(token));
+    const quantityIndex = [...tokens].reverse().findIndex((token) => looksLikeQuantity(token));
+
+    if (articleIndex !== -1 && quantityIndex !== -1) {
+      const realQuantityIndex = tokens.length - 1 - quantityIndex;
+      if (realQuantityIndex > articleIndex + 1) {
+        const article = stripLineJunk(tokens[articleIndex]);
+        const quantity = stripLineJunk(tokens[realQuantityIndex]);
+        const name = cleanCell(tokens.slice(articleIndex + 1, realQuantityIndex).join(" "));
+
+        if (article && name && quantity) {
+          return { article, name, quantity };
+        }
+      }
+    }
   }
 
   return null;
