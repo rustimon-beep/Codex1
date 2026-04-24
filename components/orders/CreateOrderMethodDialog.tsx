@@ -11,6 +11,7 @@ const OPTIONS = [
     key: "manual" as const,
     title: "Вручную",
     description: "Открыть пустую форму и добавить позиции самостоятельно.",
+    note: "Лучше для десктопа",
     tone: "border-stone-200 bg-white text-slate-900",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -23,6 +24,7 @@ const OPTIONS = [
     key: "photo" as const,
     title: "По фото",
     description: "Загрузить фото документа и попробовать распознать позиции.",
+    note: "Удобно с телефона",
     tone: "border-amber-200 bg-amber-50/90 text-amber-950",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -35,6 +37,7 @@ const OPTIONS = [
     key: "excel" as const,
     title: "Из Excel",
     description: "Подгрузить таблицу с артикулом, наименованием и количеством.",
+    note: "Быстро для готовых таблиц",
     tone: "border-emerald-200 bg-emerald-50/90 text-emerald-950",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -57,8 +60,8 @@ export function CreateOrderMethodDialog({
   return (
     <div className="fixed inset-0 z-[95] bg-slate-950/45 backdrop-blur-[2px]">
       <div className="flex min-h-screen items-end justify-center p-0 md:items-center md:p-4">
-        <div className="premium-shell w-full rounded-t-[24px] shadow-[0_24px_80px_rgba(15,23,42,0.18)] md:max-w-2xl md:rounded-[30px]">
-          <div className="px-4 py-4 md:px-6 md:py-6">
+        <div className="premium-shell w-full max-h-[92dvh] overflow-y-auto rounded-t-[24px] shadow-[0_24px_80px_rgba(15,23,42,0.18)] md:max-w-2xl md:rounded-[30px]">
+          <div className="px-4 py-4 pb-5 md:px-6 md:py-6">
             <div className="mx-auto mb-2 h-1.5 w-10 rounded-full bg-slate-200 md:hidden" />
 
             <div className="flex items-start justify-between gap-4">
@@ -72,6 +75,14 @@ export function CreateOrderMethodDialog({
                 <p className="mt-1.5 text-[12px] leading-5 text-slate-500 md:text-sm md:leading-6">
                   Выбери удобный способ. Потом ты сможешь проверить и поправить позиции.
                 </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <div className="rounded-full border border-stone-200 bg-white/80 px-2.5 py-1 text-[11px] font-medium text-stone-600">
+                    Телефон: фото
+                  </div>
+                  <div className="rounded-full border border-stone-200 bg-white/80 px-2.5 py-1 text-[11px] font-medium text-stone-600">
+                    ПК: вручную или Excel
+                  </div>
+                </div>
               </div>
 
               <button
@@ -100,6 +111,9 @@ export function CreateOrderMethodDialog({
                   </div>
                   <div className="mt-4 text-[16px] font-semibold tracking-tight">
                     {option.title}
+                  </div>
+                  <div className="mt-2 inline-flex rounded-full border border-white/60 bg-white/70 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] opacity-80">
+                    {option.note}
                   </div>
                   <div className="mt-1.5 text-[12px] leading-5 opacity-80">
                     {option.description}

@@ -291,58 +291,6 @@ export function OrderFormModal({
               ) : null}
 
               <section className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-3 md:rounded-[26px] md:p-5">
-                <div className="mb-3 md:mb-4">
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">
-                    Комментарии
-                  </h3>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4">
-                  <div>
-                    <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                      История комментариев
-                    </label>
-                    <div className="max-h-48 space-y-2 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-3 md:max-h-52">
-                      {parsedComments.length === 0 ? (
-                        <div className="text-sm text-slate-500">Комментариев пока нет</div>
-                      ) : (
-                        parsedComments.map((entry, index) => (
-                          <div
-                            key={`${entry.datetime}-${entry.author}-${index}`}
-                            className="rounded-2xl border border-slate-200 bg-slate-50/70 px-3 py-3"
-                          >
-                            <div className="flex items-center justify-between gap-3">
-                              <div className="text-xs font-semibold text-slate-800">
-                                {entry.author}
-                              </div>
-                              <div className="text-[11px] text-slate-400">
-                                {entry.datetime}
-                              </div>
-                            </div>
-                            <div className="mt-1 whitespace-pre-wrap text-sm leading-6 text-slate-700">
-                              {entry.text}
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                      Новый комментарий
-                    </label>
-                    <textarea
-                      value={form.newComment}
-                      disabled={!canComment || saving || photoParsing}
-                      onChange={(e) => setForm({ ...form, newComment: e.target.value })}
-                      className="min-h-[110px] w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500"
-                    />
-                  </div>
-                </div>
-              </section>
-
-              <section className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-3 md:rounded-[26px] md:p-5">
                 <div className="mb-3 flex flex-col gap-3 md:mb-4 md:flex-row md:items-center md:justify-between">
                   <div>
                     <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">
@@ -496,6 +444,61 @@ export function OrderFormModal({
                       </div>
                     </div>
                   ))}
+                </div>
+              </section>
+
+              <section className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-3 md:rounded-[26px] md:p-5">
+                <div className="mb-3 md:mb-4">
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">
+                    Комментарии
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Добавь пояснение после того, как заполнишь сам заказ и позиции.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                      История комментариев
+                    </label>
+                    <div className="max-h-48 space-y-2 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-3 md:max-h-52">
+                      {parsedComments.length === 0 ? (
+                        <div className="text-sm text-slate-500">Комментариев пока нет</div>
+                      ) : (
+                        parsedComments.map((entry, index) => (
+                          <div
+                            key={`${entry.datetime}-${entry.author}-${index}`}
+                            className="rounded-2xl border border-slate-200 bg-slate-50/70 px-3 py-3"
+                          >
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="text-xs font-semibold text-slate-800">
+                                {entry.author}
+                              </div>
+                              <div className="text-[11px] text-slate-400">
+                                {entry.datetime}
+                              </div>
+                            </div>
+                            <div className="mt-1 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+                              {entry.text}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                      Новый комментарий
+                    </label>
+                    <textarea
+                      value={form.newComment}
+                      disabled={!canComment || saving || photoParsing}
+                      onChange={(e) => setForm({ ...form, newComment: e.target.value })}
+                      className="min-h-[110px] w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500"
+                    />
+                  </div>
                 </div>
               </section>
             </div>
