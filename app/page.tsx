@@ -73,6 +73,16 @@ import {
 
 const EMPTY_ORDER_FORM = createEmptyOrderForm(EMPTY_ITEM);
 
+type QuickDateDialogState = {
+  open: boolean;
+  orderId: number | null;
+  itemId: number | null;
+  status: string;
+  value: string;
+  title: string;
+  description: string;
+};
+
 export default function OrdersPage() {
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [search, setSearch] = useState("");
@@ -110,7 +120,7 @@ export default function OrdersPage() {
     closePromptDialog,
   } = useDialog();
 
-  const [quickDateDialog, setQuickDateDialog] = useState({
+  const [quickDateDialog, setQuickDateDialog] = useState<QuickDateDialogState>({
     open: false,
     orderId: null,
     itemId: null,
