@@ -9,6 +9,7 @@ import { LoginForm } from "../../../components/orders/LoginForm";
 import { AppDialog } from "../../../components/ui/AppDialog";
 import { MobileBottomNav } from "../../../components/ui/MobileBottomNav";
 import { MobileLaunchReveal } from "../../../components/ui/MobileLaunchReveal";
+import { PremiumIconTile } from "../../../components/ui/PremiumIconTile";
 import { ToastViewport } from "../../../components/ui/ToastViewport";
 import { AppLogo } from "../../../components/ui/AppLogo";
 import { EmptyStateCard } from "../../../components/ui/EmptyStateCard";
@@ -373,15 +374,28 @@ export default function OrderDetailsPage() {
 
               <div className="premium-enter premium-enter-delay-2 grid gap-4 md:gap-5 xl:grid-cols-[1.55fr_0.95fr]">
                 <div className="space-y-4 md:space-y-5">
-                  <section className="rounded-[22px] border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.06)] md:rounded-[28px] md:p-6">
+                  <section className="premium-shell rounded-[22px] p-4 md:rounded-[28px] md:p-6">
                     <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="text-[10px] font-medium tracking-[0.06em] text-slate-400 md:text-[12px]">
-                          Основная информация
+                      <div className="flex items-start gap-3">
+                        <PremiumIconTile
+                          tone="sky"
+                          icon={
+                            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
+                              <path d="M4 7H20" />
+                              <path d="M7 4V10" />
+                              <path d="M17 4V10" />
+                              <rect x="4" y="6" width="16" height="14" rx="3" />
+                            </svg>
+                          }
+                        />
+                        <div>
+                          <div className="text-[10px] font-medium tracking-[0.06em] text-slate-400 md:text-[12px]">
+                            Основная информация
+                          </div>
+                          <h2 className="mt-1.5 text-[18px] font-medium tracking-tight text-slate-900 md:mt-2 md:text-[24px]">
+                            Параметры заказа
+                          </h2>
                         </div>
-                        <h2 className="mt-1.5 text-[18px] font-medium tracking-tight text-slate-900 md:mt-2 md:text-[24px]">
-                          Параметры заказа
-                        </h2>
                       </div>
 
                       <div className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-medium text-slate-600 md:px-3 md:text-[11px]">
@@ -436,15 +450,26 @@ export default function OrderDetailsPage() {
                   </section>
 
                   {canBulkEditItems ? (
-                    <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_10px_28px_rgba(15,23,42,0.06)] md:p-6">
+                    <section className="premium-shell rounded-[28px] p-5 md:p-6">
                       <div className="flex items-start justify-between gap-3">
-                        <div>
+                        <div className="flex items-start gap-3">
+                          <PremiumIconTile
+                            tone="amber"
+                            icon={
+                              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
+                                <path d="M12 3V21" />
+                                <path d="M3 12H21" />
+                              </svg>
+                            }
+                          />
+                          <div>
                           <div className="text-[12px] font-medium tracking-[0.06em] text-slate-400">
                             Массовые действия
                           </div>
-                          <h2 className="mt-2 text-[24px] font-medium tracking-tight text-slate-900">
-                            Быстрое применение
-                          </h2>
+                            <h2 className="mt-2 text-[24px] font-medium tracking-tight text-slate-900">
+                              Быстрое применение
+                            </h2>
+                          </div>
                         </div>
 
                         <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-medium text-slate-600">
@@ -516,15 +541,27 @@ export default function OrderDetailsPage() {
                     </section>
                   ) : null}
 
-                  <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_10px_28px_rgba(15,23,42,0.06)] md:p-6">
+                  <section className="premium-shell rounded-[28px] p-5 md:p-6">
                     <div className="mb-5 flex items-start justify-between gap-3">
-                      <div>
-                        <div className="text-[12px] font-medium tracking-[0.06em] text-slate-400">
-                          Позиции
+                      <div className="flex items-start gap-3">
+                        <PremiumIconTile
+                          tone="violet"
+                          icon={
+                            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
+                              <path d="M5 6H19" />
+                              <path d="M5 12H19" />
+                              <path d="M5 18H14" />
+                            </svg>
+                          }
+                        />
+                        <div>
+                          <div className="text-[12px] font-medium tracking-[0.06em] text-slate-400">
+                            Позиции
+                          </div>
+                          <h2 className="mt-2 text-[24px] font-medium tracking-tight text-slate-900">
+                            Состав заказа
+                          </h2>
                         </div>
-                        <h2 className="mt-2 text-[24px] font-medium tracking-tight text-slate-900">
-                          Состав заказа
-                        </h2>
                       </div>
 
                       <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-medium text-slate-600">
@@ -532,7 +569,7 @@ export default function OrderDetailsPage() {
                       </div>
                     </div>
 
-                    <div className="mb-5 rounded-[24px] border border-slate-200 bg-slate-50/80 px-4 py-4">
+                    <div className="mb-5 rounded-[24px] border border-slate-200 bg-[linear-gradient(180deg,rgba(248,250,252,0.96),rgba(241,245,249,0.92))] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
                       <div className="mb-2 flex items-center justify-between text-[11px] font-medium text-slate-500">
                         <span>Прогресс исполнения</span>
                         <span className="text-slate-700">
@@ -600,7 +637,7 @@ export default function OrderDetailsPage() {
                         return (
                           <div
                             key={item.id || `item-${index}`}
-                            className={`overflow-hidden rounded-[26px] border bg-white shadow-[0_8px_22px_rgba(15,23,42,0.04)] transition ${
+                            className={`premium-card-hover overflow-hidden rounded-[26px] border bg-white shadow-[0_8px_22px_rgba(15,23,42,0.04)] transition ${
                               itemOverdue
                                 ? "border-rose-200 ring-1 ring-rose-100"
                                 : "border-slate-200"
@@ -788,13 +825,25 @@ export default function OrderDetailsPage() {
                 </div>
 
                 <div className="space-y-5">
-                  <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_10px_28px_rgba(15,23,42,0.06)] md:p-6">
-                    <div className="text-[12px] font-medium tracking-[0.06em] text-slate-400">
-                      Сводка
+                  <section className="premium-shell rounded-[28px] p-5 md:p-6">
+                    <div className="flex items-start gap-3">
+                      <PremiumIconTile
+                        tone="emerald"
+                        icon={
+                          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
+                            <path d="M5 12L10 17L19 7" />
+                          </svg>
+                        }
+                      />
+                      <div>
+                        <div className="text-[12px] font-medium tracking-[0.06em] text-slate-400">
+                          Сводка
+                        </div>
+                        <h2 className="mt-2 text-[24px] font-medium tracking-tight text-slate-900">
+                          Ключевые данные
+                        </h2>
+                      </div>
                     </div>
-                    <h2 className="mt-2 text-[24px] font-medium tracking-tight text-slate-900">
-                      Ключевые данные
-                    </h2>
 
                     <div className="mt-6 grid grid-cols-1 gap-4">
                       <InfoRow label="Дата заказа" value={formatDate(form.orderDate || null)} />
@@ -823,13 +872,27 @@ export default function OrderDetailsPage() {
                     </div>
                   </section>
 
-                  <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_10px_28px_rgba(15,23,42,0.06)] md:p-6">
-                    <div className="text-[12px] font-medium tracking-[0.06em] text-slate-400">
-                      История
+                  <section className="premium-shell rounded-[28px] p-5 md:p-6">
+                    <div className="flex items-start gap-3">
+                      <PremiumIconTile
+                        tone="slate"
+                        icon={
+                          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
+                            <path d="M8 10H16" />
+                            <path d="M8 14H13" />
+                            <rect x="4" y="5" width="16" height="14" rx="3" />
+                          </svg>
+                        }
+                      />
+                      <div>
+                        <div className="text-[12px] font-medium tracking-[0.06em] text-slate-400">
+                          История
+                        </div>
+                        <h2 className="mt-2 text-[24px] font-medium tracking-tight text-slate-900">
+                          Комментарии и изменения
+                        </h2>
+                      </div>
                     </div>
-                    <h2 className="mt-2 text-[24px] font-medium tracking-tight text-slate-900">
-                      Комментарии и изменения
-                    </h2>
 
                     <div className="mt-6 max-h-80 space-y-3 overflow-y-auto pr-1">
                       {parsedComments.length === 0 ? (
@@ -872,11 +935,11 @@ export default function OrderDetailsPage() {
                     </div>
                   </section>
 
-                  <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_10px_28px_rgba(15,23,42,0.06)] md:p-6">
+                  <section className="premium-shell rounded-[28px] p-5 md:p-6">
                     <button
                       onClick={handleSaveOrderWithHaptic}
                       disabled={saving}
-                      className="w-full rounded-2xl bg-slate-900 px-5 py-4 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="w-full rounded-2xl bg-slate-900 px-5 py-4 text-sm font-medium text-white shadow-[0_20px_40px_rgba(15,23,42,0.18)] transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {saving ? "Сохранение..." : "Сохранить изменения"}
                     </button>

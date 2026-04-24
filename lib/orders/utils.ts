@@ -74,25 +74,28 @@ export function compareValues(
 
 export function statusClasses(status: string) {
   if (status === "Поставлен") {
-    return "bg-emerald-100 text-emerald-700 border border-emerald-200";
+    return "border border-emerald-200/80 bg-[linear-gradient(180deg,rgba(236,253,245,0.98),rgba(209,250,229,0.92))] text-emerald-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
   }
   if (status === "Отменен" || status === "Частично отменен") {
-    return "bg-rose-100 text-rose-700 border border-rose-200";
+    return "border border-rose-200/80 bg-[linear-gradient(180deg,rgba(255,241,242,0.98),rgba(255,228,230,0.92))] text-rose-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
   }
   if (status === "В пути") {
-    return "bg-violet-100 text-violet-700 border border-violet-200";
+    return "border border-violet-200/80 bg-[linear-gradient(180deg,rgba(245,243,255,0.98),rgba(237,233,254,0.92))] text-violet-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
+  }
+  if (status === "Частично поставлен") {
+    return "border border-cyan-200/80 bg-[linear-gradient(180deg,rgba(236,254,255,0.98),rgba(207,250,254,0.9))] text-cyan-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
   }
   if (status === "В работе") {
-    return "bg-amber-100 text-amber-700 border border-amber-200";
+    return "border border-amber-200/80 bg-[linear-gradient(180deg,rgba(255,251,235,0.98),rgba(254,243,199,0.92))] text-amber-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
   }
-  return "bg-slate-100 text-slate-700 border border-slate-200";
+  return "border border-slate-200/80 bg-[linear-gradient(180deg,rgba(248,250,252,0.98),rgba(241,245,249,0.94))] text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
 }
 
 export function orderTypeClasses(orderType: string) {
   if (orderType === "Срочный") {
-    return "bg-amber-100 text-amber-700 border border-amber-200";
+    return "border border-amber-200/80 bg-[linear-gradient(180deg,rgba(255,251,235,0.98),rgba(254,243,199,0.92))] text-amber-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
   }
-  return "bg-sky-100 text-sky-700 border border-sky-200";
+  return "border border-sky-200/80 bg-[linear-gradient(180deg,rgba(240,249,255,0.98),rgba(224,242,254,0.92))] text-sky-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
 }
 
 export function statusSelectClasses(status: string) {
