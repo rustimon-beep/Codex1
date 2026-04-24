@@ -80,7 +80,7 @@ type QuickDateDialogState = {
   status: string;
   value: string;
   title: string;
-  description: string;
+  description?: string;
 };
 
 export default function OrdersPage() {
