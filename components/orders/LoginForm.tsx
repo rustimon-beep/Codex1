@@ -23,14 +23,14 @@ export function LoginForm({
     <>
       <MobileLaunchReveal />
       <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-100 p-2.5 md:p-8">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.08),transparent_32%)]" />
-        <div className="pointer-events-none absolute -left-16 top-20 h-44 w-44 rounded-full bg-sky-300/20 blur-3xl" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(180,138,76,0.08),transparent_32%)]" />
+        <div className="pointer-events-none absolute -left-16 top-20 h-44 w-44 rounded-full bg-amber-200/20 blur-3xl" />
         <div className="pointer-events-none absolute right-0 top-0 h-56 w-56 rounded-full bg-slate-900/8 blur-3xl" />
         <div className="premium-enter w-full max-w-md overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.12)] md:rounded-[32px]">
           <div className="hero-premium px-4 py-5 text-white md:px-8 md:py-10">
             <AppLogo className="mb-5 md:mb-6" />
 
-            <div className="glass-chip inline-flex items-center rounded-full px-3 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-slate-200">
+            <div className="glass-chip inline-flex items-center rounded-full px-3 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-slate-200 md:hidden">
               Premium Access
             </div>
             <h1 className="mt-3 text-[21px] font-semibold tracking-tight md:text-3xl">Вход в систему</h1>

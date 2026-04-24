@@ -177,8 +177,8 @@ export function OrdersListMobile({
               onTouchEnd={(event) => handleTouchEnd(event, order.id)}
               className={`relative bg-white transition-transform duration-300 ${isActionsVisible ? actionsWidthClass : "translate-x-0"}`}
             >
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.07),transparent_65%)]" />
-              <div className="pointer-events-none absolute right-3 top-3 h-14 w-14 rounded-full bg-sky-100/60 blur-2xl" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-[radial-gradient(circle_at_top,rgba(180,138,76,0.07),transparent_65%)]" />
+              <div className="pointer-events-none absolute right-3 top-3 h-14 w-14 rounded-full bg-amber-100/60 blur-2xl" />
               <div
                 className={`h-1.5 w-full ${
                   overdue
@@ -236,7 +236,7 @@ export function OrdersListMobile({
                         </span>
 
                         {(hasComment(order.comment) || hasReplacementInOrder(items)) && (
-                          <span className="inline-flex rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-[8px] font-medium text-sky-700 md:text-[9px]">
+                          <span className="inline-flex rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-[8px] font-medium text-stone-700 md:text-[9px]">
                             Есть отметки
                           </span>
                         )}

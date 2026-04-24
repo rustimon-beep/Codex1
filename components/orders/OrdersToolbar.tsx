@@ -350,7 +350,7 @@ function StatCard({
     <div
       className={`premium-card-hover relative overflow-hidden rounded-[18px] bg-white p-3 shadow-[0_10px_28px_rgba(15,23,42,0.06)] ring-1 md:rounded-[28px] md:p-5 ${ring}`}
     >
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-14 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.08),transparent_65%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-14 bg-[radial-gradient(circle_at_top,rgba(180,138,76,0.08),transparent_65%)]" />
       <div className="flex items-start justify-between gap-3">
         <div className="text-[12px] font-medium text-slate-500 md:text-sm">{title}</div>
         <div className={`mt-1 h-2.5 w-2.5 rounded-full md:h-3 md:w-3 ${accent}`} />

@@ -11,7 +11,7 @@ export function StatMini({
 }) {
   return (
     <div className="premium-card-hover relative overflow-hidden rounded-[18px] bg-white p-3.5 shadow-[0_10px_28px_rgba(15,23,42,0.06)] ring-1 ring-slate-200 md:rounded-[24px] md:p-5">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-12 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.08),transparent_68%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-12 bg-[radial-gradient(circle_at_top,rgba(180,138,76,0.08),transparent_68%)]" />
       <div className="text-[10px] font-medium tracking-[0.06em] text-slate-400 md:text-xs">
         {title}
       </div>

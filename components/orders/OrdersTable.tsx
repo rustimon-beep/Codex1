@@ -156,7 +156,7 @@ export function OrdersTable({
                                     <button
                                       type="button"
                                       onClick={(e) => e.stopPropagation()}
-                                      className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-md border border-sky-200 bg-sky-50 px-1.5 text-[11px] leading-none text-sky-600 transition hover:border-sky-300 hover:bg-sky-100"
+                                      className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-md border border-stone-200 bg-stone-50 px-1.5 text-[11px] leading-none text-stone-600 transition hover:border-stone-300 hover:bg-stone-100"
                                       aria-label={flagTitle}
                                     >
                                       ⚑

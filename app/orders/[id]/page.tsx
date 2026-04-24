@@ -273,9 +273,9 @@ export default function OrderDetailsPage() {
         <div className="route-stage bottom-nav-safe mx-auto max-w-7xl space-y-4 md:space-y-6 md:pb-0">
           <div className="premium-enter overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-[0_12px_36px_rgba(15,23,42,0.08)] md:rounded-[28px]">
             <div className="hero-premium relative px-3.5 py-3.5 text-white md:px-8 md:py-7">
-              <div className="absolute inset-y-0 right-0 w-[38%] bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.18),transparent_55%)] pointer-events-none" />
+              <div className="absolute inset-y-0 right-0 w-[38%] bg-[radial-gradient(circle_at_top_right,rgba(180,138,76,0.18),transparent_55%)] pointer-events-none" />
               <div className="pointer-events-none absolute -left-8 top-8 h-24 w-24 rounded-full bg-white/5 blur-2xl" />
-              <div className="pointer-events-none absolute bottom-0 right-6 h-28 w-28 rounded-full bg-sky-400/10 blur-3xl" />
+              <div className="pointer-events-none absolute bottom-0 right-6 h-28 w-28 rounded-full bg-amber-300/10 blur-3xl" />
 
               <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0">

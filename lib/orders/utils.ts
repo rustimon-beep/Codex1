@@ -74,44 +74,47 @@ export function compareValues(
 
 export function statusClasses(status: string) {
   if (status === "Поставлен") {
-    return "border border-emerald-200/80 bg-[linear-gradient(180deg,rgba(236,253,245,0.98),rgba(209,250,229,0.92))] text-emerald-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
+    return "border border-emerald-200/80 bg-[linear-gradient(180deg,rgba(236,253,245,0.98),rgba(209,250,229,0.92))] text-emerald-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
   }
   if (status === "Отменен" || status === "Частично отменен") {
-    return "border border-rose-200/80 bg-[linear-gradient(180deg,rgba(255,241,242,0.98),rgba(255,228,230,0.92))] text-rose-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
+    return "border border-rose-200/80 bg-[linear-gradient(180deg,rgba(255,241,242,0.98),rgba(254,226,226,0.92))] text-rose-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
   }
   if (status === "В пути") {
-    return "border border-violet-200/80 bg-[linear-gradient(180deg,rgba(245,243,255,0.98),rgba(237,233,254,0.92))] text-violet-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
+    return "border border-fuchsia-200/80 bg-[linear-gradient(180deg,rgba(253,244,255,0.98),rgba(245,208,254,0.9))] text-fuchsia-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
   }
   if (status === "Частично поставлен") {
-    return "border border-cyan-200/80 bg-[linear-gradient(180deg,rgba(236,254,255,0.98),rgba(207,250,254,0.9))] text-cyan-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
+    return "border border-emerald-200/80 bg-[linear-gradient(180deg,rgba(247,254,231,0.98),rgba(220,252,231,0.92))] text-emerald-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
   }
   if (status === "В работе") {
-    return "border border-amber-200/80 bg-[linear-gradient(180deg,rgba(255,251,235,0.98),rgba(254,243,199,0.92))] text-amber-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
+    return "border border-amber-200/80 bg-[linear-gradient(180deg,rgba(255,251,235,0.98),rgba(253,230,138,0.92))] text-amber-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
   }
-  return "border border-slate-200/80 bg-[linear-gradient(180deg,rgba(248,250,252,0.98),rgba(241,245,249,0.94))] text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
+  return "border border-stone-200/80 bg-[linear-gradient(180deg,rgba(250,250,249,0.98),rgba(245,245,244,0.94))] text-stone-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
 }
 
 export function orderTypeClasses(orderType: string) {
   if (orderType === "Срочный") {
-    return "border border-amber-200/80 bg-[linear-gradient(180deg,rgba(255,251,235,0.98),rgba(254,243,199,0.92))] text-amber-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
+    return "border border-amber-200/80 bg-[linear-gradient(180deg,rgba(255,251,235,0.98),rgba(253,230,138,0.9))] text-amber-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
   }
-  return "border border-sky-200/80 bg-[linear-gradient(180deg,rgba(240,249,255,0.98),rgba(224,242,254,0.92))] text-sky-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
+  return "border border-stone-200/80 bg-[linear-gradient(180deg,rgba(250,250,249,0.98),rgba(245,245,244,0.92))] text-stone-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
 }
 
 export function statusSelectClasses(status: string) {
   if (status === "Поставлен") {
-    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+    return "border-emerald-200 bg-emerald-50 text-emerald-800";
   }
   if (status === "Отменен") {
-    return "border-rose-200 bg-rose-50 text-rose-700";
+    return "border-rose-200 bg-rose-50 text-rose-800";
   }
   if (status === "В пути") {
-    return "border-violet-200 bg-violet-50 text-violet-700";
+    return "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-800";
+  }
+  if (status === "Частично поставлен") {
+    return "border-emerald-200 bg-emerald-50 text-emerald-800";
   }
   if (status === "В работе") {
-    return "border-amber-200 bg-amber-50 text-amber-700";
+    return "border-amber-200 bg-amber-50 text-amber-800";
   }
-  return "border-slate-200 bg-slate-50 text-slate-700";
+  return "border-stone-200 bg-stone-50 text-stone-700";
 }
 
 export function getOrderProgress(items: OrderItem[]) {
