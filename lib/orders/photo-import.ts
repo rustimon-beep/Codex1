@@ -36,6 +36,65 @@ export function extractJsonObject(text: string) {
   return trimmed;
 }
 
+function cleanCell(value: string) {
+  return value.replace(/\s+/g, " ").trim();
+}
+
+function looksLikeArticle(value: string) {
+  const normalized = cleanCell(value);
+  return /^[A-Za-z0-9][A-Za-z0-9\-_.]{2,}$/.test(normalized);
+}
+
+function looksLikeQuantity(value: string) {
+  const normalized = cleanCell(value).replace(",", ".");
+  return /^\d+([.]\d+)?$/.test(normalized);
+}
+
+function lineToRecognizedItem(line: string): RecognizedOrderItem | null {
+  const normalized = cleanCell(line);
+  if (!normalized) return null;
+
+  const splitByColumns = normalized.split(/\s{2,}|\t+/).map(cleanCell).filter(Boolean);
+
+  if (splitByColumns.length >= 3) {
+    const [first, ...rest] = splitByColumns;
+    const last = rest[rest.length - 1];
+    const middle = rest.slice(0, -1).join(" ");
+
+    if (looksLikeArticle(first) && looksLikeQuantity(last)) {
+      return {
+        article: first,
+        name: cleanCell(middle),
+        quantity: last,
+      };
+    }
+  }
+
+  const tailMatch = normalized.match(/^([A-Za-z0-9][A-Za-z0-9\-_.]{2,})\s+(.+?)\s+(\d+(?:[.,]\d+)?)$/);
+  if (tailMatch) {
+    return {
+      article: cleanCell(tailMatch[1]),
+      name: cleanCell(tailMatch[2]),
+      quantity: cleanCell(tailMatch[3]),
+    };
+  }
+
+  return null;
+}
+
+export function parseOcrTextToRecognizedItems(text: string) {
+  const lines = text
+    .split(/\r?\n/)
+    .map(cleanCell)
+    .filter(Boolean)
+    .filter((line) => line.length > 3);
+
+  return lines
+    .map(lineToRecognizedItem)
+    .filter((item): item is RecognizedOrderItem => Boolean(item))
+    .filter((item) => item.article || item.name || item.quantity);
+}
+
 export async function fileToVisionDataUrl(file: File) {
   const fileDataUrl = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader();

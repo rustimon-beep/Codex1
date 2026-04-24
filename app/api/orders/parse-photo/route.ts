@@ -1,120 +1,73 @@
 import { NextResponse } from "next/server";
-import { extractJsonObject } from "../../../../lib/orders/photo-import";
+import { parseOcrTextToRecognizedItems } from "../../../../lib/orders/photo-import";
 
 export const runtime = "nodejs";
 
-type ResponseContentPart = {
-  type?: string;
-  text?: string;
+type OcrSpaceParsedResult = {
+  ParsedText?: string;
 };
 
-type ResponseOutputItem = {
-  type?: string;
-  content?: ResponseContentPart[];
+type OcrSpacePayload = {
+  IsErroredOnProcessing?: boolean;
+  ErrorMessage?: string[] | string;
+  ParsedResults?: OcrSpaceParsedResult[];
 };
-
-type OpenAIResponsePayload = {
-  output_text?: string;
-  output?: ResponseOutputItem[];
-  error?: {
-    message?: string;
-  };
-};
-
-function getOutputText(payload: OpenAIResponsePayload) {
-  if (typeof payload.output_text === "string" && payload.output_text.trim()) {
-    return payload.output_text;
-  }
-
-  if (Array.isArray(payload.output)) {
-    for (const item of payload.output) {
-      if (item.type === "message" && Array.isArray(item.content)) {
-        const textPart = item.content.find((part) => part.type === "output_text");
-        if (typeof textPart?.text === "string" && textPart.text.trim()) {
-          return textPart.text;
-        }
-      }
-    }
-  }
-
-  return "";
-}
 
 export async function POST(request: Request) {
-  const apiKey = process.env.OPENAI_API_KEY;
-
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: "OPENAI_API_KEY is not configured" },
-      { status: 500 }
-    );
-  }
-
   const { imageDataUrl } = await request.json();
 
   if (!imageDataUrl || typeof imageDataUrl !== "string") {
     return NextResponse.json({ error: "Image is required" }, { status: 400 });
   }
 
-  const model = process.env.OPENAI_VISION_MODEL || "gpt-4.1-mini";
+  const apiKey = process.env.OCR_SPACE_API_KEY || "helloworld";
+  const formData = new FormData();
+  formData.append("base64Image", imageDataUrl);
+  formData.append("language", "auto");
+  formData.append("isOverlayRequired", "false");
+  formData.append("detectOrientation", "true");
+  formData.append("scale", "true");
+  formData.append("OCREngine", "2");
+  formData.append("isTable", "true");
 
-  const response = await fetch("https://api.openai.com/v1/responses", {
+  const response = await fetch("https://api.ocr.space/parse/image", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
+      apikey: apiKey,
     },
-    body: JSON.stringify({
-      model,
-      input: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "input_text",
-              text:
-                "Ты распознаешь фото документа с перечнем товаров. Верни только JSON без пояснений в формате {\"items\":[{\"article\":\"\",\"name\":\"\",\"quantity\":\"\"}],\"notes\":\"\"}. " +
-                "Извлекай только артикул, наименование и количество. Если значение не удалось уверенно распознать, оставляй пустую строку. Не придумывай данные.",
-            },
-            {
-              type: "input_image",
-              image_url: imageDataUrl,
-              detail: "high",
-            },
-          ],
-        },
-      ],
-    }),
+    body: formData,
   });
 
-  const payload = (await response.json()) as OpenAIResponsePayload;
+  const payload = (await response.json()) as OcrSpacePayload;
 
   if (!response.ok) {
     return NextResponse.json(
-      { error: payload.error?.message || "Failed to parse image" },
+      { error: "OCR service request failed" },
       { status: response.status }
     );
   }
 
-  const outputText = getOutputText(payload);
+  if (payload.IsErroredOnProcessing) {
+    const message = Array.isArray(payload.ErrorMessage)
+      ? payload.ErrorMessage.join(". ")
+      : payload.ErrorMessage || "OCR service failed to process the image.";
 
-  if (!outputText) {
-    return NextResponse.json({ error: "Model returned empty response" }, { status: 500 });
-  }
-
-  try {
-    const parsed = JSON.parse(extractJsonObject(outputText));
-    return NextResponse.json({
-      items: Array.isArray(parsed?.items) ? parsed.items : [],
-      notes: typeof parsed?.notes === "string" ? parsed.notes : "",
-    });
-  } catch {
     return NextResponse.json(
       {
-        error: "Could not parse model response",
-        raw: outputText,
+        error: message,
       },
       { status: 500 }
     );
   }
+
+  const parsedText = (payload.ParsedResults || [])
+    .map((result) => result.ParsedText || "")
+    .join("\n");
+
+  const items = parseOcrTextToRecognizedItems(parsedText);
+
+  return NextResponse.json({
+    items,
+    notes: parsedText.trim(),
+  });
 }
