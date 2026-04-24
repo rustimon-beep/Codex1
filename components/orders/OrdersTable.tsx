@@ -44,6 +44,21 @@ const STATUS_OPTIONS = [
   "Отменен",
 ];
 
+function hasMissingPlannedDate(items: OrderItem[]) {
+  return items.some(
+    (item) =>
+      item.status !== "Поставлен" &&
+      item.status !== "Отменен" &&
+      !item.planned_date
+  );
+}
+
+function isStaleOrder(updatedAt: string | null) {
+  if (!updatedAt) return false;
+  const diffMs = Date.now() - new Date(updatedAt).getTime();
+  return diffMs > 1000 * 60 * 60 * 24 * 3;
+}
+
 export function OrdersTable({
   loading,
   orders,
@@ -65,14 +80,14 @@ export function OrdersTable({
         <table className="min-w-[1180px] w-full border-separate border-spacing-0 text-left text-sm">
           <thead className="premium-grid text-slate-600">
             <tr>
-              <th className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em]">Заказ</th>
-              <th className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em]">Тип</th>
-              <th className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em]">Дата заказа</th>
-              <th className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em]">Общий статус</th>
-              <th className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em]">Прогресс</th>
-              <th className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em]">Плановая</th>
-              <th className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em]">Полная поставка</th>
-              <th className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em]">Последнее изменение</th>
+              <th className="sticky top-0 z-10 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Заказ</th>
+              <th className="sticky top-0 z-10 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Тип</th>
+              <th className="sticky top-0 z-10 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Дата заказа</th>
+              <th className="sticky top-0 z-10 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Общий статус</th>
+              <th className="sticky top-0 z-10 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Прогресс</th>
+              <th className="sticky top-0 z-10 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Плановая</th>
+              <th className="sticky top-0 z-10 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Полная поставка</th>
+              <th className="sticky top-0 z-10 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Последнее изменение</th>
             </tr>
           </thead>
 
@@ -103,6 +118,8 @@ export function OrdersTable({
                 const plannedDate = getOrderPlannedDate(items);
                 const fullDeliveredDate = getOrderDeliveredDate(items);
                 const orderType = order.order_type || "Стандартный";
+                const missingPlannedDate = hasMissingPlannedDate(items);
+                const staleOrder = isStaleOrder(order.updated_at);
 
                 const hasOrderComment = hasComment(order.comment);
                 const hasOrderReplacement = hasReplacementInOrder(items);
@@ -169,6 +186,14 @@ export function OrdersTable({
                                     </div>
                                   </div>
                                 ) : null}
+
+                                <span
+                                  className={`inline-flex h-6 w-6 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 transition ${expanded ? "rotate-180" : ""}`}
+                                >
+                                  <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor">
+                                    <path d="M5.25 7.5L10 12.25L14.75 7.5H5.25Z" />
+                                  </svg>
+                                </span>
                               </div>
                             </div>
 
@@ -193,6 +218,26 @@ export function OrdersTable({
                                 </button>
                               ) : null}
                             </div>
+
+                            {(overdue || missingPlannedDate || staleOrder) && (
+                              <div className="mt-2.5 flex flex-wrap gap-1.5">
+                                {overdue ? (
+                                  <span className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[10px] font-medium text-rose-700">
+                                    Просрочен
+                                  </span>
+                                ) : null}
+                                {missingPlannedDate ? (
+                                  <span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-900">
+                                    Нет плановой даты
+                                  </span>
+                                ) : null}
+                                {staleOrder ? (
+                                  <span className="inline-flex rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-[10px] font-medium text-stone-700">
+                                    Нет обновлений 3+ дня
+                                  </span>
+                                ) : null}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </td>
