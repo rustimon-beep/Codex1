@@ -6,6 +6,7 @@ import { getTodayDate } from "../../lib/orders/utils";
 type OrderFormModalProps = {
   open: boolean;
   saving: boolean;
+  photoParsing: boolean;
   editingOrderId: number | null;
   userRole: "admin" | "supplier" | "viewer" | "buyer";
   form: OrderFormState;
@@ -15,9 +16,11 @@ type OrderFormModalProps = {
     text: string;
   }[];
   fileInputRef: RefObject<HTMLInputElement>;
+  photoInputRef: RefObject<HTMLInputElement>;
   canEditOrderTextFields: boolean;
   canEditItemMainFields: boolean;
   canImportItems: boolean;
+  canImportFromPhoto: boolean;
   canEditItemStatusFields: boolean;
   canComment: boolean;
   canUseBulkActions: boolean;
@@ -27,6 +30,7 @@ type OrderFormModalProps = {
   applyBulkPlannedDate: () => void;
   applyBulkStatus: () => void;
   handleExcelUpload: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
+  handlePhotoUpload: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
   addItemRow: () => void;
   updateItemField: (
     index: number,
@@ -40,14 +44,17 @@ type OrderFormModalProps = {
 export function OrderFormModal({
   open,
   saving,
+  photoParsing,
   editingOrderId,
   userRole,
   form,
   parsedComments,
   fileInputRef,
+  photoInputRef,
   canEditOrderTextFields,
   canEditItemMainFields,
   canImportItems,
+  canImportFromPhoto,
   canEditItemStatusFields,
   canComment,
   canUseBulkActions,
@@ -57,6 +64,7 @@ export function OrderFormModal({
   applyBulkPlannedDate,
   applyBulkStatus,
   handleExcelUpload,
+  handlePhotoUpload,
   addItemRow,
   updateItemField,
   removeItemRow,
@@ -97,17 +105,19 @@ export function OrderFormModal({
     missingDeliveredDate ? "Для статуса «Поставлен» нужна дата поставки" : null,
     missingCanceledDate ? "Для статуса «Отменен» нужна дата отмены" : null,
   ].filter(Boolean) as string[];
-  const saveDisabled = saving || blockingIssues.length > 0;
+  const saveDisabled = saving || photoParsing || blockingIssues.length > 0;
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/45 backdrop-blur-[2px]">
       <div className="flex min-h-screen items-end justify-center p-0 md:items-center md:p-4">
         <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden rounded-none bg-white shadow-[0_24px_80px_rgba(15,23,42,0.18)] md:my-8 md:h-auto md:max-h-[92vh] md:max-w-6xl md:rounded-[30px]">
-          {saving ? (
+          {saving || photoParsing ? (
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/75 backdrop-blur-[2px]">
               <div className="flex flex-col items-center gap-3 rounded-3xl border border-slate-200 bg-white px-7 py-6 shadow-xl">
                 <div className="h-9 w-9 animate-spin rounded-full border-2 border-slate-300 border-t-slate-800" />
-                <div className="text-sm font-medium text-slate-700">Сохраняем заказ...</div>
+                <div className="text-sm font-medium text-slate-700">
+                  {photoParsing ? "Распознаём фото..." : "Сохраняем заказ..."}
+                </div>
               </div>
             </div>
           ) : null}
@@ -235,7 +245,7 @@ export function OrderFormModal({
                             type="date"
                             min={getTodayDate()}
                             value={form.bulkPlannedDate}
-                            disabled={saving}
+                            disabled={saving || photoParsing}
                             onChange={(e) =>
                               setForm({ ...form, bulkPlannedDate: e.target.value })
                             }
@@ -246,7 +256,7 @@ export function OrderFormModal({
                         <div>
                           <button
                             onClick={applyBulkPlannedDate}
-                            disabled={saving}
+                            disabled={saving || photoParsing}
                             className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 md:w-auto"
                           >
                             Применить ко всем позициям
@@ -263,7 +273,7 @@ export function OrderFormModal({
                           </label>
                           <select
                             value={form.bulkStatus}
-                            disabled={saving}
+                            disabled={saving || photoParsing}
                             onChange={(e) =>
                               setForm({ ...form, bulkStatus: e.target.value })
                             }
@@ -280,7 +290,7 @@ export function OrderFormModal({
                         <div>
                           <button
                             onClick={applyBulkStatus}
-                            disabled={saving}
+                            disabled={saving || photoParsing}
                             className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 md:w-auto"
                           >
                             Применить статус ко всем
@@ -336,7 +346,7 @@ export function OrderFormModal({
                     </label>
                     <textarea
                       value={form.newComment}
-                      disabled={!canComment || saving}
+                      disabled={!canComment || saving || photoParsing}
                       onChange={(e) => setForm({ ...form, newComment: e.target.value })}
                       className="min-h-[110px] w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500"
                     />
@@ -365,9 +375,26 @@ export function OrderFormModal({
                           onChange={handleExcelUpload}
                           className="hidden"
                         />
+                        <input
+                          ref={photoInputRef}
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          onChange={handlePhotoUpload}
+                          className="hidden"
+                        />
+                        {canImportFromPhoto ? (
+                          <button
+                            onClick={() => photoInputRef.current?.click()}
+                            disabled={saving || photoParsing}
+                            className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2.5 text-sm font-medium text-stone-700 transition hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            Фото документа
+                          </button>
+                        ) : null}
                         <button
                           onClick={() => fileInputRef.current?.click()}
-                          disabled={saving}
+                          disabled={saving || photoParsing}
                           className="rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           Импорт Excel
@@ -378,7 +405,7 @@ export function OrderFormModal({
                     {canManageItemsInCreate ? (
                       <button
                         onClick={addItemRow}
-                        disabled={saving}
+                        disabled={saving || photoParsing}
                         className="rounded-2xl bg-slate-900 px-3 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         Добавить позицию
@@ -406,7 +433,7 @@ export function OrderFormModal({
                           </label>
                           <input
                             value={item.article}
-                            disabled={!canEditItemMainFields || saving}
+                            disabled={!canEditItemMainFields || saving || photoParsing}
                             onChange={(e) => updateItemField(index, "article", e.target.value)}
                             className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500"
                           />
@@ -418,7 +445,7 @@ export function OrderFormModal({
                           </label>
                           <input
                             value={item.name}
-                            disabled={!canEditItemMainFields || saving}
+                            disabled={!canEditItemMainFields || saving || photoParsing}
                             onChange={(e) => updateItemField(index, "name", e.target.value)}
                             className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500"
                           />
@@ -430,7 +457,7 @@ export function OrderFormModal({
                           </label>
                           <input
                             value={item.quantity}
-                            disabled={!canEditItemMainFields || saving}
+                            disabled={!canEditItemMainFields || saving || photoParsing}
                             onChange={(e) => updateItemField(index, "quantity", e.target.value)}
                             className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500"
                           />
@@ -444,7 +471,7 @@ export function OrderFormModal({
                             type="date"
                             min={getTodayDate()}
                             value={item.plannedDate}
-                            disabled={!canEditItemStatusFields || saving}
+                            disabled={!canEditItemStatusFields || saving || photoParsing}
                             onChange={(e) => updateItemField(index, "plannedDate", e.target.value)}
                             className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500"
                           />
@@ -456,7 +483,7 @@ export function OrderFormModal({
                           </label>
                           <select
                             value={item.status}
-                            disabled={!canEditItemStatusFields || saving}
+                            disabled={!canEditItemStatusFields || saving || photoParsing}
                             onChange={(e) => updateItemField(index, "status", e.target.value)}
                             className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500"
                           >
@@ -474,7 +501,7 @@ export function OrderFormModal({
                           <input
                             type="checkbox"
                             checked={item.hasReplacement}
-                            disabled={!canEditItemStatusFields || saving}
+                            disabled={!canEditItemStatusFields || saving || photoParsing}
                             onChange={(e) =>
                               updateItemField(index, "hasReplacement", e.target.checked)
                             }
@@ -492,7 +519,8 @@ export function OrderFormModal({
                             disabled={
                               !canEditItemStatusFields ||
                               !item.hasReplacement ||
-                              saving
+                              saving ||
+                              photoParsing
                             }
                             onChange={(e) =>
                               updateItemField(index, "replacementArticle", e.target.value)
@@ -506,7 +534,7 @@ export function OrderFormModal({
                           {canManageItemsInCreate ? (
                             <button
                               onClick={() => removeItemRow(index)}
-                              disabled={saving}
+                              disabled={saving || photoParsing}
                               className="w-full rounded-2xl border border-rose-200 px-3 py-3 text-sm font-medium text-rose-600 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60 md:w-auto"
                             >
                               Удалить
@@ -541,7 +569,7 @@ export function OrderFormModal({
               <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <button
                 onClick={() => !saving && setOpen(false)}
-                disabled={saving}
+                disabled={saving || photoParsing}
                 className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
               >
                 Отмена

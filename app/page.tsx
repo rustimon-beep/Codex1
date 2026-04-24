@@ -80,6 +80,7 @@ import {
   parseComments,
   parseExcelItems,
 } from "../lib/orders/utils";
+import { normalizeRecognizedItems } from "../lib/orders/photo-import";
 
 const EMPTY_ORDER_FORM = createEmptyOrderForm(EMPTY_ITEM);
 
@@ -104,10 +105,12 @@ export default function OrdersPage() {
   const isEditing = !!editingOrderId;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [photoParsing, setPhotoParsing] = useState(false);
   const [copiedArticle, setCopiedArticle] = useState<string | null>(null);
   const [expandedOrders, setExpandedOrders] = useState<number[]>([]);
   const [showAttentionPanel, setShowAttentionPanel] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const [sortField, setSortField] = useState<SortField>("id");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
@@ -470,6 +473,81 @@ export default function OrdersPage() {
         variant: "error",
       });
     } finally {
+      if (event.target) {
+        event.target.value = "";
+      }
+    }
+  };
+
+  const handlePhotoUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setPhotoParsing(true);
+
+    try {
+      const imageDataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === "string") resolve(reader.result);
+          else reject(new Error("Не удалось прочитать фото."));
+        };
+        reader.onerror = () => reject(new Error("Не удалось прочитать фото."));
+        reader.readAsDataURL(file);
+      });
+
+      const response = await fetch("/api/orders/parse-photo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ imageDataUrl }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result?.error || "Не удалось распознать фото.");
+      }
+
+      const recognizedItems = normalizeRecognizedItems(result?.items || []);
+
+      if (recognizedItems.length === 0) {
+        showToast("Фото не распознано", {
+          description:
+            "Не удалось уверенно выделить артикул, наименование и количество.",
+          variant: "error",
+        });
+        return;
+      }
+
+      setForm((prev) => {
+        const hasOnlyEmptyRow = hasOnlyEmptyItemRow(prev.items);
+        const preparedItems = prepareImportedItems(
+          recognizedItems,
+          prev,
+          canUseBulkActions(user)
+        );
+
+        return {
+          ...prev,
+          items: hasOnlyEmptyRow ? preparedItems : [...prev.items, ...preparedItems],
+        };
+      });
+
+      showToast("Фото обработано", {
+        description: `Добавлено позиций: ${recognizedItems.length}`,
+        variant: "success",
+      });
+    } catch (error) {
+      showToast("Ошибка распознавания фото", {
+        description: error instanceof Error ? error.message : "Не удалось обработать фото.",
+        variant: "error",
+      });
+    } finally {
+      setPhotoParsing(false);
       if (event.target) {
         event.target.value = "";
       }
@@ -1245,14 +1323,17 @@ export default function OrdersPage() {
           <OrderFormModal
             open={open}
             saving={saving}
+            photoParsing={photoParsing}
             editingOrderId={editingOrderId}
             userRole={user.role}
             form={form}
             parsedComments={parsedComments}
             fileInputRef={fileInputRef}
+            photoInputRef={photoInputRef}
             canEditOrderTextFields={canEditOrderTextFields(user)}
             canEditItemMainFields={canEditItemMainFields(user)}
             canImportItems={canImportItems(user)}
+            canImportFromPhoto={canImportItems(user)}
             canEditItemStatusFields={canEditItemStatusFields(user)}
             canComment={canComment(user)}
             canUseBulkActions={canUseBulkActions(user)}
@@ -1262,6 +1343,7 @@ export default function OrdersPage() {
             applyBulkPlannedDate={applyBulkPlannedDate}
             applyBulkStatus={applyBulkStatus}
             handleExcelUpload={handleExcelUpload}
+            handlePhotoUpload={handlePhotoUpload}
             addItemRow={addItemRow}
             updateItemField={updateItemField}
             removeItemRow={removeItemRow}
