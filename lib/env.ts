@@ -9,4 +9,5 @@ if (!supabaseAnonKey) {
   throw new Error("Missing environment variable: NEXT_PUBLIC_SUPABASE_ANON_KEY");
 }
 
-export { supabaseUrl, supabaseAnonKey };
+export const requiredSupabaseUrl: string = supabaseUrl;
+export const requiredSupabaseAnonKey: string = supabaseAnonKey;
