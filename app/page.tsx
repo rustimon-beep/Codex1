@@ -106,6 +106,7 @@ export default function OrdersPage() {
   const [saving, setSaving] = useState(false);
   const [copiedArticle, setCopiedArticle] = useState<string | null>(null);
   const [expandedOrders, setExpandedOrders] = useState<number[]>([]);
+  const [showAttentionPanel, setShowAttentionPanel] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [sortField, setSortField] = useState<SortField>("id");
@@ -187,6 +188,7 @@ export default function OrdersPage() {
 
   const stats = useMemo(() => getOrdersStats(orders), [orders]);
   const attention = useMemo(() => getOrdersAttention(orders), [orders]);
+  const hasAttentionItems = attention.cards.some((card) => card.count > 0);
 
   const { login, logout } = useOrdersAuthActions({
     loginForm,
@@ -1144,7 +1146,7 @@ export default function OrdersPage() {
             </div>
           ) : filteredOrders.length === 0 ? (
             <>
-              {orders.length > 0 ? (
+              {orders.length > 0 && showAttentionPanel ? (
                 <div className="premium-enter premium-enter-delay-1 hidden md:block">
                   <OrdersAttentionPanel
                     cards={attention.cards}
@@ -1167,6 +1169,9 @@ export default function OrdersPage() {
                   sortDirection={sortDirection}
                   setSortField={setSortField}
                   setSortDirection={setSortDirection}
+                  showAttentionPanel={showAttentionPanel}
+                  setShowAttentionPanel={setShowAttentionPanel}
+                  hasAttentionItems={hasAttentionItems}
                 />
               </div>
               <div className="premium-enter premium-enter-delay-2">
@@ -1178,13 +1183,15 @@ export default function OrdersPage() {
             </>
           ) : (
             <>
-              <div className="premium-enter premium-enter-delay-1 hidden md:block">
-                <OrdersAttentionPanel
-                  cards={attention.cards}
-                  topAttentionOrders={attention.topAttentionOrders}
-                  onApplyFocus={applyFocusFilter}
-                />
-              </div>
+              {showAttentionPanel ? (
+                <div className="premium-enter premium-enter-delay-1 hidden md:block">
+                  <OrdersAttentionPanel
+                    cards={attention.cards}
+                    topAttentionOrders={attention.topAttentionOrders}
+                    onApplyFocus={applyFocusFilter}
+                  />
+                </div>
+              ) : null}
 
               <div className="premium-enter premium-enter-delay-1">
                 <OrdersToolbar
@@ -1199,6 +1206,9 @@ export default function OrdersPage() {
                   sortDirection={sortDirection}
                   setSortField={setSortField}
                   setSortDirection={setSortDirection}
+                  showAttentionPanel={showAttentionPanel}
+                  setShowAttentionPanel={setShowAttentionPanel}
+                  hasAttentionItems={hasAttentionItems}
                 />
               </div>
 

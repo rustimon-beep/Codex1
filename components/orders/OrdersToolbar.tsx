@@ -20,6 +20,9 @@ type OrdersToolbarProps = {
   sortDirection: SortDirection;
   setSortField: (value: SortField) => void;
   setSortDirection: (value: SortDirection) => void;
+  showAttentionPanel?: boolean;
+  setShowAttentionPanel?: (value: boolean) => void;
+  hasAttentionItems?: boolean;
 };
 
 export function OrdersToolbar({
@@ -34,6 +37,9 @@ export function OrdersToolbar({
   sortDirection,
   setSortField,
   setSortDirection,
+  showAttentionPanel = false,
+  setShowAttentionPanel,
+  hasAttentionItems = false,
 }: OrdersToolbarProps) {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const hasSearch = search.trim().length > 0;
@@ -99,13 +105,34 @@ export function OrdersToolbar({
 
       <div className="premium-shell rounded-[20px] p-3 md:rounded-[28px] md:p-6">
         <div className="flex flex-col gap-3 md:gap-5">
-          <div>
-            <div className="text-[16px] font-semibold tracking-tight text-slate-900 md:text-[28px]">
-              Поиск и фильтрация
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="text-[16px] font-semibold tracking-tight text-slate-900 md:text-[28px]">
+                Поиск и фильтрация
+              </div>
+              <p className="mt-1 text-[12px] text-slate-500 md:text-sm">
+                Найди нужный заказ или отфильтруй список по типу и статусу.
+              </p>
             </div>
-            <p className="mt-1 text-[12px] text-slate-500 md:text-sm">
-              Найди нужный заказ или отфильтруй список по типу и статусу.
-            </p>
+
+            {setShowAttentionPanel ? (
+              <button
+                type="button"
+                onClick={() => setShowAttentionPanel(!showAttentionPanel)}
+                className={`hidden rounded-2xl border px-4 py-2 text-sm font-medium transition md:inline-flex md:items-center md:gap-2 ${
+                  showAttentionPanel
+                    ? "border-stone-300 bg-stone-100 text-stone-800"
+                    : "border-stone-200 bg-white text-stone-700 hover:bg-stone-50"
+                }`}
+              >
+                <span>Фокус дня</span>
+                {hasAttentionItems ? (
+                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-900">
+                    Есть
+                  </span>
+                ) : null}
+              </button>
+            ) : null}
           </div>
 
           {activeFilterCount > 0 ? (
