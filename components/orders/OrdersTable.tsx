@@ -53,12 +53,6 @@ function hasMissingPlannedDate(items: OrderItem[]) {
   );
 }
 
-function isStaleOrder(updatedAt: string | null) {
-  if (!updatedAt) return false;
-  const diffMs = Date.now() - new Date(updatedAt).getTime();
-  return diffMs > 1000 * 60 * 60 * 24 * 3;
-}
-
 export function OrdersTable({
   loading,
   orders,
@@ -119,7 +113,6 @@ export function OrdersTable({
                 const fullDeliveredDate = getOrderDeliveredDate(items);
                 const orderType = order.order_type || "Стандартный";
                 const missingPlannedDate = hasMissingPlannedDate(items);
-                const staleOrder = isStaleOrder(order.updated_at);
 
                 const hasOrderComment = hasComment(order.comment);
                 const hasOrderReplacement = hasReplacementInOrder(items);
@@ -219,7 +212,7 @@ export function OrdersTable({
                               ) : null}
                             </div>
 
-                            {(overdue || missingPlannedDate || staleOrder) && (
+                            {(overdue || missingPlannedDate) && (
                               <div className="mt-2.5 flex flex-wrap gap-1.5">
                                 {overdue ? (
                                   <span className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[10px] font-medium text-rose-700">
@@ -229,11 +222,6 @@ export function OrdersTable({
                                 {missingPlannedDate ? (
                                   <span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-900">
                                     Нет плановой даты
-                                  </span>
-                                ) : null}
-                                {staleOrder ? (
-                                  <span className="inline-flex rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-[10px] font-medium text-stone-700">
-                                    Нет обновлений 3+ дня
                                   </span>
                                 ) : null}
                               </div>
