@@ -30,10 +30,7 @@ export function LoginForm({
           <div className="hero-premium px-4 py-5 text-white md:px-8 md:py-10">
             <AppLogo className="mb-5 md:mb-6" />
 
-            <div className="glass-chip inline-flex items-center rounded-full px-3 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-slate-200 md:hidden">
-              Premium Access
-            </div>
-            <h1 className="mt-3 text-[21px] font-semibold tracking-tight md:text-3xl">Вход в систему</h1>
+            <h1 className="mt-1 text-[21px] font-semibold tracking-tight md:text-3xl">Вход в систему</h1>
             <p className="mt-1.5 text-[12px] leading-5 text-slate-300 md:mt-2 md:text-sm md:leading-6">
               Введи данные учетной записи, чтобы продолжить работу с заказами.
             </p>
@@ -51,6 +48,12 @@ export function LoginForm({
                   onChange={(e) =>
                     setLoginForm({ ...loginForm, login: e.target.value })
                   }
+                  autoComplete="username"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  inputMode="email"
+                  enterKeyHint="next"
                   className="w-full rounded-[18px] border border-slate-200 bg-white/92 px-3.5 py-2.5 text-[12px] text-slate-900 outline-none focus:border-slate-400 md:rounded-2xl md:px-4 md:py-3 md:text-sm"
                 />
               </div>
@@ -65,6 +68,11 @@ export function LoginForm({
                   onChange={(e) =>
                     setLoginForm({ ...loginForm, password: e.target.value })
                   }
+                  autoComplete="current-password"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  enterKeyHint="go"
                   className="w-full rounded-[18px] border border-slate-200 bg-white/92 px-3.5 py-2.5 text-[12px] text-slate-900 outline-none focus:border-slate-400 md:rounded-2xl md:px-4 md:py-3 md:text-sm"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
