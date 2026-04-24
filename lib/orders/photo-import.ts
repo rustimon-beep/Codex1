@@ -128,3 +128,60 @@ export function parseOcrTextToRecognizedItems(text: string) {
     .filter((item): item is RecognizedOrderItem => Boolean(item))
     .filter((item) => item.article || item.name || item.quantity);
 }
+
+export async function prepareImageFileForUpload(file: File) {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Нужен файл изображения.");
+  }
+
+  const objectUrl = URL.createObjectURL(file);
+
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("Не удалось открыть изображение."));
+      img.src = objectUrl;
+    });
+
+    const maxSide = 1600;
+    const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+    const width = Math.max(1, Math.round(image.width * scale));
+    const height = Math.max(1, Math.round(image.height * scale));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      throw new Error("Не удалось подготовить изображение.");
+    }
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, width, height);
+    ctx.drawImage(image, 0, 0, width, height);
+
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (result) => {
+          if (result) resolve(result);
+          else reject(new Error("Не удалось уменьшить фото."));
+        },
+        "image/jpeg",
+        0.82
+      );
+    });
+
+    const safeName = (file.name || "photo")
+      .replace(/\.[^.]+$/, "")
+      .replace(/[^\w\-]+/g, "-");
+
+    return new File([blob], `${safeName || "photo"}.jpg`, {
+      type: "image/jpeg",
+      lastModified: Date.now(),
+    });
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}

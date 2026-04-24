@@ -80,7 +80,10 @@ import {
   parseComments,
   parseExcelItems,
 } from "../lib/orders/utils";
-import { normalizeRecognizedItems } from "../lib/orders/photo-import";
+import {
+  normalizeRecognizedItems,
+  prepareImageFileForUpload,
+} from "../lib/orders/photo-import";
 
 const EMPTY_ORDER_FORM = createEmptyOrderForm(EMPTY_ITEM);
 
@@ -488,8 +491,9 @@ export default function OrdersPage() {
     setPhotoParsing(true);
 
     try {
+      const preparedFile = await prepareImageFileForUpload(file);
       const formData = new FormData();
-      formData.append("file", file, file.name || "upload.jpg");
+      formData.append("file", preparedFile, preparedFile.name);
 
       const response = await fetch("/api/orders/parse-photo", {
         method: "POST",
