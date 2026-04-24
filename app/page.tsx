@@ -9,6 +9,7 @@ import { OrdersToolbar } from "../components/orders/OrdersToolbar";
 import { OrdersListMobile } from "../components/orders/OrdersListMobile";
 import { QuickDateDialog } from "../components/orders/QuickDateDialog";
 import { OrdersOverviewSkeleton } from "../components/orders/LoadingSkeletons";
+import { MobileLaunchReveal } from "../components/ui/MobileLaunchReveal";
 import { AppDialog } from "../components/ui/AppDialog";
 import { MobileBottomNav } from "../components/ui/MobileBottomNav";
 import { ToastViewport } from "../components/ui/ToastViewport";
@@ -1008,6 +1009,7 @@ export default function OrdersPage() {
 
   return (
     <>
+      <MobileLaunchReveal />
       <ToastViewport toasts={toasts} onClose={closeToast} />
 
       <AppDialog

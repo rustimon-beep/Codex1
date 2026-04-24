@@ -8,6 +8,7 @@ import { OrderDetailSkeleton } from "../../../components/orders/LoadingSkeletons
 import { LoginForm } from "../../../components/orders/LoginForm";
 import { AppDialog } from "../../../components/ui/AppDialog";
 import { MobileBottomNav } from "../../../components/ui/MobileBottomNav";
+import { MobileLaunchReveal } from "../../../components/ui/MobileLaunchReveal";
 import { ToastViewport } from "../../../components/ui/ToastViewport";
 import { AppLogo } from "../../../components/ui/AppLogo";
 import { useOrdersAuthActions } from "../../../lib/auth/useOrdersAuthActions";
@@ -234,6 +235,7 @@ export default function OrderDetailsPage() {
 
   return (
     <>
+      <MobileLaunchReveal />
       <ToastViewport toasts={toasts} onClose={closeToast} />
 
       <AppDialog
