@@ -39,6 +39,8 @@ export type ItemForm = {
   status: string;
   deliveredDate: string;
   canceledDate: string;
+  importSource?: "photo" | "excel";
+  importIssues?: string[];
 };
 
 export type OrderFormState = {

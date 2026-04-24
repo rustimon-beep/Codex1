@@ -72,6 +72,7 @@ import {
   appendCommentEntries,
   createEmptyOrderForm,
   formatDateTimeForDb,
+  getImportedItemIssues,
   getOrderStatus,
   getTodayDate,
   hasComment,
@@ -98,6 +99,10 @@ type QuickDateDialogState = {
 };
 
 export default function OrdersPage() {
+  const [importReview, setImportReview] = useState<{
+    source: "photo" | "excel";
+    importedCount: number;
+  } | null>(null);
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -197,6 +202,14 @@ export default function OrdersPage() {
   const stats = useMemo(() => getOrdersStats(orders), [orders]);
   const attention = useMemo(() => getOrdersAttention(orders), [orders]);
   const hasAttentionItems = attention.cards.some((card) => card.count > 0);
+  const currentImportReview = useMemo(() => {
+    if (!importReview) return null;
+
+    return {
+      ...importReview,
+      reviewCount: form.items.filter((item) => (item.importIssues || []).length > 0).length,
+    };
+  }, [form.items, importReview]);
 
   const { login, logout } = useOrdersAuthActions({
     loginForm,
@@ -221,6 +234,7 @@ export default function OrdersPage() {
     if (!canCreateOrder(user)) return;
 
     setEditingOrderId(null);
+    setImportReview(null);
     setForm({
       ...createEmptyOrderForm(EMPTY_ITEM),
       orderDate: getTodayDate(),
@@ -351,6 +365,10 @@ export default function OrdersPage() {
           ...current,
           [field]: value,
         } as ItemForm;
+
+        if (nextItem.importSource) {
+          nextItem.importIssues = getImportedItemIssues(nextItem);
+        }
 
         if (field === "status") {
           if (value === "Поставлен") {
@@ -493,6 +511,10 @@ export default function OrdersPage() {
           items: hasOnlyEmptyRow ? preparedItems : [...prev.items, ...preparedItems],
         };
       });
+      setImportReview({
+        source: "excel",
+        importedCount: importedItems.length,
+      });
       setOpen(true);
 
       showToast("Импорт выполнен", {
@@ -561,6 +583,10 @@ export default function OrdersPage() {
           ...prev,
           items: hasOnlyEmptyRow ? preparedItems : [...prev.items, ...preparedItems],
         };
+      });
+      setImportReview({
+        source: "photo",
+        importedCount: recognizedItems.length,
       });
       setOpen(true);
 
@@ -1388,6 +1414,7 @@ export default function OrdersPage() {
             open={open}
             saving={saving}
             photoParsing={photoParsing}
+            importReview={currentImportReview}
             editingOrderId={editingOrderId}
             userRole={user.role}
             form={form}

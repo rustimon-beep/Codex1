@@ -263,11 +263,33 @@ export function parseExcelItems(rows: Record<string, unknown>[]): ItemForm[] {
         status: "Новый",
         deliveredDate: "",
         canceledDate: "",
+        importSource: "excel" as const,
+        importIssues: getImportedItemIssues({ article, name, quantity } as ItemForm),
       };
     })
     .filter((item) => item.article || item.name || item.quantity);
 
   return items;
+}
+
+export function getImportedItemIssues(item: Pick<ItemForm, "article" | "name" | "quantity">) {
+  const issues: string[] = [];
+
+  if (!item.article.trim()) {
+    issues.push("Нет артикула");
+  }
+
+  if (!item.name.trim()) {
+    issues.push("Нет наименования");
+  }
+
+  if (!item.quantity.trim()) {
+    issues.push("Нет количества");
+  } else if (!/^\d+(?:[.,]\d+)?$/.test(item.quantity.trim())) {
+    issues.push("Проверь количество");
+  }
+
+  return issues;
 }
 
 export function normalizeDateForCompare(value?: string | null) {

@@ -1,4 +1,5 @@
 import type { ItemForm } from "./types";
+import { getImportedItemIssues } from "./utils";
 
 export type RecognizedOrderItem = {
   article: string;
@@ -18,6 +19,12 @@ export function normalizeRecognizedItems(items: RecognizedOrderItem[]): ItemForm
       status: "Новый",
       deliveredDate: "",
       canceledDate: "",
+      importSource: "photo" as const,
+      importIssues: getImportedItemIssues({
+        article: item.article?.trim() || "",
+        name: item.name?.trim() || "",
+        quantity: item.quantity?.trim() || "",
+      }),
     }))
     .filter((item) => item.article || item.name || item.quantity);
 }

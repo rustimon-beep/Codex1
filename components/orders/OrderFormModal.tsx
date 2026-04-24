@@ -7,6 +7,11 @@ type OrderFormModalProps = {
   open: boolean;
   saving: boolean;
   photoParsing: boolean;
+  importReview: {
+    source: "photo" | "excel";
+    importedCount: number;
+    reviewCount: number;
+  } | null;
   editingOrderId: number | null;
   userRole: "admin" | "supplier" | "viewer" | "buyer";
   form: OrderFormState;
@@ -39,6 +44,7 @@ export function OrderFormModal({
   open,
   saving,
   photoParsing,
+  importReview,
   editingOrderId,
   userRole,
   form,
@@ -320,12 +326,55 @@ export function OrderFormModal({
                   </div>
                 ) : null}
 
+                {importReview ? (
+                  <div className="mb-4 rounded-[20px] border border-amber-200 bg-amber-50/90 px-3 py-3 text-[12px] text-amber-950 md:px-4 md:text-sm">
+                    <div className="font-semibold">
+                      {importReview.source === "photo"
+                        ? "Фото распознано"
+                        : "Excel импортирован"}
+                    </div>
+                    <div className="mt-1 leading-5">
+                      Загружено позиций: {importReview.importedCount}.{" "}
+                      {importReview.reviewCount > 0
+                        ? `Проверь строки с подсветкой: ${importReview.reviewCount}.`
+                        : "Все строки выглядят заполненными."}
+                    </div>
+                  </div>
+                ) : null}
+
                 <div className="space-y-3">
                   {form.items.map((item, index) => (
                     <div
                       key={item.id || `new-${index}`}
-                      className="rounded-2xl border border-slate-200 bg-white p-3 md:p-4"
+                      className={`rounded-2xl border bg-white p-3 md:p-4 ${
+                        item.importIssues?.length
+                          ? "border-amber-200 bg-amber-50/30"
+                          : "border-slate-200"
+                      }`}
                     >
+                      {item.importSource ? (
+                        <div className="mb-3 flex flex-wrap items-center gap-2">
+                          <div className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-600">
+                            {item.importSource === "photo" ? "Из фото" : "Из Excel"}
+                          </div>
+                          {item.importIssues?.length ? (
+                            <div className="rounded-full border border-amber-200 bg-amber-100/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-900">
+                              Нужна проверка
+                            </div>
+                          ) : (
+                            <div className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-emerald-800">
+                              Выглядит нормально
+                            </div>
+                          )}
+                        </div>
+                      ) : null}
+
+                      {item.importIssues?.length ? (
+                        <div className="mb-3 rounded-2xl border border-amber-200 bg-white/80 px-3 py-2 text-[12px] text-amber-950">
+                          Проверь: {item.importIssues.join(", ")}.
+                        </div>
+                      ) : null}
+
                       <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_1.45fr_0.55fr_0.85fr_0.85fr]">
                         <div>
                           <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500">
