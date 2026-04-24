@@ -60,19 +60,19 @@ export function OrdersTable({
   };
 
   return (
-    <div className="premium-shell overflow-hidden rounded-[28px]">
+    <div className="premium-shell route-stage overflow-hidden rounded-[28px]">
       <div className="overflow-x-auto">
         <table className="min-w-[1180px] w-full border-separate border-spacing-0 text-left text-sm">
           <thead className="premium-grid bg-slate-50/90 text-slate-600">
             <tr>
-              <th className="px-5 py-4 font-semibold">Заказ</th>
-              <th className="px-5 py-4 font-semibold">Тип</th>
-              <th className="px-5 py-4 font-semibold">Дата заказа</th>
-              <th className="px-5 py-4 font-semibold">Общий статус</th>
-              <th className="px-5 py-4 font-semibold">Прогресс</th>
-              <th className="px-5 py-4 font-semibold">Плановая</th>
-              <th className="px-5 py-4 font-semibold">Полная поставка</th>
-              <th className="px-5 py-4 font-semibold">Последнее изменение</th>
+              <th className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em]">Заказ</th>
+              <th className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em]">Тип</th>
+              <th className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em]">Дата заказа</th>
+              <th className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em]">Общий статус</th>
+              <th className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em]">Прогресс</th>
+              <th className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em]">Плановая</th>
+              <th className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em]">Полная поставка</th>
+              <th className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em]">Последнее изменение</th>
             </tr>
           </thead>
 
@@ -176,7 +176,7 @@ export function OrdersTable({
                               <Link
                                 href={`/orders/${order.id}`}
                                 onClick={(e) => e.stopPropagation()}
-                                className="rounded-xl border border-slate-200 bg-white/92 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                                className="route-link rounded-xl border border-slate-200 bg-white/92 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
                               >
                                 Открыть
                               </Link>
@@ -230,7 +230,7 @@ export function OrdersTable({
                             </span>
                           </div>
 
-                          <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
+                          <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-slate-100 shadow-[inset_0_1px_2px_rgba(15,23,42,0.06)]">
                             <div
                               className="bg-emerald-500"
                               style={{
@@ -292,7 +292,7 @@ export function OrdersTable({
                           colSpan={8}
                           className="border-t border-slate-100 bg-slate-50/70 px-5 py-4"
                         >
-                          <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_8px_22px_rgba(15,23,42,0.04)]">
+                          <div className="premium-shell rounded-[24px] p-4 shadow-[0_8px_22px_rgba(15,23,42,0.04)]">
                             <div className="mb-4 flex items-center justify-between">
                               <div>
                                 <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
@@ -315,7 +315,7 @@ export function OrdersTable({
                                 return (
                                   <div
                                     key={item.id}
-                                    className={`grid grid-cols-[1.05fr_1.6fr_0.55fr_0.9fr_0.8fr_0.8fr_0.8fr] gap-4 rounded-2xl border bg-white px-4 py-4 shadow-[0_2px_10px_rgba(15,23,42,0.03)] ${
+                                    className={`premium-card-hover grid grid-cols-[1.05fr_1.6fr_0.55fr_0.9fr_0.8fr_0.8fr_0.8fr] gap-4 rounded-2xl border bg-white px-4 py-4 shadow-[0_2px_10px_rgba(15,23,42,0.03)] ${
                                       itemOverdue
                                         ? "border-rose-200 ring-1 ring-rose-100"
                                         : "border-slate-200"

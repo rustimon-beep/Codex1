@@ -108,7 +108,7 @@ export function OrdersListMobile({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="route-stage space-y-2">
       {orders.map((order) => {
         const expanded = expandedOrders.includes(order.id);
         const items = order.order_items || [];
@@ -142,7 +142,7 @@ export function OrdersListMobile({
                   e.stopPropagation();
                   triggerHapticFeedback("medium");
                 }}
-                className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-[0_12px_24px_rgba(15,23,42,0.16)]"
+                className="route-link flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-[0_12px_24px_rgba(15,23,42,0.16)]"
                 aria-label="Открыть заказ"
               >
                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
@@ -178,6 +178,7 @@ export function OrdersListMobile({
               className={`relative bg-white transition-transform duration-300 ${isActionsVisible ? actionsWidthClass : "translate-x-0"}`}
             >
               <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.07),transparent_65%)]" />
+              <div className="pointer-events-none absolute right-3 top-3 h-14 w-14 rounded-full bg-sky-100/60 blur-2xl" />
               <div
                 className={`h-1.5 w-full ${
                   overdue
@@ -325,7 +326,7 @@ export function OrdersListMobile({
                         return (
                           <div
                             key={item.id}
-                            className={`rounded-[18px] border bg-slate-50/60 p-2.5 md:rounded-[22px] md:p-3 ${
+                            className={`premium-card-hover rounded-[18px] border bg-[linear-gradient(180deg,rgba(248,250,252,0.96),rgba(255,255,255,0.94))] p-2.5 md:rounded-[22px] md:p-3 ${
                               itemOverdue ? "border-rose-200" : "border-slate-200"
                             }`}
                           >
