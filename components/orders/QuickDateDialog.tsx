@@ -1,4 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
+import { getTodayDate } from "../../lib/orders/utils";
 
 type QuickDateDialogState = {
   open: boolean;
@@ -44,6 +45,7 @@ export function QuickDateDialog({
           </label>
           <input
             type="date"
+            min={getTodayDate()}
             value={dialog.value}
             onChange={(e) =>
               setDialog((prev) => ({
@@ -64,6 +66,7 @@ export function QuickDateDialog({
           </button>
           <button
             onClick={() => void confirmDialog()}
+            disabled={!dialog.value}
             className="premium-button w-full rounded-[18px] bg-slate-900 px-4 py-2 text-[12px] font-medium text-white transition hover:bg-slate-800 sm:w-auto md:rounded-2xl md:py-3 md:text-sm"
           >
             Подтвердить

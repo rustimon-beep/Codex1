@@ -68,6 +68,36 @@ export function OrderFormModal({
   const canEditOrderType = !isEditing && (userRole === "admin" || userRole === "buyer");
   const canManageItemsInCreate =
     !isEditing && (userRole === "admin" || userRole === "buyer");
+  const filledItems = form.items.filter((item) =>
+    [
+      item.article,
+      item.name,
+      item.quantity,
+      item.replacementArticle,
+      item.plannedDate,
+      item.deliveredDate,
+      item.canceledDate,
+    ].some((value) => value?.trim()) || item.hasReplacement
+  );
+  const missingClientOrder = !form.clientOrder.trim();
+  const missingItems = filledItems.length === 0;
+  const missingReplacement = filledItems.some(
+    (item) => item.hasReplacement && !item.replacementArticle.trim()
+  );
+  const missingDeliveredDate = filledItems.some(
+    (item) => item.status === "Поставлен" && !item.deliveredDate
+  );
+  const missingCanceledDate = filledItems.some(
+    (item) => item.status === "Отменен" && !item.canceledDate
+  );
+  const blockingIssues = [
+    missingClientOrder ? "Укажи номер клиентского заказа" : null,
+    missingItems ? "Добавь хотя бы одну заполненную позицию" : null,
+    missingReplacement ? "Заполни актуальный артикул для всех замен" : null,
+    missingDeliveredDate ? "Для статуса «Поставлен» нужна дата поставки" : null,
+    missingCanceledDate ? "Для статуса «Отменен» нужна дата отмены" : null,
+  ].filter(Boolean) as string[];
+  const saveDisabled = saving || blockingIssues.length > 0;
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/45 backdrop-blur-[2px]">
@@ -492,7 +522,23 @@ export function OrderFormModal({
           </div>
 
           <div className="shrink-0 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur md:px-6 md:py-4">
-            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            {blockingIssues.length > 0 ? (
+              <div className="mb-3 rounded-[18px] border border-amber-200 bg-amber-50/90 px-3.5 py-3 text-[12px] text-amber-900 md:rounded-2xl md:px-4 md:text-sm">
+                <div className="font-medium">Перед сохранением проверь:</div>
+                <div className="mt-1.5 space-y-1">
+                  {blockingIssues.map((issue) => (
+                    <div key={issue}>• {issue}</div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between sm:items-center">
+              <div className="text-[11px] text-slate-500 md:text-sm">
+                Позиции: {filledItems.length} из {form.items.length}
+              </div>
+
+              <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <button
                 onClick={() => !saving && setOpen(false)}
                 disabled={saving}
@@ -502,11 +548,12 @@ export function OrderFormModal({
               </button>
               <button
                 onClick={saveForm}
-                disabled={saving}
+                disabled={saveDisabled}
                 className="w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
               >
                 {saving ? "Сохранение..." : "Сохранить"}
               </button>
+              </div>
             </div>
           </div>
         </div>

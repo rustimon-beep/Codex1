@@ -36,6 +36,8 @@ export function OrdersToolbar({
   setSortDirection,
 }: OrdersToolbarProps) {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const hasSearch = search.trim().length > 0;
+  const isDefaultSort = sortField === "id" && sortDirection === "desc";
 
   const hasAnyAdvancedFilter = useMemo(() => {
     return (
@@ -44,9 +46,27 @@ export function OrdersToolbar({
         statusFilter !== "В работе" &&
         statusFilter !== "Поставлен" &&
         statusFilter !== "Просрочено") ||
-      !(sortField === "id" && sortDirection === "desc")
+      !isDefaultSort
     );
-  }, [orderTypeFilter, statusFilter, sortField, sortDirection]);
+  }, [isDefaultSort, orderTypeFilter, statusFilter]);
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (hasSearch) count += 1;
+    if (orderTypeFilter !== "all") count += 1;
+    if (statusFilter !== "all") count += 1;
+    if (!isDefaultSort) count += 1;
+    return count;
+  }, [hasSearch, isDefaultSort, orderTypeFilter, statusFilter]);
+
+  const clearAllFilters = () => {
+    setSearch("");
+    setOrderTypeFilter("all");
+    setStatusFilter("all");
+    setSortField("id");
+    setSortDirection("desc");
+    setMobileFiltersOpen(false);
+  };
 
   return (
     <div className="space-y-2.5 md:space-y-5">
@@ -88,6 +108,21 @@ export function OrdersToolbar({
             </p>
           </div>
 
+          {activeFilterCount > 0 ? (
+            <div className="flex items-center justify-between gap-2 rounded-[18px] border border-stone-200 bg-stone-50/80 px-3 py-2 md:rounded-2xl md:px-4">
+              <div className="text-[11px] font-medium text-stone-700 md:text-sm">
+                Активных фильтров: {activeFilterCount}
+              </div>
+              <button
+                type="button"
+                onClick={clearAllFilters}
+                className="rounded-full border border-stone-200 bg-white px-3 py-1 text-[11px] font-medium text-stone-700 transition hover:bg-stone-100 md:text-xs"
+              >
+                Сбросить всё
+              </button>
+            </div>
+          ) : null}
+
           <div className="relative">
             <svg
               viewBox="0 0 24 24"
@@ -106,6 +141,20 @@ export function OrdersToolbar({
               placeholder="Поиск по заказу, артикулу, замене, наименованию"
               className="h-[42px] w-full rounded-[18px] border border-slate-200/90 bg-white/80 pl-10 pr-3.5 text-[12px] text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-300 focus:bg-white md:h-[56px] md:rounded-2xl md:pl-11 md:pr-4 md:text-sm"
             />
+
+            {hasSearch ? (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute right-2.5 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 md:right-3 md:h-8 md:w-8"
+                aria-label="Очистить поиск"
+              >
+                <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M6 6L14 14" />
+                  <path d="M14 6L6 14" />
+                </svg>
+              </button>
+            ) : null}
           </div>
 
           <div className="flex flex-wrap gap-2 md:hidden">
@@ -244,11 +293,21 @@ export function OrdersToolbar({
                   <option value="updated_at:desc">Свежее изменение</option>
                   <option value="updated_at:asc">Старое изменение</option>
                 </select>
+
+                {activeFilterCount > 0 ? (
+                  <button
+                    type="button"
+                    onClick={clearAllFilters}
+                    className="h-[40px] rounded-[14px] border border-stone-200 bg-white px-3 text-[12px] font-medium text-stone-700 transition hover:bg-stone-50"
+                  >
+                    Сбросить фильтры
+                  </button>
+                ) : null}
               </div>
             ) : null}
           </div>
 
-          <div className="hidden md:grid md:grid-cols-3 xl:grid-cols-[190px_190px_220px] gap-3">
+          <div className="hidden gap-3 md:grid md:grid-cols-4 xl:grid-cols-[190px_190px_220px_auto]">
             <select
               value={orderTypeFilter}
               onChange={(e) => setOrderTypeFilter(e.target.value)}
@@ -302,6 +361,15 @@ export function OrdersToolbar({
               <option value="updated_at:desc">Свежее изменение</option>
               <option value="updated_at:asc">Старое изменение</option>
             </select>
+
+            <button
+              type="button"
+              onClick={clearAllFilters}
+              disabled={activeFilterCount === 0}
+              className="h-[50px] rounded-2xl border border-stone-200 bg-white px-4 text-sm font-medium text-stone-700 transition hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Сбросить
+            </button>
           </div>
         </div>
       </div>
