@@ -19,8 +19,6 @@ type OrderFormModalProps = {
   photoInputRef: RefObject<HTMLInputElement>;
   canEditOrderTextFields: boolean;
   canEditItemMainFields: boolean;
-  canImportItems: boolean;
-  canImportFromPhoto: boolean;
   canEditItemStatusFields: boolean;
   canComment: boolean;
   canUseBulkActions: boolean;
@@ -53,8 +51,6 @@ export function OrderFormModal({
   photoInputRef,
   canEditOrderTextFields,
   canEditItemMainFields,
-  canImportItems,
-  canImportFromPhoto,
   canEditItemStatusFields,
   canComment,
   canUseBulkActions,
@@ -366,41 +362,20 @@ export function OrderFormModal({
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    {canManageItemsInCreate && canImportItems ? (
-                      <>
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept=".xlsx,.xls"
-                          onChange={handleExcelUpload}
-                          className="hidden"
-                        />
-                        <input
-                          ref={photoInputRef}
-                          type="file"
-                          accept="image/*"
-                          onChange={handlePhotoUpload}
-                          className="hidden"
-                        />
-                        {canImportFromPhoto ? (
-                          <button
-                            onClick={() => photoInputRef.current?.click()}
-                            disabled={saving || photoParsing}
-                            className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2.5 text-sm font-medium text-stone-700 transition hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            Фото документа
-                          </button>
-                        ) : null}
-                        <button
-                          onClick={() => fileInputRef.current?.click()}
-                          disabled={saving || photoParsing}
-                          className="rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          Импорт Excel
-                        </button>
-                      </>
-                    ) : null}
-
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".xlsx,.xls"
+                      onChange={handleExcelUpload}
+                      className="hidden"
+                    />
+                    <input
+                      ref={photoInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                      className="hidden"
+                    />
                     {canManageItemsInCreate ? (
                       <button
                         onClick={addItemRow}
@@ -415,7 +390,7 @@ export function OrderFormModal({
 
                 {!isEditing ? (
                   <div className="mb-4 rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-500">
-                    Для Excel используй колонки: <b>Артикул</b>, <b>Наименование</b>, <b>Количество</b>
+                    Если ты выбрал создание по фото или Excel, проверь распознанные позиции и поправь их перед сохранением.
                   </div>
                 ) : null}
 

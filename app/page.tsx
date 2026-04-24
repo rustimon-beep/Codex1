@@ -8,6 +8,7 @@ import { OrdersTable } from "../components/orders/OrdersTable";
 import { OrdersToolbar } from "../components/orders/OrdersToolbar";
 import { OrdersListMobile } from "../components/orders/OrdersListMobile";
 import { OrdersAttentionPanel } from "../components/orders/OrdersAttentionPanel";
+import { CreateOrderMethodDialog } from "../components/orders/CreateOrderMethodDialog";
 import { QuickDateDialog } from "../components/orders/QuickDateDialog";
 import { OrdersOverviewSkeleton } from "../components/orders/LoadingSkeletons";
 import { MobileLaunchReveal } from "../components/ui/MobileLaunchReveal";
@@ -49,7 +50,6 @@ import {
   canEditItemStatusFields,
   canEditOrderDate,
   canEditOrderTextFields,
-  canImportItems,
   canUseBulkActions,
 } from "../lib/orders/permissions";
 import {
@@ -112,6 +112,10 @@ export default function OrdersPage() {
   const [copiedArticle, setCopiedArticle] = useState<string | null>(null);
   const [expandedOrders, setExpandedOrders] = useState<number[]>([]);
   const [showAttentionPanel, setShowAttentionPanel] = useState(false);
+  const [createMethodOpen, setCreateMethodOpen] = useState(false);
+  const [pendingCreateImport, setPendingCreateImport] = useState<"photo" | "excel" | null>(
+    null
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
@@ -181,6 +185,21 @@ export default function OrdersPage() {
     }
   }, [user, loadOrders]);
 
+  useEffect(() => {
+    if (!open || !pendingCreateImport) return;
+
+    const timer = window.setTimeout(() => {
+      if (pendingCreateImport === "photo") {
+        photoInputRef.current?.click();
+      } else {
+        fileInputRef.current?.click();
+      }
+      setPendingCreateImport(null);
+    }, 120);
+
+    return () => window.clearTimeout(timer);
+  }, [open, pendingCreateImport]);
+
   const filteredOrders = useMemo(() => {
     return getFilteredAndSortedOrders({
       orders,
@@ -215,7 +234,7 @@ export default function OrdersPage() {
     setEditingOrderId(null);
   };
 
-  const openCreate = () => {
+  const openCreate = (mode: "manual" | "photo" | "excel" = "manual") => {
     if (!canCreateOrder(user)) return;
 
     setEditingOrderId(null);
@@ -225,11 +244,17 @@ export default function OrdersPage() {
       items: [{ ...EMPTY_ITEM }],
     });
     setOpen(true);
+    setPendingCreateImport(mode === "manual" ? null : mode);
   };
 
   const handleOpenCreateWithHaptic = () => {
     triggerHapticFeedback("medium");
-    openCreate();
+    setCreateMethodOpen(true);
+  };
+
+  const handleSelectCreateMethod = (mode: "manual" | "photo" | "excel") => {
+    setCreateMethodOpen(false);
+    openCreate(mode);
   };
 
   const handleLogoutWithHaptic = () => {
@@ -1315,6 +1340,12 @@ export default function OrdersPage() {
             </>
           )}
 
+          <CreateOrderMethodDialog
+            open={createMethodOpen}
+            onClose={() => setCreateMethodOpen(false)}
+            onSelect={handleSelectCreateMethod}
+          />
+
           <OrderFormModal
             open={open}
             saving={saving}
@@ -1327,8 +1358,6 @@ export default function OrdersPage() {
             photoInputRef={photoInputRef}
             canEditOrderTextFields={canEditOrderTextFields(user)}
             canEditItemMainFields={canEditItemMainFields(user)}
-            canImportItems={canImportItems(user)}
-            canImportFromPhoto={canImportItems(user)}
             canEditItemStatusFields={canEditItemStatusFields(user)}
             canComment={canComment(user)}
             canUseBulkActions={canUseBulkActions(user)}
@@ -1365,7 +1394,7 @@ export default function OrdersPage() {
           canCreateOrder(user)
             ? {
                 label: "Новый",
-                onClick: openCreate,
+                onClick: handleOpenCreateWithHaptic,
                 tone: "accent" as const,
                 haptic: "medium" as const,
                 icon: (
