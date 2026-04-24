@@ -82,18 +82,18 @@ export function OrderFormModal({
             </div>
           ) : null}
 
-          <div className="shrink-0 border-b border-slate-200 px-3.5 py-3.5 md:px-6 md:py-5">
+          <div className="hero-premium shrink-0 border-b border-white/10 px-3.5 py-3.5 text-white md:px-6 md:py-5">
             <div className="mx-auto mb-2.5 h-1.5 w-10 rounded-full bg-slate-200 md:hidden" />
 
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 md:px-3 md:text-[11px]">
+                <div className="glass-chip inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-200 md:px-3 md:text-[11px]">
                   {editingOrderId ? "Редактирование" : "Создание"}
                 </div>
-                <h2 className="mt-2.5 pr-2 text-[17px] font-semibold tracking-tight text-slate-900 md:mt-3 md:text-xl">
+                <h2 className="mt-2.5 pr-2 text-[17px] font-semibold tracking-tight text-white md:mt-3 md:text-xl">
                   {editingOrderId ? "Редактировать заказ" : "Новый заказ"}
                 </h2>
-                <p className="mt-1 text-[12px] text-slate-500 md:text-sm">
+                <p className="mt-1 text-[12px] text-slate-300 md:text-sm">
                   Управление реквизитами заказа, комментариями и позициями.
                 </p>
               </div>
@@ -101,7 +101,7 @@ export function OrderFormModal({
               <button
                 onClick={() => !saving && setOpen(false)}
                 disabled={saving}
-                className="shrink-0 rounded-[18px] border border-slate-200 px-3 py-1.5 text-[12px] font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 md:rounded-2xl md:px-3 md:py-2 md:text-sm"
+                className="glass-chip shrink-0 rounded-[18px] px-3 py-1.5 text-[12px] font-medium text-slate-100 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60 md:rounded-2xl md:px-3 md:py-2 md:text-sm"
               >
                 Закрыть
               </button>
@@ -110,7 +110,7 @@ export function OrderFormModal({
 
           <div className="min-h-0 flex-1 overflow-y-auto px-3.5 py-3.5 md:px-6 md:py-5">
             <div className="space-y-3.5 md:space-y-6">
-              <section className="rounded-[20px] border border-slate-200 bg-slate-50/70 p-2.5 md:rounded-[26px] md:p-5">
+              <section className="premium-shell rounded-[20px] p-2.5 md:rounded-[26px] md:p-5">
                 <div className="mb-2.5 md:mb-4">
                   <h3 className="text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 md:text-sm">
                     Основная информация
@@ -126,7 +126,7 @@ export function OrderFormModal({
                       value={form.clientOrder}
                       disabled={!canEditOrderTextFields || saving}
                       onChange={(e) => setForm({ ...form, clientOrder: e.target.value })}
-                      className="w-full rounded-[18px] border border-slate-200 bg-white px-3 py-2.5 text-[12px] text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500 md:rounded-2xl md:py-3 md:text-sm"
+                      className="w-full rounded-[18px] border border-slate-200 bg-white/92 px-3 py-2.5 text-[12px] text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500 md:rounded-2xl md:py-3 md:text-sm"
                     />
                   </div>
 
@@ -140,7 +140,7 @@ export function OrderFormModal({
                         value={form.orderDate}
                         disabled={!canEditOrderDate || saving}
                         onChange={(e) => setForm({ ...form, orderDate: e.target.value })}
-                        className="w-full rounded-[18px] border border-slate-200 bg-white px-3 py-2.5 text-[12px] text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500 md:rounded-2xl md:py-3 md:text-sm"
+                        className="w-full rounded-[18px] border border-slate-200 bg-white/92 px-3 py-2.5 text-[12px] text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500 md:rounded-2xl md:py-3 md:text-sm"
                       />
                     </div>
                   ) : (
@@ -162,7 +162,7 @@ export function OrderFormModal({
                       value={form.orderType}
                       disabled={!canEditOrderType || saving}
                       onChange={(e) => setForm({ ...form, orderType: e.target.value })}
-                      className="w-full rounded-[18px] border border-slate-200 bg-white px-3 py-2.5 text-[12px] text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500 md:rounded-2xl md:py-3 md:text-sm"
+                      className="w-full rounded-[18px] border border-slate-200 bg-white/92 px-3 py-2.5 text-[12px] text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500 md:rounded-2xl md:py-3 md:text-sm"
                     >
                       {ORDER_TYPE_OPTIONS.map((type) => (
                         <option key={type} value={type}>
