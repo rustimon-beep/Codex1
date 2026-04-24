@@ -1,0 +1,9 @@
+"use client";
+
+type SkeletonProps = {
+  className?: string;
+};
+
+export function Skeleton({ className = "" }: SkeletonProps) {
+  return <div className={`skeleton ${className}`.trim()} aria-hidden="true" />;
+}

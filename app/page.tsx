@@ -8,7 +8,9 @@ import { OrdersTable } from "../components/orders/OrdersTable";
 import { OrdersToolbar } from "../components/orders/OrdersToolbar";
 import { OrdersListMobile } from "../components/orders/OrdersListMobile";
 import { QuickDateDialog } from "../components/orders/QuickDateDialog";
+import { OrdersOverviewSkeleton } from "../components/orders/LoadingSkeletons";
 import { AppDialog } from "../components/ui/AppDialog";
+import { MobileBottomNav } from "../components/ui/MobileBottomNav";
 import { ToastViewport } from "../components/ui/ToastViewport";
 import { AppLogo } from "../components/ui/AppLogo";
 import { useOrdersAuthActions } from "../lib/auth/useOrdersAuthActions";
@@ -56,6 +58,7 @@ import type {
   SortDirection,
   SortField,
 } from "../lib/orders/types";
+import { triggerHapticFeedback } from "../lib/ui/haptics";
 import { useDialog } from "../lib/ui/useDialog";
 import { useToast } from "../lib/ui/useToast";
 import {
@@ -206,6 +209,20 @@ export default function OrdersPage() {
       items: [{ ...EMPTY_ITEM }],
     });
     setOpen(true);
+  };
+
+  const handleOpenCreateWithHaptic = () => {
+    triggerHapticFeedback("medium");
+    openCreate();
+  };
+
+  const handleLogoutWithHaptic = () => {
+    triggerHapticFeedback("light");
+    void logout();
+  };
+
+  const handleRefresh = () => {
+    void loadOrders();
   };
 
   const updateItemField = (
@@ -1029,8 +1046,8 @@ export default function OrdersPage() {
       />
 
       <div className="min-h-screen bg-slate-100/80 p-2 md:p-8">
-        <div className="mx-auto max-w-7xl space-y-3 md:space-y-7">
-          <div className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-[0_12px_36px_rgba(15,23,42,0.08)] md:rounded-[28px]">
+        <div className="bottom-nav-safe mx-auto max-w-7xl space-y-3 md:space-y-7 md:pb-0">
+          <div className="premium-enter overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-[0_12px_36px_rgba(15,23,42,0.08)] md:rounded-[28px]">
             <div className="relative bg-gradient-to-r from-slate-950 via-slate-900 to-slate-800 px-3.5 py-3.5 text-white md:px-8 md:py-7">
               <div className="absolute inset-y-0 right-0 w-[38%] bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.18),transparent_55%)] pointer-events-none" />
 
@@ -1074,7 +1091,7 @@ export default function OrdersPage() {
                     </div>
 
                     <button
-                      onClick={logout}
+                      onClick={handleLogoutWithHaptic}
                       className="rounded-[18px] border border-white/15 bg-white/5 px-2.5 py-1.5 text-[12px] font-medium text-slate-100 transition hover:bg-white/10 md:rounded-2xl md:px-4 md:py-2.5 md:text-sm"
                     >
                       Выйти
@@ -1083,7 +1100,7 @@ export default function OrdersPage() {
 
                   {user.role === "admin" || user.role === "buyer" ? (
                     <button
-                      onClick={openCreate}
+                      onClick={handleOpenCreateWithHaptic}
                       className="w-full rounded-[18px] bg-white px-4 py-2 text-[12px] font-semibold text-slate-900 transition hover:bg-slate-100 lg:w-auto md:rounded-2xl md:px-5 md:py-3 md:text-sm"
                     >
                       Добавить заказ
@@ -1094,47 +1111,57 @@ export default function OrdersPage() {
             </div>
           </div>
 
-          <OrdersToolbar
-            stats={stats}
-            search={search}
-            setSearch={setSearch}
-            orderTypeFilter={orderTypeFilter}
-            setOrderTypeFilter={setOrderTypeFilter}
-            statusFilter={statusFilter}
-            setStatusFilter={setStatusFilter}
-            sortField={sortField}
-            sortDirection={sortDirection}
-            setSortField={setSortField}
-            setSortDirection={setSortDirection}
-          />
+          {loading ? (
+            <div className="premium-enter premium-enter-delay-1">
+              <OrdersOverviewSkeleton />
+            </div>
+          ) : (
+            <>
+              <div className="premium-enter premium-enter-delay-1">
+                <OrdersToolbar
+                  stats={stats}
+                  search={search}
+                  setSearch={setSearch}
+                  orderTypeFilter={orderTypeFilter}
+                  setOrderTypeFilter={setOrderTypeFilter}
+                  statusFilter={statusFilter}
+                  setStatusFilter={setStatusFilter}
+                  sortField={sortField}
+                  sortDirection={sortDirection}
+                  setSortField={setSortField}
+                  setSortDirection={setSortDirection}
+                />
+              </div>
 
-          <div className="hidden md:block">
-            <OrdersTable
-              loading={loading}
-              orders={filteredOrders}
-              expandedOrders={expandedOrders}
-              copiedArticle={copiedArticle}
-              user={user}
-              toggleOrderExpand={toggleOrderExpand}
-              removeOrder={removeOrder}
-              updateItemStatusQuick={updateItemStatusQuick}
-              copyArticle={copyArticle}
-            />
-          </div>
+              <div className="premium-enter premium-enter-delay-2 hidden md:block">
+                <OrdersTable
+                  loading={loading}
+                  orders={filteredOrders}
+                  expandedOrders={expandedOrders}
+                  copiedArticle={copiedArticle}
+                  user={user}
+                  toggleOrderExpand={toggleOrderExpand}
+                  removeOrder={removeOrder}
+                  updateItemStatusQuick={updateItemStatusQuick}
+                  copyArticle={copyArticle}
+                />
+              </div>
 
-          <div className="md:hidden">
-            <OrdersListMobile
-              loading={loading}
-              orders={filteredOrders}
-              expandedOrders={expandedOrders}
-              copiedArticle={copiedArticle}
-              user={user}
-              toggleOrderExpand={toggleOrderExpand}
-              removeOrder={removeOrder}
-              updateItemStatusQuick={updateItemStatusQuick}
-              copyArticle={copyArticle}
-            />
-          </div>
+              <div className="premium-enter premium-enter-delay-2 md:hidden">
+                <OrdersListMobile
+                  loading={loading}
+                  orders={filteredOrders}
+                  expandedOrders={expandedOrders}
+                  copiedArticle={copiedArticle}
+                  user={user}
+                  toggleOrderExpand={toggleOrderExpand}
+                  removeOrder={removeOrder}
+                  updateItemStatusQuick={updateItemStatusQuick}
+                  copyArticle={copyArticle}
+                />
+              </div>
+            </>
+          )}
 
           <OrderFormModal
             open={open}
@@ -1163,6 +1190,60 @@ export default function OrdersPage() {
           />
         </div>
       </div>
+
+      <MobileBottomNav
+        items={[
+          {
+            label: "Заказы",
+            href: "/",
+            active: true,
+            haptic: "light",
+            icon: (
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M4 6H20" />
+                <path d="M4 12H20" />
+                <path d="M4 18H14" />
+              </svg>
+            ),
+          },
+          canCreateOrder(user)
+            ? {
+                label: "Новый",
+                onClick: openCreate,
+                tone: "accent" as const,
+                haptic: "medium" as const,
+                icon: (
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 5V19" />
+                    <path d="M5 12H19" />
+                  </svg>
+                ),
+              }
+            : {
+                label: "Обновить",
+                onClick: handleRefresh,
+                haptic: "light" as const,
+                icon: (
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M20 12A8 8 0 1 1 17.5 6.2" />
+                    <path d="M20 4V10H14" />
+                  </svg>
+                ),
+              },
+          {
+            label: "Выход",
+            onClick: () => void logout(),
+            haptic: "light",
+            icon: (
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M15 3H6V21H15" />
+                <path d="M10 12H21" />
+                <path d="M18 9L21 12L18 15" />
+              </svg>
+            ),
+          },
+        ]}
+      />
     </>
   );
 }
