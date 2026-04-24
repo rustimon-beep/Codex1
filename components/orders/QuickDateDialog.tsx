@@ -27,11 +27,11 @@ export function QuickDateDialog({
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/45 p-3 backdrop-blur-[2px] md:p-4">
-      <div className="w-full max-w-md rounded-[20px] border border-slate-200 bg-white p-3.5 shadow-[0_24px_80px_rgba(15,23,42,0.18)] md:rounded-[28px] md:p-5">
+      <div className="premium-shell w-full max-w-md rounded-[20px] p-3.5 shadow-[0_24px_80px_rgba(15,23,42,0.18)] md:rounded-[28px] md:p-5">
         <div className="text-[10px] font-medium tracking-[0.06em] text-slate-400 md:text-[12px]">
           Быстрое обновление
         </div>
-        <h3 className="mt-1.5 text-[16px] font-medium tracking-tight text-slate-900 md:mt-2 md:text-[22px]">
+        <h3 className="premium-title mt-1.5 text-[16px] font-medium tracking-tight text-slate-900 md:mt-2 md:text-[22px]">
           {dialog.title}
         </h3>
         {dialog.description ? (
@@ -51,20 +51,20 @@ export function QuickDateDialog({
                 value: e.target.value,
               }))
             }
-            className="w-full rounded-[18px] border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-[12px] text-slate-900 outline-none focus:border-slate-400 focus:bg-white md:rounded-2xl md:px-4 md:py-3.5 md:text-sm"
+            className="premium-input w-full rounded-[18px] px-3.5 py-2.5 text-[12px] text-slate-900 outline-none md:rounded-2xl md:px-4 md:py-3.5 md:text-sm"
           />
         </div>
 
         <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end md:mt-5">
           <button
             onClick={closeDialog}
-            className="w-full rounded-[18px] border border-slate-200 px-4 py-2 text-[12px] font-medium text-slate-700 transition hover:bg-slate-50 sm:w-auto md:rounded-2xl md:py-3 md:text-sm"
+            className="premium-button-soft w-full rounded-[18px] border border-slate-200 bg-white/92 px-4 py-2 text-[12px] font-medium text-slate-700 transition hover:bg-slate-50 sm:w-auto md:rounded-2xl md:py-3 md:text-sm"
           >
             Отмена
           </button>
           <button
             onClick={() => void confirmDialog()}
-            className="w-full rounded-[18px] bg-slate-900 px-4 py-2 text-[12px] font-medium text-white transition hover:bg-slate-800 sm:w-auto md:rounded-2xl md:py-3 md:text-sm"
+            className="premium-button w-full rounded-[18px] bg-slate-900 px-4 py-2 text-[12px] font-medium text-white transition hover:bg-slate-800 sm:w-auto md:rounded-2xl md:py-3 md:text-sm"
           >
             Подтвердить
           </button>

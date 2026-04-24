@@ -90,7 +90,7 @@ export function OrderFormModal({
                 <div className="glass-chip inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-200 md:px-3 md:text-[11px]">
                   {editingOrderId ? "Редактирование" : "Создание"}
                 </div>
-                <h2 className="mt-2.5 pr-2 text-[17px] font-semibold tracking-tight text-white md:mt-3 md:text-xl">
+                <h2 className="premium-title mt-2.5 pr-2 text-[17px] font-semibold tracking-tight text-white md:mt-3 md:text-xl">
                   {editingOrderId ? "Редактировать заказ" : "Новый заказ"}
                 </h2>
                 <p className="mt-1 text-[12px] text-slate-300 md:text-sm">
@@ -126,7 +126,7 @@ export function OrderFormModal({
                       value={form.clientOrder}
                       disabled={!canEditOrderTextFields || saving}
                       onChange={(e) => setForm({ ...form, clientOrder: e.target.value })}
-                      className="w-full rounded-[18px] border border-slate-200 bg-white/92 px-3 py-2.5 text-[12px] text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500 md:rounded-2xl md:py-3 md:text-sm"
+                      className="premium-input w-full rounded-[18px] px-3 py-2.5 text-[12px] text-slate-900 outline-none disabled:bg-slate-100 disabled:text-slate-500 md:rounded-2xl md:py-3 md:text-sm"
                     />
                   </div>
 
@@ -140,7 +140,7 @@ export function OrderFormModal({
                         value={form.orderDate}
                         disabled={!canEditOrderDate || saving}
                         onChange={(e) => setForm({ ...form, orderDate: e.target.value })}
-                        className="w-full rounded-[18px] border border-slate-200 bg-white/92 px-3 py-2.5 text-[12px] text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500 md:rounded-2xl md:py-3 md:text-sm"
+                        className="premium-input w-full rounded-[18px] px-3 py-2.5 text-[12px] text-slate-900 outline-none disabled:bg-slate-100 disabled:text-slate-500 md:rounded-2xl md:py-3 md:text-sm"
                       />
                     </div>
                   ) : (
@@ -162,7 +162,7 @@ export function OrderFormModal({
                       value={form.orderType}
                       disabled={!canEditOrderType || saving}
                       onChange={(e) => setForm({ ...form, orderType: e.target.value })}
-                      className="w-full rounded-[18px] border border-slate-200 bg-white/92 px-3 py-2.5 text-[12px] text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500 md:rounded-2xl md:py-3 md:text-sm"
+                      className="premium-input w-full rounded-[18px] px-3 py-2.5 text-[12px] text-slate-900 outline-none disabled:bg-slate-100 disabled:text-slate-500 md:rounded-2xl md:py-3 md:text-sm"
                     >
                       {ORDER_TYPE_OPTIONS.map((type) => (
                         <option key={type} value={type}>
