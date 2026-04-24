@@ -63,7 +63,7 @@ export function OrdersTable({
     <div className="premium-shell route-stage overflow-hidden rounded-[28px]">
       <div className="overflow-x-auto">
         <table className="min-w-[1180px] w-full border-separate border-spacing-0 text-left text-sm">
-          <thead className="premium-grid bg-slate-50/90 text-slate-600">
+          <thead className="premium-grid text-slate-600">
             <tr>
               <th className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em]">Заказ</th>
               <th className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em]">Тип</th>
