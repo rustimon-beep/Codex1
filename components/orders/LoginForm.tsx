@@ -37,12 +37,19 @@ export function LoginForm({
           </div>
 
           <div className="premium-shell px-4 py-4 md:px-8 md:py-8">
-            <div className="space-y-3.5 md:space-y-4">
+            <form
+              className="space-y-3.5 md:space-y-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                onLogin();
+              }}
+            >
               <div>
                 <label className="mb-1.5 block text-[12px] font-medium text-slate-700 md:mb-2 md:text-sm">
                   Email
                 </label>
                 <input
+                  name="email"
                   type="email"
                   value={loginForm.login}
                   onChange={(e) =>
@@ -63,6 +70,7 @@ export function LoginForm({
                   Пароль
                 </label>
                 <input
+                  name="password"
                   type="password"
                   value={loginForm.password}
                   onChange={(e) =>
@@ -89,12 +97,12 @@ export function LoginForm({
               ) : null}
 
               <button
-                onClick={onLogin}
+                type="submit"
                 className="w-full rounded-[18px] bg-slate-900 px-4 py-2.5 text-[12px] font-medium text-white shadow-[0_18px_38px_rgba(15,23,42,0.18)] transition hover:bg-slate-800 md:rounded-2xl md:py-3 md:text-sm"
               >
                 Войти
               </button>
-            </div>
+            </form>
           </div>
         </div>
       </div>

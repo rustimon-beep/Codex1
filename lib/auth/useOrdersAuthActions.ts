@@ -37,15 +37,27 @@ export function useOrdersAuthActions(params: {
   const login = useCallback(async () => {
     setLoginError("");
 
+    const normalizedEmail = loginForm.login.trim().toLowerCase();
+    const rawPassword = loginForm.password;
+
+    if (!normalizedEmail || !rawPassword) {
+      setLoginError("Заполни email и пароль");
+      showToast("Не удалось войти", {
+        description: "Заполни оба поля перед входом.",
+        variant: "error",
+      });
+      return;
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
-      email: loginForm.login.trim(),
-      password: loginForm.password.trim(),
+      email: normalizedEmail,
+      password: rawPassword,
     });
 
     if (error) {
-      setLoginError("Неверный email или пароль");
+      setLoginError(error.message || "Неверный email или пароль");
       showToast("Не удалось войти", {
-        description: "Проверь email и пароль.",
+        description: error.message || "Проверь email и пароль.",
         variant: "error",
       });
       return;
