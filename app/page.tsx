@@ -109,13 +109,11 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [photoParsing, setPhotoParsing] = useState(false);
+  const [excelImporting, setExcelImporting] = useState(false);
   const [copiedArticle, setCopiedArticle] = useState<string | null>(null);
   const [expandedOrders, setExpandedOrders] = useState<number[]>([]);
   const [showAttentionPanel, setShowAttentionPanel] = useState(false);
   const [createMethodOpen, setCreateMethodOpen] = useState(false);
-  const [pendingCreateImport, setPendingCreateImport] = useState<"photo" | "excel" | null>(
-    null
-  );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
@@ -185,21 +183,6 @@ export default function OrdersPage() {
     }
   }, [user, loadOrders]);
 
-  useEffect(() => {
-    if (!open || !pendingCreateImport) return;
-
-    const timer = window.setTimeout(() => {
-      if (pendingCreateImport === "photo") {
-        photoInputRef.current?.click();
-      } else {
-        fileInputRef.current?.click();
-      }
-      setPendingCreateImport(null);
-    }, 120);
-
-    return () => window.clearTimeout(timer);
-  }, [open, pendingCreateImport]);
-
   const filteredOrders = useMemo(() => {
     return getFilteredAndSortedOrders({
       orders,
@@ -234,7 +217,7 @@ export default function OrdersPage() {
     setEditingOrderId(null);
   };
 
-  const openCreate = (mode: "manual" | "photo" | "excel" = "manual") => {
+  const prepareCreateDraft = () => {
     if (!canCreateOrder(user)) return;
 
     setEditingOrderId(null);
@@ -243,8 +226,13 @@ export default function OrdersPage() {
       orderDate: getTodayDate(),
       items: [{ ...EMPTY_ITEM }],
     });
+  };
+
+  const openCreate = () => {
+    if (!canCreateOrder(user)) return;
+
+    prepareCreateDraft();
     setOpen(true);
-    setPendingCreateImport(mode === "manual" ? null : mode);
   };
 
   const handleOpenCreateWithHaptic = () => {
@@ -254,7 +242,21 @@ export default function OrdersPage() {
 
   const handleSelectCreateMethod = (mode: "manual" | "photo" | "excel") => {
     setCreateMethodOpen(false);
-    openCreate(mode);
+
+    if (mode === "manual") {
+      openCreate();
+      return;
+    }
+
+    prepareCreateDraft();
+
+    window.setTimeout(() => {
+      if (mode === "photo") {
+        photoInputRef.current?.click();
+      } else {
+        fileInputRef.current?.click();
+      }
+    }, 120);
   };
 
   const handleLogoutWithHaptic = () => {
@@ -456,6 +458,8 @@ export default function OrdersPage() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    setExcelImporting(true);
+
     try {
       const arrayBuffer = await file.arrayBuffer();
       const workbook = XLSX.read(arrayBuffer, { type: "array" });
@@ -489,6 +493,7 @@ export default function OrdersPage() {
           items: hasOnlyEmptyRow ? preparedItems : [...prev.items, ...preparedItems],
         };
       });
+      setOpen(true);
 
       showToast("Импорт выполнен", {
         description: `Загружено позиций: ${importedItems.length}`,
@@ -501,6 +506,7 @@ export default function OrdersPage() {
         variant: "error",
       });
     } finally {
+      setExcelImporting(false);
       if (event.target) {
         event.target.value = "";
       }
@@ -556,6 +562,7 @@ export default function OrdersPage() {
           items: hasOnlyEmptyRow ? preparedItems : [...prev.items, ...preparedItems],
         };
       });
+      setOpen(true);
 
       showToast("Фото обработано", {
         description: `Добавлено позиций: ${recognizedItems.length}`,
@@ -1346,6 +1353,37 @@ export default function OrdersPage() {
             onSelect={handleSelectCreateMethod}
           />
 
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls"
+            onChange={handleExcelUpload}
+            className="hidden"
+          />
+          <input
+            ref={photoInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handlePhotoUpload}
+            className="hidden"
+          />
+
+          {!open && (photoParsing || excelImporting) ? (
+            <div className="fixed inset-0 z-[96] bg-slate-950/45 backdrop-blur-[2px]">
+              <div className="flex min-h-screen items-center justify-center p-4">
+                <div className="premium-shell flex w-full max-w-sm flex-col items-center gap-3 rounded-[28px] px-6 py-7 text-center shadow-[0_24px_80px_rgba(15,23,42,0.18)]">
+                  <div className="h-10 w-10 animate-spin rounded-full border-2 border-slate-300 border-t-slate-900" />
+                  <div className="premium-title text-[18px] font-semibold tracking-tight text-slate-900">
+                    {photoParsing ? "Распознаём фото" : "Подгружаем Excel"}
+                  </div>
+                  <div className="text-sm leading-6 text-slate-500">
+                    Подготовим позиции и сразу откроем форму уже с готовыми данными.
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
           <OrderFormModal
             open={open}
             saving={saving}
@@ -1354,8 +1392,6 @@ export default function OrdersPage() {
             userRole={user.role}
             form={form}
             parsedComments={parsedComments}
-            fileInputRef={fileInputRef}
-            photoInputRef={photoInputRef}
             canEditOrderTextFields={canEditOrderTextFields(user)}
             canEditItemMainFields={canEditItemMainFields(user)}
             canEditItemStatusFields={canEditItemStatusFields(user)}
@@ -1366,8 +1402,6 @@ export default function OrdersPage() {
             setForm={setForm}
             applyBulkPlannedDate={applyBulkPlannedDate}
             applyBulkStatus={applyBulkStatus}
-            handleExcelUpload={handleExcelUpload}
-            handlePhotoUpload={handlePhotoUpload}
             addItemRow={addItemRow}
             updateItemField={updateItemField}
             removeItemRow={removeItemRow}

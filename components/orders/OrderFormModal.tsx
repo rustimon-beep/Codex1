@@ -1,4 +1,4 @@
-import type { Dispatch, RefObject, SetStateAction } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import type { ItemForm, OrderFormState } from "../../lib/orders/types";
 import { ORDER_TYPE_OPTIONS, STATUS_OPTIONS } from "../../lib/orders/constants";
 import { getTodayDate } from "../../lib/orders/utils";
@@ -15,8 +15,6 @@ type OrderFormModalProps = {
     author: string;
     text: string;
   }[];
-  fileInputRef: RefObject<HTMLInputElement>;
-  photoInputRef: RefObject<HTMLInputElement>;
   canEditOrderTextFields: boolean;
   canEditItemMainFields: boolean;
   canEditItemStatusFields: boolean;
@@ -27,8 +25,6 @@ type OrderFormModalProps = {
   setForm: Dispatch<SetStateAction<OrderFormState>>;
   applyBulkPlannedDate: () => void;
   applyBulkStatus: () => void;
-  handleExcelUpload: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
-  handlePhotoUpload: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
   addItemRow: () => void;
   updateItemField: (
     index: number,
@@ -47,8 +43,6 @@ export function OrderFormModal({
   userRole,
   form,
   parsedComments,
-  fileInputRef,
-  photoInputRef,
   canEditOrderTextFields,
   canEditItemMainFields,
   canEditItemStatusFields,
@@ -59,8 +53,6 @@ export function OrderFormModal({
   setForm,
   applyBulkPlannedDate,
   applyBulkStatus,
-  handleExcelUpload,
-  handlePhotoUpload,
   addItemRow,
   updateItemField,
   removeItemRow,
@@ -362,20 +354,6 @@ export function OrderFormModal({
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".xlsx,.xls"
-                      onChange={handleExcelUpload}
-                      className="hidden"
-                    />
-                    <input
-                      ref={photoInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoUpload}
-                      className="hidden"
-                    />
                     {canManageItemsInCreate ? (
                       <button
                         onClick={addItemRow}
