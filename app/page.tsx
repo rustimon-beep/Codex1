@@ -80,7 +80,7 @@ import {
   parseComments,
   parseExcelItems,
 } from "../lib/orders/utils";
-import { normalizeRecognizedItems } from "../lib/orders/photo-import";
+import { fileToVisionDataUrl, normalizeRecognizedItems } from "../lib/orders/photo-import";
 
 const EMPTY_ORDER_FORM = createEmptyOrderForm(EMPTY_ITEM);
 
@@ -488,15 +488,7 @@ export default function OrdersPage() {
     setPhotoParsing(true);
 
     try {
-      const imageDataUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          if (typeof reader.result === "string") resolve(reader.result);
-          else reject(new Error("Не удалось прочитать фото."));
-        };
-        reader.onerror = () => reject(new Error("Не удалось прочитать фото."));
-        reader.readAsDataURL(file);
-      });
+      const imageDataUrl = await fileToVisionDataUrl(file);
 
       const response = await fetch("/api/orders/parse-photo", {
         method: "POST",
