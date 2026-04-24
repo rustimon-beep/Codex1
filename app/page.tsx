@@ -1028,38 +1028,38 @@ export default function OrdersPage() {
         confirmDialog={confirmQuickDateDialog}
       />
 
-      <div className="min-h-screen bg-slate-100/80 p-3 md:p-8">
-        <div className="mx-auto max-w-7xl space-y-5 md:space-y-7">
-          <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_12px_36px_rgba(15,23,42,0.08)]">
-            <div className="relative bg-gradient-to-r from-slate-950 via-slate-900 to-slate-800 px-5 py-5 text-white md:px-8 md:py-7">
+      <div className="min-h-screen bg-slate-100/80 p-2 md:p-8">
+        <div className="mx-auto max-w-7xl space-y-3 md:space-y-7">
+          <div className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-[0_12px_36px_rgba(15,23,42,0.08)] md:rounded-[28px]">
+            <div className="relative bg-gradient-to-r from-slate-950 via-slate-900 to-slate-800 px-3.5 py-3.5 text-white md:px-8 md:py-7">
               <div className="absolute inset-y-0 right-0 w-[38%] bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.18),transparent_55%)] pointer-events-none" />
 
-              <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+              <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0">
-                  <div className="flex items-start gap-6">
+                  <div className="flex items-start gap-4 md:gap-6">
                     <div className="shrink-0 pt-1">
                       <AppLogo compact showText={false} />
                     </div>
 
                     <div className="min-w-0">
-                      <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-200 md:text-[11px]">
+                      <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-2 py-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-slate-200 md:px-3 md:text-[11px]">
                         Центр управления заказами
                       </div>
 
-                      <h1 className="mt-3 text-[28px] font-semibold tracking-tight text-white md:text-[30px] md:leading-[1.02]">
+                      <h1 className="mt-2 text-[19px] font-semibold tracking-tight text-white md:mt-2.5 md:text-[30px] md:leading-[1.02]">
                         Общая таблица заказов
                       </h1>
 
-                      <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300 md:text-[17px]">
+                      <p className="mt-1.5 max-w-3xl text-[12px] leading-[1.1rem] text-slate-300 md:mt-3 md:text-[17px] md:leading-6">
                         Система обработки и мониторинга заказов Автодом – Союз.
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="relative flex flex-col gap-3 lg:min-w-[320px] lg:items-end">
+                <div className="relative flex flex-col gap-2.5 lg:min-w-[320px] lg:items-end">
                   <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center lg:justify-end">
-                    <div className="rounded-2xl border border-white/15 bg-white/10 px-4 py-2.5 text-sm text-white backdrop-blur">
+                    <div className="rounded-[18px] border border-white/15 bg-white/10 px-2.5 py-1.5 text-[12px] text-white backdrop-blur md:rounded-2xl md:px-4 md:py-2.5 md:text-sm">
                       {profileLoading
                         ? "Загрузка профиля..."
                         : `${user.name} · ${
@@ -1075,7 +1075,7 @@ export default function OrdersPage() {
 
                     <button
                       onClick={logout}
-                      className="rounded-2xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-medium text-slate-100 transition hover:bg-white/10"
+                      className="rounded-[18px] border border-white/15 bg-white/5 px-2.5 py-1.5 text-[12px] font-medium text-slate-100 transition hover:bg-white/10 md:rounded-2xl md:px-4 md:py-2.5 md:text-sm"
                     >
                       Выйти
                     </button>
@@ -1084,7 +1084,7 @@ export default function OrdersPage() {
                   {user.role === "admin" || user.role === "buyer" ? (
                     <button
                       onClick={openCreate}
-                      className="w-full rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100 lg:w-auto"
+                      className="w-full rounded-[18px] bg-white px-4 py-2 text-[12px] font-semibold text-slate-900 transition hover:bg-slate-100 lg:w-auto md:rounded-2xl md:px-5 md:py-3 md:text-sm"
                     >
                       Добавить заказ
                     </button>

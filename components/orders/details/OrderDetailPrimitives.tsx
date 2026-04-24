@@ -10,17 +10,17 @@ export function StatMini({
   badgeClass?: string;
 }) {
   return (
-    <div className="rounded-[24px] bg-white p-5 shadow-[0_10px_28px_rgba(15,23,42,0.06)] ring-1 ring-slate-200">
-      <div className="text-xs font-medium tracking-[0.06em] text-slate-400">
+    <div className="rounded-[18px] bg-white p-3.5 shadow-[0_10px_28px_rgba(15,23,42,0.06)] ring-1 ring-slate-200 md:rounded-[24px] md:p-5">
+      <div className="text-[10px] font-medium tracking-[0.06em] text-slate-400 md:text-xs">
         {title}
       </div>
-      <div className="mt-3">
+      <div className="mt-2.5 md:mt-3">
         {badgeClass ? (
-          <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${badgeClass}`}>
+          <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-medium md:px-3 md:text-xs ${badgeClass}`}>
             {value}
           </span>
         ) : (
-          <div className="text-base font-medium text-slate-900">{value}</div>
+          <div className="text-[14px] font-medium text-slate-900 md:text-base">{value}</div>
         )}
       </div>
     </div>
@@ -41,8 +41,8 @@ export function FieldBlock({
       <label
         className={`block text-slate-700 ${
           compact
-            ? "mb-1.5 text-[11px] font-medium tracking-[0.06em] text-slate-500"
-            : "mb-2 text-sm font-medium"
+            ? "mb-1 text-[10px] font-medium tracking-[0.06em] text-slate-500 md:mb-1.5 md:text-[11px]"
+            : "mb-1.5 text-[12px] font-medium md:mb-2 md:text-sm"
         }`}
       >
         {label}
@@ -61,10 +61,10 @@ export function InfoRow({
 }) {
   return (
     <div>
-      <div className="text-[11px] font-medium tracking-[0.06em] text-slate-400">
+      <div className="text-[10px] font-medium tracking-[0.06em] text-slate-400 md:text-[11px]">
         {label}
       </div>
-      <div className="mt-1 text-sm leading-6 text-slate-700">{value}</div>
+      <div className="mt-1 text-[12px] leading-5 text-slate-700 md:text-sm md:leading-6">{value}</div>
     </div>
   );
 }

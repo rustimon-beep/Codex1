@@ -12,17 +12,17 @@ export function AppLogo({
   className = "",
 }: AppLogoProps) {
   return (
-    <div className={`flex items-center gap-4 ${className}`}>
+    <div className={`flex items-center gap-3 md:gap-4 ${className}`}>
       <div
         className={`flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 backdrop-blur ${
-          compact ? "h-[88px] w-[88px] p-3" : "h-28 w-28 p-4"
+          compact ? "h-[68px] w-[68px] p-2.5 md:h-[88px] md:w-[88px] md:p-3" : "h-[88px] w-[88px] p-3 md:h-28 md:w-28 md:p-4"
         }`}
       >
         <Image
           src="/avtodom-logo.png"
           alt="Автодом"
-          width={compact ? 68 : 96}
-          height={compact ? 68 : 96}
+          width={compact ? 52 : 72}
+          height={compact ? 52 : 72}
           className="h-auto w-auto object-contain"
           priority
         />
@@ -32,14 +32,14 @@ export function AppLogo({
         <div className="min-w-0">
           <div
             className={`font-semibold tracking-tight text-white ${
-              compact ? "text-lg" : "text-3xl"
+              compact ? "text-base md:text-lg" : "text-2xl md:text-3xl"
             }`}
           >
             Автодом
           </div>
           <div
             className={`text-slate-300 ${
-              compact ? "text-xs" : "text-sm"
+              compact ? "text-[11px] md:text-xs" : "text-[12px] md:text-sm"
             }`}
           >
             Система обработки заказов

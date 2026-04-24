@@ -49,8 +49,8 @@ export function OrdersToolbar({
   }, [orderTypeFilter, statusFilter, sortField, sortDirection]);
 
   return (
-    <div className="space-y-4 md:space-y-5">
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+    <div className="space-y-2.5 md:space-y-5">
+      <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4 md:gap-4">
         <StatCard
           title="Всего заказов"
           value={stats.total}
@@ -77,13 +77,13 @@ export function OrdersToolbar({
         />
       </div>
 
-      <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)] md:p-6">
-        <div className="flex flex-col gap-4 md:gap-5">
+      <div className="rounded-[20px] border border-slate-200 bg-white p-3 shadow-[0_12px_32px_rgba(15,23,42,0.06)] md:rounded-[28px] md:p-6">
+        <div className="flex flex-col gap-3 md:gap-5">
           <div>
-            <div className="text-[22px] font-semibold tracking-tight text-slate-900 md:text-[28px]">
+            <div className="text-[16px] font-semibold tracking-tight text-slate-900 md:text-[28px]">
               Поиск и фильтрация
             </div>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-[12px] text-slate-500 md:text-sm">
               Найди нужный заказ или отфильтруй список по типу и статусу.
             </p>
           </div>
@@ -91,7 +91,7 @@ export function OrdersToolbar({
           <div className="relative">
             <svg
               viewBox="0 0 24 24"
-              className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+              className="pointer-events-none absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-400 md:left-4 md:h-5 md:w-5"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
@@ -104,11 +104,11 @@ export function OrdersToolbar({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Поиск по заказу, артикулу, замене, наименованию"
-              className="h-[58px] w-full rounded-[24px] border border-slate-200 bg-slate-50 pl-12 pr-4 text-base text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-300 focus:bg-white md:h-[56px] md:rounded-2xl md:text-sm"
+              className="h-[42px] w-full rounded-[18px] border border-slate-200 bg-slate-50 pl-10 pr-3.5 text-[12px] text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-300 focus:bg-white md:h-[56px] md:rounded-2xl md:pl-11 md:pr-4 md:text-sm"
             />
           </div>
 
-          <div className="flex flex-wrap gap-2.5 md:hidden">
+          <div className="flex flex-wrap gap-2 md:hidden">
             <QuickFilterPill
               active={orderTypeFilter === "all" && statusFilter === "all"}
               onClick={() => {
@@ -165,14 +165,14 @@ export function OrdersToolbar({
             <button
               type="button"
               onClick={() => setMobileFiltersOpen((prev) => !prev)}
-              className="flex h-[58px] w-full items-center justify-between rounded-[24px] border border-slate-200 bg-slate-50 px-5 text-left"
+              className="flex h-[42px] w-full items-center justify-between rounded-[18px] border border-slate-200 bg-slate-50 px-3.5 text-left"
             >
               <div className="flex items-center gap-3">
-                <span className="text-[15px] font-semibold text-slate-700">
+                <span className="text-[12px] font-semibold text-slate-700">
                   Фильтры
                 </span>
                 {hasAnyAdvancedFilter ? (
-                  <span className="rounded-full bg-slate-900 px-2.5 py-1 text-[10px] font-medium text-white">
+                  <span className="rounded-full bg-slate-900 px-2 py-0.5 text-[9px] font-medium text-white">
                     Активны
                   </span>
                 ) : null}
@@ -190,11 +190,11 @@ export function OrdersToolbar({
             </button>
 
             {mobileFiltersOpen ? (
-              <div className="mt-3 grid grid-cols-1 gap-2.5 rounded-[24px] border border-slate-200 bg-slate-50/70 p-3">
+              <div className="mt-2.5 grid grid-cols-1 gap-2 rounded-[18px] border border-slate-200 bg-slate-50/70 p-2">
                 <select
                   value={orderTypeFilter}
                   onChange={(e) => setOrderTypeFilter(e.target.value)}
-                  className="h-[54px] rounded-[20px] border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none focus:border-slate-300"
+                  className="h-[40px] rounded-[14px] border border-slate-200 bg-white px-3 text-[12px] text-slate-900 outline-none focus:border-slate-300"
                 >
                   <option value="all">Все типы</option>
                   <option value="Стандартный">Стандартный</option>
@@ -204,7 +204,7 @@ export function OrdersToolbar({
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="h-[54px] rounded-[20px] border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none focus:border-slate-300"
+                  className="h-[40px] rounded-[14px] border border-slate-200 bg-white px-3 text-[12px] text-slate-900 outline-none focus:border-slate-300"
                 >
                   <option value="all">Все статусы</option>
                   <option value="Новый">Новый</option>
@@ -227,7 +227,7 @@ export function OrdersToolbar({
                     setSortField(field);
                     setSortDirection(direction);
                   }}
-                  className="h-[54px] rounded-[20px] border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none focus:border-slate-300"
+                  className="h-[40px] rounded-[14px] border border-slate-200 bg-white px-3 text-[12px] text-slate-900 outline-none focus:border-slate-300"
                 >
                   <option value="id:desc">Сначала новые</option>
                   <option value="id:asc">Сначала старые</option>
@@ -324,7 +324,7 @@ function QuickFilterPill({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full px-4 py-2.5 text-sm font-medium transition ${
+      className={`rounded-full px-3.5 py-2 text-[12px] font-medium transition md:px-4 md:py-2.5 md:text-sm ${
         active
           ? activeClassName || "bg-slate-900 text-white"
           : "border border-slate-200 bg-white text-slate-700"
@@ -348,19 +348,19 @@ function StatCard({
 }) {
   return (
     <div
-      className={`rounded-[28px] bg-white p-5 shadow-[0_10px_28px_rgba(15,23,42,0.06)] ring-1 ${ring}`}
+      className={`rounded-[18px] bg-white p-3 shadow-[0_10px_28px_rgba(15,23,42,0.06)] ring-1 md:rounded-[28px] md:p-5 ${ring}`}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="text-sm font-medium text-slate-500">{title}</div>
-        <div className={`mt-1 h-3 w-3 rounded-full ${accent}`} />
+        <div className="text-[12px] font-medium text-slate-500 md:text-sm">{title}</div>
+        <div className={`mt-1 h-2.5 w-2.5 rounded-full md:h-3 md:w-3 ${accent}`} />
       </div>
 
-      <div className="mt-4 text-5xl font-semibold tracking-tight text-slate-900 md:text-4xl">
+      <div className="mt-3 text-[34px] font-semibold tracking-tight text-slate-900 md:mt-4 md:text-4xl">
         {value}
       </div>
 
-      <div className="mt-3 h-1.5 w-16 rounded-full bg-slate-100">
-        <div className={`h-1.5 w-8 rounded-full ${accent}`} />
+      <div className="mt-2.5 h-1.5 w-14 rounded-full bg-slate-100 md:mt-3 md:w-16">
+        <div className={`h-1.5 w-7 rounded-full md:w-8 ${accent}`} />
       </div>
     </div>
   );
