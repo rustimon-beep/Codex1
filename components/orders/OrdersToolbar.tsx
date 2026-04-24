@@ -77,7 +77,7 @@ export function OrdersToolbar({
         />
       </div>
 
-      <div className="rounded-[20px] border border-slate-200 bg-white p-3 shadow-[0_12px_32px_rgba(15,23,42,0.06)] md:rounded-[28px] md:p-6">
+      <div className="premium-shell rounded-[20px] p-3 md:rounded-[28px] md:p-6">
         <div className="flex flex-col gap-3 md:gap-5">
           <div>
             <div className="text-[16px] font-semibold tracking-tight text-slate-900 md:text-[28px]">
@@ -104,7 +104,7 @@ export function OrdersToolbar({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Поиск по заказу, артикулу, замене, наименованию"
-              className="h-[42px] w-full rounded-[18px] border border-slate-200 bg-slate-50 pl-10 pr-3.5 text-[12px] text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-300 focus:bg-white md:h-[56px] md:rounded-2xl md:pl-11 md:pr-4 md:text-sm"
+              className="h-[42px] w-full rounded-[18px] border border-slate-200/90 bg-white/80 pl-10 pr-3.5 text-[12px] text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-300 focus:bg-white md:h-[56px] md:rounded-2xl md:pl-11 md:pr-4 md:text-sm"
             />
           </div>
 
@@ -326,8 +326,8 @@ function QuickFilterPill({
       onClick={onClick}
       className={`rounded-full px-3.5 py-2 text-[12px] font-medium transition md:px-4 md:py-2.5 md:text-sm ${
         active
-          ? activeClassName || "bg-slate-900 text-white"
-          : "border border-slate-200 bg-white text-slate-700"
+          ? activeClassName || "bg-slate-900 text-white shadow-[0_10px_24px_rgba(15,23,42,0.12)]"
+          : "border border-slate-200 bg-white/85 text-slate-700"
       }`}
     >
       {children}
@@ -348,8 +348,9 @@ function StatCard({
 }) {
   return (
     <div
-      className={`rounded-[18px] bg-white p-3 shadow-[0_10px_28px_rgba(15,23,42,0.06)] ring-1 md:rounded-[28px] md:p-5 ${ring}`}
+      className={`premium-card-hover relative overflow-hidden rounded-[18px] bg-white p-3 shadow-[0_10px_28px_rgba(15,23,42,0.06)] ring-1 md:rounded-[28px] md:p-5 ${ring}`}
     >
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-14 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.08),transparent_65%)]" />
       <div className="flex items-start justify-between gap-3">
         <div className="text-[12px] font-medium text-slate-500 md:text-sm">{title}</div>
         <div className={`mt-1 h-2.5 w-2.5 rounded-full md:h-3 md:w-3 ${accent}`} />

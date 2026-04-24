@@ -11,6 +11,7 @@ import { MobileBottomNav } from "../../../components/ui/MobileBottomNav";
 import { MobileLaunchReveal } from "../../../components/ui/MobileLaunchReveal";
 import { ToastViewport } from "../../../components/ui/ToastViewport";
 import { AppLogo } from "../../../components/ui/AppLogo";
+import { EmptyStateCard } from "../../../components/ui/EmptyStateCard";
 import { useOrdersAuthActions } from "../../../lib/auth/useOrdersAuthActions";
 import { useProfileAuth } from "../../../lib/auth/useProfileAuth";
 import { fetchOrderById } from "../../../lib/orders/api";
@@ -270,8 +271,10 @@ export default function OrderDetailsPage() {
       <div className="min-h-screen bg-slate-100/80 p-2 md:p-8 text-slate-900 antialiased">
         <div className="bottom-nav-safe mx-auto max-w-7xl space-y-4 md:space-y-6 md:pb-0">
           <div className="premium-enter overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-[0_12px_36px_rgba(15,23,42,0.08)] md:rounded-[28px]">
-            <div className="relative bg-gradient-to-r from-slate-950 via-slate-900 to-slate-800 px-3.5 py-3.5 text-white md:px-8 md:py-7">
+            <div className="hero-premium relative px-3.5 py-3.5 text-white md:px-8 md:py-7">
               <div className="absolute inset-y-0 right-0 w-[38%] bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.18),transparent_55%)] pointer-events-none" />
+              <div className="pointer-events-none absolute -left-8 top-8 h-24 w-24 rounded-full bg-white/5 blur-2xl" />
+              <div className="pointer-events-none absolute bottom-0 right-6 h-28 w-28 rounded-full bg-sky-400/10 blur-3xl" />
 
               <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0">
@@ -281,7 +284,7 @@ export default function OrderDetailsPage() {
                     </div>
 
                     <div className="min-w-0">
-                      <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-2 py-1 text-[8px] font-medium tracking-[0.08em] text-slate-200 md:px-3 md:text-[11px]">
+                      <div className="glass-chip inline-flex items-center gap-2 rounded-full px-2 py-1 text-[8px] font-medium tracking-[0.08em] text-slate-200 md:px-3 md:text-[11px]">
                         Карточка заказа
                       </div>
 
@@ -298,7 +301,7 @@ export default function OrderDetailsPage() {
 
                 <div className="relative flex flex-col gap-2.5 lg:min-w-[340px] lg:items-end">
                   <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center lg:justify-end">
-                    <div className="rounded-[18px] border border-white/15 bg-white/10 px-2.5 py-1.5 text-[12px] text-white backdrop-blur md:rounded-2xl md:px-4 md:py-2.5 md:text-sm">
+                    <div className="glass-chip rounded-[18px] px-2.5 py-1.5 text-[12px] text-white md:rounded-2xl md:px-4 md:py-2.5 md:text-sm">
                       {profileLoading
                         ? "Загрузка профиля..."
                         : `${user.name} · ${
@@ -314,7 +317,7 @@ export default function OrderDetailsPage() {
 
                     <button
                       onClick={handleLogoutWithHaptic}
-                      className="rounded-[18px] border border-white/15 bg-white/5 px-2.5 py-1.5 text-[12px] font-medium text-slate-100 transition hover:bg-white/10 md:rounded-2xl md:px-4 md:py-2.5 md:text-sm"
+                      className="glass-chip rounded-[18px] px-2.5 py-1.5 text-[12px] font-medium text-slate-100 transition hover:bg-white/10 md:rounded-2xl md:px-4 md:py-2.5 md:text-sm"
                     >
                       Выйти
                     </button>
@@ -323,7 +326,7 @@ export default function OrderDetailsPage() {
                   <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
                     <Link
                       href="/"
-                      className="rounded-[18px] border border-white/15 bg-white/10 px-3.5 py-2 text-center text-[12px] font-medium text-white transition hover:bg-white/15 md:rounded-2xl md:px-5 md:py-3 md:text-sm"
+                      className="glass-chip rounded-[18px] px-3.5 py-2 text-center text-[12px] font-medium text-white transition hover:bg-white/15 md:rounded-2xl md:px-5 md:py-3 md:text-sm"
                     >
                       Назад к списку
                     </Link>
@@ -331,7 +334,7 @@ export default function OrderDetailsPage() {
                     {user.role === "admin" ? (
                       <button
                         onClick={handleRemoveOrderWithHaptic}
-                        className="rounded-[18px] border border-rose-200/30 bg-white/10 px-3.5 py-2 text-[12px] font-medium text-white transition hover:bg-white/15 md:rounded-2xl md:px-5 md:py-3 md:text-sm"
+                        className="glass-chip rounded-[18px] px-3.5 py-2 text-[12px] font-medium text-white transition hover:bg-white/15 md:rounded-2xl md:px-5 md:py-3 md:text-sm"
                       >
                         Удалить заказ
                       </button>
@@ -347,9 +350,10 @@ export default function OrderDetailsPage() {
               <OrderDetailSkeleton />
             </div>
           ) : !order ? (
-            <div className="rounded-[22px] bg-white p-6 text-center text-[13px] text-slate-500 shadow-[0_10px_28px_rgba(15,23,42,0.06)] ring-1 ring-slate-200 md:rounded-[28px] md:p-10 md:text-sm">
-              Заказ не найден.
-            </div>
+            <EmptyStateCard
+              title="Заказ не найден"
+              description="Похоже, запись была удалена или ссылка устарела. Вернись к общему списку и открой нужный заказ заново."
+            />
           ) : (
             <>
               <div className="premium-enter premium-enter-delay-1 grid grid-cols-2 gap-2.5 md:grid-cols-4 md:gap-4">

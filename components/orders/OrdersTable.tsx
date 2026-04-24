@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Fragment } from "react";
 import type { OrderItem, OrderWithItems, UserProfile } from "../../lib/orders/types";
+import { EmptyStateCard } from "../ui/EmptyStateCard";
 import {
   formatDate,
   formatDateTimeForView,
@@ -59,10 +60,10 @@ export function OrdersTable({
   };
 
   return (
-    <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.06)]">
+    <div className="premium-shell overflow-hidden rounded-[28px]">
       <div className="overflow-x-auto">
         <table className="min-w-[1180px] w-full border-separate border-spacing-0 text-left text-sm">
-          <thead className="bg-slate-50/90 text-slate-600">
+          <thead className="premium-grid bg-slate-50/90 text-slate-600">
             <tr>
               <th className="px-5 py-4 font-semibold">Заказ</th>
               <th className="px-5 py-4 font-semibold">Тип</th>
@@ -84,8 +85,12 @@ export function OrdersTable({
               </tr>
             ) : orders.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-5 py-14 text-center text-slate-500">
-                  Ничего не найдено.
+                <td colSpan={8} className="px-5 py-10">
+                  <EmptyStateCard
+                    compact
+                    title="Заказы не найдены"
+                    description="Попробуй изменить фильтры, поиск или сбросить ограничения, чтобы снова увидеть список."
+                  />
                 </td>
               </tr>
             ) : (
@@ -111,7 +116,7 @@ export function OrdersTable({
                   <Fragment key={order.id}>
                     <tr
                       onClick={() => toggleOrderExpand(order.id)}
-                      className={`align-top cursor-pointer transition-all duration-200 group ${
+                      className={`align-top cursor-pointer transition-all duration-200 group premium-card-hover ${
                         overdue
                           ? "bg-rose-50/40 hover:bg-rose-50"
                           : orderStatus === "Поставлен"
@@ -171,7 +176,7 @@ export function OrdersTable({
                               <Link
                                 href={`/orders/${order.id}`}
                                 onClick={(e) => e.stopPropagation()}
-                                className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                                className="rounded-xl border border-slate-200 bg-white/92 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
                               >
                                 Открыть
                               </Link>
@@ -182,7 +187,7 @@ export function OrdersTable({
                                     e.stopPropagation();
                                     void removeOrder(order.id);
                                   }}
-                                  className="rounded-xl border border-rose-200 bg-white px-3 py-1.5 text-xs font-medium text-rose-600 transition hover:bg-rose-50"
+                                  className="rounded-xl border border-rose-200 bg-white/92 px-3 py-1.5 text-xs font-medium text-rose-600 transition hover:bg-rose-50"
                                 >
                                   Удалить
                                 </button>

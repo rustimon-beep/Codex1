@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import type { OrderItem, OrderWithItems, UserProfile } from "../../lib/orders/types";
 import { triggerHapticFeedback } from "../../lib/ui/haptics";
+import { EmptyStateCard } from "../ui/EmptyStateCard";
 import {
   formatDate,
   formatDateTimeForView,
@@ -98,9 +99,11 @@ export function OrdersListMobile({
 
   if (orders.length === 0) {
     return (
-      <div className="rounded-[18px] bg-white p-3 text-center text-[12px] text-slate-500 shadow-[0_8px_24px_rgba(15,23,42,0.05)] ring-1 ring-slate-200">
-        Ничего не найдено.
-      </div>
+      <EmptyStateCard
+        compact
+        title="Пусто по текущему фильтру"
+        description="Сейчас подходящих заказов нет. Попробуй изменить поиск или сбросить фильтры."
+      />
     );
   }
 
@@ -122,7 +125,7 @@ export function OrdersListMobile({
         return (
           <div
             key={order.id}
-            className={`relative overflow-hidden rounded-[18px] border bg-white shadow-[0_12px_30px_rgba(15,23,42,0.06)] transition md:rounded-[22px] ${
+            className={`premium-card-hover relative overflow-hidden rounded-[18px] border bg-white shadow-[0_12px_30px_rgba(15,23,42,0.06)] transition md:rounded-[22px] ${
               overdue
                 ? "border-rose-200"
                 : orderStatus === "Поставлен"
@@ -174,6 +177,7 @@ export function OrdersListMobile({
               onTouchEnd={(event) => handleTouchEnd(event, order.id)}
               className={`relative bg-white transition-transform duration-300 ${isActionsVisible ? actionsWidthClass : "translate-x-0"}`}
             >
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.07),transparent_65%)]" />
               <div
                 className={`h-1.5 w-full ${
                   overdue
