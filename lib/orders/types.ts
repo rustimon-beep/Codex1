@@ -1,0 +1,77 @@
+export type OrderHeader = {
+  id: number;
+  client_order: string | null;
+  order_date: string | null;
+  order_type: string | null;
+  planned_date: string | null;
+  status: string | null;
+  delivered_date: string | null;
+  comment: string | null;
+  updated_by: string | null;
+  updated_at: string | null;
+};
+
+export type OrderItem = {
+  id: number;
+  order_id: number;
+  article: string | null;
+  replacement_article: string | null;
+  name: string | null;
+  quantity: string | null;
+  planned_date: string | null;
+  status: string | null;
+  delivered_date: string | null;
+  canceled_date: string | null;
+};
+
+export type OrderWithItems = OrderHeader & {
+  order_items?: OrderItem[];
+};
+
+export type ItemForm = {
+  id?: number;
+  article: string;
+  hasReplacement: boolean;
+  replacementArticle: string;
+  name: string;
+  quantity: string;
+  plannedDate: string;
+  status: string;
+  deliveredDate: string;
+  canceledDate: string;
+};
+
+export type OrderFormState = {
+  clientOrder: string;
+  orderDate: string;
+  orderType: string;
+  comment: string;
+  newComment: string;
+  bulkPlannedDate: string;
+  bulkStatus: string;
+  items: ItemForm[];
+};
+
+export type ParsedComment = {
+  datetime: string;
+  author: string;
+  text: string;
+};
+
+export type UserProfile = {
+  id: string;
+  email: string;
+  role: "admin" | "supplier" | "viewer" | "buyer";
+  name: string;
+};
+
+export type SortField =
+  | "id"
+  | "client_order"
+  | "order_date"
+  | "order_type"
+  | "status"
+  | "updated_at"
+  | "progress";
+
+export type SortDirection = "asc" | "desc";
