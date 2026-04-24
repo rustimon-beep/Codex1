@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { SortDirection, SortField } from "../../lib/orders/types";
-import { formatDateTimeForView, getOrderStatus, orderTypeClasses, statusClasses } from "../../lib/orders/utils";
+import { formatDateTimeForView, orderTypeClasses, statusClasses } from "../../lib/orders/utils";
 
 type AttentionCard = {
   key: string;
@@ -21,11 +21,9 @@ type AttentionEntry = {
     client_order: string | null;
     order_type: string | null;
     updated_at: string | null;
-    order_items?: {
-      status: string | null;
-    }[];
   };
   reasons: string[];
+  status: string;
 };
 
 type OrdersAttentionPanelProps = {
@@ -102,8 +100,7 @@ export function OrdersAttentionPanel({
               Сейчас критичных заказов не видно. Это хороший знак.
             </div>
           ) : (
-            topAttentionOrders.map(({ order, reasons }) => {
-              const status = getOrderStatus(order.order_items || []);
+            topAttentionOrders.map(({ order, reasons, status }) => {
               const orderType = order.order_type || "Стандартный";
 
               return (

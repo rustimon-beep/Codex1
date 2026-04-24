@@ -190,6 +190,7 @@ export function getOrdersAttention(orders: OrderWithItems[]) {
       return {
         order,
         reasons,
+        status: getOrderStatus(order.order_items || []),
       };
     })
     .filter((entry) => entry.reasons.length > 0)
