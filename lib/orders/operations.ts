@@ -1,7 +1,12 @@
 import type { ItemForm, OrderItem, OrderWithItems, OrderFormState } from "./types";
 import { appendCommentEntries, buildCommentEntry, formatDate, getTodayDate } from "./utils";
 
-export function getItemLabel(item: Pick<ItemForm, "article" | "name">) {
+type ItemLabelSource = {
+  article?: string | null;
+  name?: string | null;
+};
+
+export function getItemLabel(item: ItemLabelSource) {
   return item.article || item.name || "без названия";
 }
 
@@ -97,7 +102,7 @@ export function buildPlannedDateChangeComments(params: {
 export function appendCancellationComment(params: {
   comment: string | null;
   authorName: string;
-  item: Pick<ItemForm, "article" | "name">;
+  item: ItemLabelSource;
   reason: string;
 }) {
   const { comment, authorName, item, reason } = params;
