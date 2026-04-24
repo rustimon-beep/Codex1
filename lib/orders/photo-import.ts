@@ -130,21 +130,20 @@ export function parseOcrTextToRecognizedItems(text: string) {
 }
 
 export async function fileToVisionDataUrl(file: File) {
-  const fileDataUrl = await new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") resolve(reader.result);
-      else reject(new Error("Не удалось прочитать фото."));
-    };
-    reader.onerror = () => reject(new Error("Не удалось прочитать фото."));
-    reader.readAsDataURL(file);
-  });
-
   const image = await new Promise<HTMLImageElement>((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
     img.onerror = () => reject(new Error("Не удалось подготовить фото."));
-    img.src = fileDataUrl;
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(img);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("Не удалось подготовить фото."));
+    };
+    img.src = objectUrl;
   });
 
   const maxSide = 1800;
@@ -165,5 +164,11 @@ export async function fileToVisionDataUrl(file: File) {
   ctx.fillRect(0, 0, width, height);
   ctx.drawImage(image, 0, 0, width, height);
 
-  return canvas.toDataURL("image/jpeg", 0.9);
+  try {
+    return canvas.toDataURL("image/jpeg", 0.9);
+  } catch {
+    throw new Error(
+      "Не удалось обработать фото на этом устройстве. Попробуй выбрать фото из галереи или сделать скрин и загрузить его."
+    );
+  }
 }
