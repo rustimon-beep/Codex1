@@ -80,7 +80,7 @@ import {
   parseComments,
   parseExcelItems,
 } from "../lib/orders/utils";
-import { fileToVisionDataUrl, normalizeRecognizedItems } from "../lib/orders/photo-import";
+import { normalizeRecognizedItems } from "../lib/orders/photo-import";
 
 const EMPTY_ORDER_FORM = createEmptyOrderForm(EMPTY_ITEM);
 
@@ -488,14 +488,12 @@ export default function OrdersPage() {
     setPhotoParsing(true);
 
     try {
-      const imageDataUrl = await fileToVisionDataUrl(file);
+      const formData = new FormData();
+      formData.append("file", file, file.name || "upload.jpg");
 
       const response = await fetch("/api/orders/parse-photo", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ imageDataUrl }),
+        body: formData,
       });
 
       const result = await response.json();

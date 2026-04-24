@@ -14,15 +14,16 @@ type OcrSpacePayload = {
 };
 
 export async function POST(request: Request) {
-  const { imageDataUrl } = await request.json();
+  const requestFormData = await request.formData();
+  const imageFile = requestFormData.get("file");
 
-  if (!imageDataUrl || typeof imageDataUrl !== "string") {
+  if (!(imageFile instanceof File)) {
     return NextResponse.json({ error: "Image is required" }, { status: 400 });
   }
 
   const apiKey = process.env.OCR_SPACE_API_KEY || "helloworld";
   const formData = new FormData();
-  formData.append("base64Image", imageDataUrl);
+  formData.append("file", imageFile, imageFile.name || "upload.jpg");
   formData.append("language", "auto");
   formData.append("isOverlayRequired", "false");
   formData.append("detectOrientation", "true");
