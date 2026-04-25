@@ -16,6 +16,7 @@ import {
   isItemOverdue,
   isOrderOverdue,
   orderTypeClasses,
+  parseComments,
   statusClasses,
   statusSelectClasses,
 } from "../../lib/orders/utils";
@@ -114,10 +115,7 @@ export function OrdersTable({
                 const orderType = order.order_type || "Стандартный";
                 const hasOrderComment = hasComment(order.comment);
                 const hasOrderReplacement = hasReplacementInOrder(items);
-                const parsedCommentEntries = (order.comment || "")
-                  .split("\n")
-                  .map((entry) => entry.trim())
-                  .filter(Boolean);
+                const parsedCommentEntries = parseComments(order.comment || "");
                 const hasDetails = hasOrderComment || hasOrderReplacement;
                 const detailsOpen = detailsOrderId === order.id;
 
@@ -170,10 +168,10 @@ export function OrdersTable({
                                           prev === order.id ? null : order.id
                                         );
                                       }}
-                                      className="inline-flex h-7 items-center justify-center rounded-full border border-stone-200 bg-white px-2.5 text-[11px] font-medium text-stone-700 shadow-[0_2px_10px_rgba(15,23,42,0.06)] transition hover:border-stone-300 hover:bg-stone-50"
+                                      className="inline-flex h-6 min-w-[20px] items-center justify-center rounded-md border border-stone-200 bg-stone-50 px-1.5 text-[11px] leading-none text-stone-600 transition hover:border-stone-300 hover:bg-stone-100"
                                       aria-label="Показать детали заказа"
                                     >
-                                      Детали
+                                      ⚑
                                     </button>
 
                                     {detailsOpen ? (
@@ -210,9 +208,19 @@ export function OrdersTable({
                                                 {parsedCommentEntries.map((entry, index) => (
                                                   <div
                                                     key={`${order.id}-comment-${index}`}
-                                                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-[12px] leading-5 text-slate-700"
+                                                    className="rounded-xl border border-slate-200 bg-white px-3 py-2.5"
                                                   >
-                                                    {entry}
+                                                    <div className="flex items-center justify-between gap-3">
+                                                      <div className="text-[11px] font-semibold text-slate-800">
+                                                        {entry.author}
+                                                      </div>
+                                                      <div className="text-[10px] text-slate-400">
+                                                        {entry.datetime}
+                                                      </div>
+                                                    </div>
+                                                    <div className="mt-1.5 text-[12px] leading-5 text-slate-700">
+                                                      {entry.text}
+                                                    </div>
                                                   </div>
                                                 ))}
                                               </div>

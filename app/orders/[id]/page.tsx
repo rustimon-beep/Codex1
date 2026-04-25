@@ -403,7 +403,7 @@ export default function OrderDetailsPage() {
                       </div>
                     </div>
 
-                    <div className="mt-4 grid grid-cols-1 gap-3 md:mt-5 md:gap-4 md:grid-cols-2">
+                    <div className="mt-4 grid grid-cols-1 gap-3 md:mt-5 md:gap-4 md:grid-cols-3">
                       <FieldBlock label="Номер клиентского заказа">
                         <input
                           value={form.clientOrder}
@@ -441,11 +441,6 @@ export default function OrderDetailsPage() {
                         </select>
                       </FieldBlock>
 
-                      <FieldBlock label="Примечание">
-                        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm text-slate-500">
-                          Тип заказа на отдельной странице не редактируется
-                        </div>
-                      </FieldBlock>
                     </div>
                   </section>
 
@@ -632,7 +627,7 @@ export default function OrderDetailsPage() {
                             ? `Отмена: ${formatDate(item.canceledDate || null)}`
                             : itemOverdue
                             ? "Просрочено"
-                            : "Без события";
+                            : null;
 
                         return (
                           <div
@@ -677,9 +672,11 @@ export default function OrderDetailsPage() {
                                   ) : null}
                                 </div>
 
-                                <div className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-medium text-slate-600">
-                                  {eventLabel}
-                                </div>
+                                {eventLabel ? (
+                                  <div className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-medium text-slate-600">
+                                    {eventLabel}
+                                  </div>
+                                ) : null}
                               </div>
                             </div>
 
