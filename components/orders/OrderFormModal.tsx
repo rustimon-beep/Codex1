@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import type { ItemForm, OrderFormState } from "../../lib/orders/types";
 import { ORDER_TYPE_OPTIONS, STATUS_OPTIONS } from "../../lib/orders/constants";
-import { getTodayDate } from "../../lib/orders/utils";
+import { formatDate, getTodayDate } from "../../lib/orders/utils";
 
 type OrderFormModalProps = {
   open: boolean;
@@ -42,6 +42,55 @@ type OrderFormModalProps = {
   removeItemRow: (index: number) => void;
   saveForm: () => Promise<void>;
 };
+
+function formatDateInputValue(value: string) {
+  if (!value) return "";
+  const [year, month, day] = value.split("-");
+  if (!year || !month || !day) return value;
+  return `${day}.${month}.${year}`;
+}
+
+function parseDateInputValue(value: string) {
+  const normalized = value.trim().replace(/\//g, ".").replace(/-/g, ".");
+  const match = normalized.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+
+  if (!match) return value;
+
+  const [, dayRaw, monthRaw, year] = match;
+  const day = dayRaw.padStart(2, "0");
+  const month = monthRaw.padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function DateField({
+  label,
+  value,
+  disabled,
+  placeholder = "ДД.ММ.ГГГГ",
+  onChange,
+}: {
+  label: string;
+  value: string;
+  disabled?: boolean;
+  placeholder?: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div>
+      <label className="mb-1.5 block text-[12px] font-medium text-slate-700 md:text-sm">
+        {label}
+      </label>
+      <input
+        value={formatDateInputValue(value)}
+        disabled={disabled}
+        placeholder={placeholder}
+        onChange={(e) => onChange(parseDateInputValue(e.target.value))}
+        className="premium-input w-full rounded-[18px] px-3 py-2.5 text-[12px] text-slate-900 outline-none disabled:bg-slate-100 disabled:text-slate-500 md:rounded-2xl md:py-3 md:text-sm"
+      />
+    </div>
+  );
+}
 
 export function OrderFormModal({
   open,
@@ -171,25 +220,19 @@ export function OrderFormModal({
                   </div>
 
                   {canEditOrderDate ? (
-                    <div>
-                      <label className="mb-1.5 block text-[12px] font-medium text-slate-700 md:text-sm">
-                        Дата заказа
-                      </label>
-                      <input
-                        type="date"
-                        value={form.orderDate}
-                        disabled={!canEditOrderDate || saving}
-                        onChange={(e) => setForm({ ...form, orderDate: e.target.value })}
-                        className="premium-input w-full rounded-[18px] px-3 py-2.5 text-[12px] text-slate-900 outline-none disabled:bg-slate-100 disabled:text-slate-500 md:rounded-2xl md:py-3 md:text-sm"
-                      />
-                    </div>
+                    <DateField
+                      label="Дата заказа"
+                      value={form.orderDate}
+                      disabled={!canEditOrderDate || saving}
+                      onChange={(value) => setForm({ ...form, orderDate: value })}
+                    />
                   ) : (
                     <div>
                       <label className="mb-1.5 block text-[12px] font-medium text-slate-700 md:text-sm">
                         Дата заказа
                       </label>
                       <div className="w-full rounded-[18px] border border-slate-200 bg-slate-100 px-3 py-2.5 text-[12px] text-slate-500 md:rounded-2xl md:py-3 md:text-sm">
-                        {form.orderDate || getTodayDate()}
+                        {formatDate(form.orderDate || getTodayDate())}
                       </div>
                     </div>
                   )}
@@ -242,12 +285,14 @@ export function OrderFormModal({
                             Плановая дата для всех позиций
                           </label>
                           <input
-                            type="date"
-                            min={getTodayDate()}
-                            value={form.bulkPlannedDate}
+                            value={formatDateInputValue(form.bulkPlannedDate)}
                             disabled={saving || photoParsing}
+                            placeholder="ДД.ММ.ГГГГ"
                             onChange={(e) =>
-                              setForm({ ...form, bulkPlannedDate: e.target.value })
+                              setForm({
+                                ...form,
+                                bulkPlannedDate: parseDateInputValue(e.target.value),
+                              })
                             }
                             className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500"
                           />
@@ -471,11 +516,16 @@ export function OrderFormModal({
                             Плановая
                           </label>
                           <input
-                            type="date"
-                            min={getTodayDate()}
-                            value={item.plannedDate}
+                            value={formatDateInputValue(item.plannedDate)}
                             disabled={!canEditItemStatusFields || saving || photoParsing}
-                            onChange={(e) => updateItemField(index, "plannedDate", e.target.value)}
+                            placeholder="ДД.ММ.ГГГГ"
+                            onChange={(e) =>
+                              updateItemField(
+                                index,
+                                "plannedDate",
+                                parseDateInputValue(e.target.value)
+                              )
+                            }
                             className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500"
                           />
                         </div>

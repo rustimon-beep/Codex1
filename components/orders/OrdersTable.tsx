@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import type { OrderItem, OrderWithItems, UserProfile } from "../../lib/orders/types";
 import { EmptyStateCard } from "../ui/EmptyStateCard";
 import {
@@ -36,22 +36,7 @@ type OrdersTableProps = {
   copyArticle: (article: string | null) => void | Promise<void>;
 };
 
-const STATUS_OPTIONS = [
-  "Новый",
-  "В работе",
-  "В пути",
-  "Поставлен",
-  "Отменен",
-];
-
-function hasMissingPlannedDate(items: OrderItem[]) {
-  return items.some(
-    (item) =>
-      item.status !== "Поставлен" &&
-      item.status !== "Отменен" &&
-      !item.planned_date
-  );
-}
+const STATUS_OPTIONS = ["Новый", "В работе", "В пути", "Поставлен", "Отменен"];
 
 export function OrdersTable({
   loading,
@@ -67,6 +52,21 @@ export function OrdersTable({
   const getQuickStatusOptions = (_currentStatus: string) => {
     return STATUS_OPTIONS;
   };
+  const [detailsOrderId, setDetailsOrderId] = useState<number | null>(null);
+  const detailsRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!detailsOrderId) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!detailsRef.current?.contains(event.target as Node)) {
+        setDetailsOrderId(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [detailsOrderId]);
 
   return (
     <div className="premium-shell route-stage overflow-hidden rounded-[26px]">
@@ -112,15 +112,14 @@ export function OrdersTable({
                 const plannedDate = getOrderPlannedDate(items);
                 const fullDeliveredDate = getOrderDeliveredDate(items);
                 const orderType = order.order_type || "Стандартный";
-                const missingPlannedDate = hasMissingPlannedDate(items);
-
                 const hasOrderComment = hasComment(order.comment);
                 const hasOrderReplacement = hasReplacementInOrder(items);
-
-                const flagMessages: string[] = [];
-                if (hasOrderComment) flagMessages.push("Есть комментарий");
-                if (hasOrderReplacement) flagMessages.push("Есть замены");
-                const flagTitle = flagMessages.join(" • ");
+                const parsedCommentEntries = (order.comment || "")
+                  .split("\n")
+                  .map((entry) => entry.trim())
+                  .filter(Boolean);
+                const hasDetails = hasOrderComment || hasOrderReplacement;
+                const detailsOpen = detailsOrderId === order.id;
 
                 return (
                   <Fragment key={order.id}>
@@ -161,22 +160,67 @@ export function OrdersTable({
                                   {order.client_order || "Без номера"}
                                 </span>
 
-                                {flagMessages.length > 0 ? (
-                                  <div className="relative group/flag" title={flagTitle}>
+                                {hasDetails ? (
+                                  <div className="relative" ref={detailsOpen ? detailsRef : null}>
                                     <button
                                       type="button"
-                                      onClick={(e) => e.stopPropagation()}
-                                      className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-md border border-stone-200 bg-stone-50 px-1.5 text-[11px] leading-none text-stone-600 transition hover:border-stone-300 hover:bg-stone-100"
-                                      aria-label={flagTitle}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setDetailsOrderId((prev) =>
+                                          prev === order.id ? null : order.id
+                                        );
+                                      }}
+                                      className="inline-flex h-7 items-center justify-center rounded-full border border-stone-200 bg-white px-2.5 text-[11px] font-medium text-stone-700 shadow-[0_2px_10px_rgba(15,23,42,0.06)] transition hover:border-stone-300 hover:bg-stone-50"
+                                      aria-label="Показать детали заказа"
                                     >
-                                      ⚑
+                                      Детали
                                     </button>
 
-                                    <div className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden w-max max-w-[220px] -translate-x-1/2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-[0_10px_24px_rgba(15,23,42,0.12)] group-hover/flag:block">
-                                      {flagMessages.map((message, index) => (
-                                        <div key={index}>{message}</div>
-                                      ))}
-                                    </div>
+                                    {detailsOpen ? (
+                                      <div className="absolute left-0 top-full z-20 mt-2 w-[320px] max-w-[min(320px,calc(100vw-3rem))] rounded-[22px] border border-slate-200 bg-white p-3 shadow-[0_18px_44px_rgba(15,23,42,0.14)]">
+                                        <div className="flex items-center justify-between gap-3">
+                                          <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                                            Детали заказа
+                                          </div>
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setDetailsOrderId(null);
+                                            }}
+                                            className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] text-slate-500 transition hover:bg-slate-100"
+                                          >
+                                            Закрыть
+                                          </button>
+                                        </div>
+
+                                        <div className="mt-3 space-y-3">
+                                          {hasOrderReplacement ? (
+                                            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[12px] text-amber-900">
+                                              В заказе есть позиции с заменами.
+                                            </div>
+                                          ) : null}
+
+                                          {hasOrderComment ? (
+                                            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3">
+                                              <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                                                Комментарии
+                                              </div>
+                                              <div className="max-h-44 space-y-2 overflow-y-auto pr-1">
+                                                {parsedCommentEntries.map((entry, index) => (
+                                                  <div
+                                                    key={`${order.id}-comment-${index}`}
+                                                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-[12px] leading-5 text-slate-700"
+                                                  >
+                                                    {entry}
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            </div>
+                                          ) : null}
+                                        </div>
+                                      </div>
+                                    ) : null}
                                   </div>
                                 ) : null}
 
@@ -212,18 +256,11 @@ export function OrdersTable({
                               ) : null}
                             </div>
 
-                            {(overdue || missingPlannedDate) && (
+                            {overdue && (
                               <div className="mt-2.5 flex flex-wrap gap-1.5">
-                                {overdue ? (
-                                  <span className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[10px] font-medium text-rose-700">
-                                    Просрочен
-                                  </span>
-                                ) : null}
-                                {missingPlannedDate ? (
-                                  <span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-900">
-                                    Нет плановой даты
-                                  </span>
-                                ) : null}
+                                <span className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[10px] font-medium text-rose-700">
+                                  Просрочен
+                                </span>
                               </div>
                             )}
                           </div>
