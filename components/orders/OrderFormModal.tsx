@@ -155,6 +155,30 @@ export function OrderFormModal({
     missingCanceledDate ? "Для статуса «Отменен» нужна дата отмены" : null,
   ].filter(Boolean) as string[];
   const saveDisabled = saving || photoParsing || blockingIssues.length > 0;
+  const importedItems = form.items.filter((item) => !!item.importSource);
+  const problematicImportedItems = importedItems.filter(
+    (item) => (item.importIssues || []).length > 0
+  );
+  const readyImportedItems = importedItems.length - problematicImportedItems.length;
+
+  const getFieldIssueState = (item: ItemForm, field: "article" | "name" | "quantity") => {
+    const issues = item.importIssues || [];
+
+    if (
+      (field === "article" && issues.includes("Нет артикула")) ||
+      (field === "name" && issues.includes("Нет наименования")) ||
+      (field === "quantity" &&
+        (issues.includes("Нет количества") || issues.includes("Проверь количество")))
+    ) {
+      return "border-amber-300 bg-amber-50/70";
+    }
+
+    if (item.importSource) {
+      return "border-emerald-200 bg-emerald-50/40";
+    }
+
+    return "border-slate-200 bg-white";
+  };
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/45 backdrop-blur-[2px]">
@@ -407,6 +431,45 @@ export function OrderFormModal({
                         </button>
                       ) : null}
                     </div>
+
+                    <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-4">
+                      <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
+                        <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                          Всего
+                        </div>
+                        <div className="mt-1 text-lg font-semibold text-slate-900">
+                          {importedItems.length}
+                        </div>
+                      </div>
+                      <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 px-3 py-2.5">
+                        <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-emerald-700">
+                          Готово
+                        </div>
+                        <div className="mt-1 text-lg font-semibold text-emerald-900">
+                          {readyImportedItems}
+                        </div>
+                      </div>
+                      <div className="rounded-2xl border border-amber-200 bg-amber-100/70 px-3 py-2.5">
+                        <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-800">
+                          Проверить
+                        </div>
+                        <div className="mt-1 text-lg font-semibold text-amber-950">
+                          {problematicImportedItems.length}
+                        </div>
+                      </div>
+                      <div className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2.5">
+                        <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-stone-500">
+                          Источник
+                        </div>
+                        <div className="mt-1 text-[13px] font-semibold text-stone-900">
+                          {importReview.source === "photo"
+                            ? "Фото"
+                            : importReview.source === "excel"
+                            ? "Excel"
+                            : "Буфер"}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 ) : null}
 
@@ -489,7 +552,10 @@ export function OrderFormModal({
                             value={item.article}
                             disabled={!canEditItemMainFields || saving || photoParsing}
                             onChange={(e) => updateItemField(index, "article", e.target.value)}
-                            className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500"
+                            className={`w-full rounded-2xl border px-3 py-3 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500 ${getFieldIssueState(
+                              item,
+                              "article"
+                            )}`}
                           />
                         </div>
 
@@ -501,7 +567,10 @@ export function OrderFormModal({
                             value={item.name}
                             disabled={!canEditItemMainFields || saving || photoParsing}
                             onChange={(e) => updateItemField(index, "name", e.target.value)}
-                            className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500"
+                            className={`w-full rounded-2xl border px-3 py-3 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500 ${getFieldIssueState(
+                              item,
+                              "name"
+                            )}`}
                           />
                         </div>
 
@@ -513,7 +582,10 @@ export function OrderFormModal({
                             value={item.quantity}
                             disabled={!canEditItemMainFields || saving || photoParsing}
                             onChange={(e) => updateItemField(index, "quantity", e.target.value)}
-                            className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500"
+                            className={`w-full rounded-2xl border px-3 py-3 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500 ${getFieldIssueState(
+                              item,
+                              "quantity"
+                            )}`}
                           />
                         </div>
 
