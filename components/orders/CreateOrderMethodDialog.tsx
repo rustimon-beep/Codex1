@@ -5,7 +5,7 @@ import { useEffect } from "react";
 type CreateOrderMethodDialogProps = {
   open: boolean;
   onClose: () => void;
-  onSelect: (mode: "manual" | "photo" | "excel") => void;
+  onSelect: (mode: "manual" | "photo" | "excel" | "clipboard") => void;
 };
 
 const OPTIONS = [
@@ -53,6 +53,21 @@ const OPTIONS = [
       </svg>
     ),
   },
+  {
+    key: "clipboard" as const,
+    title: "Из буфера",
+    description: "Вставить список строк из буфера обмена и получить позиции автоматически.",
+    note: "Удобно с ПК",
+    accent: "Копировать и вставить",
+    tone: "border-sky-200 bg-sky-50/90 text-sky-950",
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <rect x="8" y="4" width="10" height="14" rx="2" />
+        <path d="M6 8H5C3.9 8 3 8.9 3 10V19C3 20.1 3.9 21 5 21H13C14.1 21 15 20.1 15 19V18" />
+        <path d="M10 2H16V6H10V2Z" />
+      </svg>
+    ),
+  },
 ];
 
 export function CreateOrderMethodDialog({
@@ -80,7 +95,7 @@ export function CreateOrderMethodDialog({
   return (
     <div className="fixed inset-0 z-[95] bg-slate-950/45 backdrop-blur-[2px]">
       <div className="flex min-h-screen items-end justify-center p-0 md:items-center md:p-4">
-        <div className="premium-shell flex h-[86dvh] w-full flex-col overflow-hidden rounded-t-[24px] shadow-[0_24px_80px_rgba(15,23,42,0.18)] md:h-auto md:max-h-[92dvh] md:max-w-2xl md:rounded-[30px]">
+        <div className="premium-shell flex h-[86dvh] w-full flex-col overflow-hidden rounded-t-[24px] shadow-[0_24px_80px_rgba(15,23,42,0.18)] md:h-auto md:max-h-[92dvh] md:max-w-[920px] md:rounded-[30px]">
           <div className="shrink-0 border-b border-slate-100/80 px-4 py-3 md:px-6 md:py-6">
             <div className="mx-auto mb-2 h-1.5 w-10 rounded-full bg-slate-200 md:hidden" />
 
@@ -93,7 +108,7 @@ export function CreateOrderMethodDialog({
                   Как создать заказ?
                 </h3>
                 <p className="mt-1 text-[11px] leading-4.5 text-slate-500 md:mt-1.5 md:text-sm md:leading-6">
-                  Выбери удобный способ и потом проверь позиции перед сохранением.
+                  Выбери способ и потом проверь позиции перед сохранением.
                 </p>
               </div>
 
@@ -113,10 +128,10 @@ export function CreateOrderMethodDialog({
 
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3 [webkit-overflow-scrolling:touch] md:px-6 md:py-6">
             <div className="md:hidden rounded-[18px] border border-white/70 bg-white/70 px-3 py-2.5 text-[11px] leading-4.5 text-slate-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-              На телефоне чаще всего удобнее начать с фото.
+              На телефоне удобнее фото, на ПК — Excel или буфер.
             </div>
 
-            <div className="mt-3 grid grid-cols-1 gap-2.5 md:mt-0 md:grid-cols-3 md:gap-3">
+            <div className="mt-3 grid grid-cols-1 gap-2.5 md:mt-0 md:grid-cols-2 xl:grid-cols-4 md:gap-3">
               {OPTIONS.map((option) => (
                 <button
                   key={option.key}

@@ -79,6 +79,7 @@ import {
   mergeComments,
   normalizeDateForCompare,
   parseComments,
+  parseClipboardItems,
   parseExcelItems,
 } from "../lib/orders/utils";
 import {
@@ -100,7 +101,7 @@ type QuickDateDialogState = {
 
 export default function OrdersPage() {
   const [importReview, setImportReview] = useState<{
-    source: "photo" | "excel";
+    source: "photo" | "excel" | "clipboard";
     importedCount: number;
   } | null>(null);
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
@@ -254,7 +255,9 @@ export default function OrdersPage() {
     setCreateMethodOpen(true);
   };
 
-  const handleSelectCreateMethod = (mode: "manual" | "photo" | "excel") => {
+  const handleSelectCreateMethod = (
+    mode: "manual" | "photo" | "excel" | "clipboard"
+  ) => {
     setCreateMethodOpen(false);
 
     if (mode === "manual") {
@@ -267,10 +270,68 @@ export default function OrdersPage() {
     window.setTimeout(() => {
       if (mode === "photo") {
         photoInputRef.current?.click();
+      } else if (mode === "clipboard") {
+        void handleClipboardImport();
       } else {
         fileInputRef.current?.click();
       }
     }, 120);
+  };
+
+  const handleClipboardImport = async () => {
+    if (!navigator.clipboard?.readText) {
+      showToast("Буфер недоступен", {
+        description: "Браузер не дал доступ к буферу обмена.",
+        variant: "error",
+      });
+      return;
+    }
+
+    try {
+      const rawText = await navigator.clipboard.readText();
+      const importedItems = parseClipboardItems(rawText);
+
+      if (importedItems.length === 0) {
+        showToast("Буфер не распознан", {
+          description:
+            "Скопируй строки с артикулом, наименованием и количеством, потом попробуй ещё раз.",
+          variant: "error",
+        });
+        return;
+      }
+
+      setForm((prev) => {
+        const hasOnlyEmptyRow = hasOnlyEmptyItemRow(prev.items);
+        const preparedItems = prepareImportedItems(
+          importedItems,
+          prev,
+          canUseBulkActions(user)
+        );
+
+        return {
+          ...prev,
+          items: hasOnlyEmptyRow ? preparedItems : [...prev.items, ...preparedItems],
+        };
+      });
+      setImportReview({
+        source: "clipboard",
+        importedCount: importedItems.length,
+      });
+      setOpen(true);
+
+      showToast("Буфер обработан", {
+        description: `Добавлено позиций: ${importedItems.length}`,
+        variant: "success",
+      });
+    } catch (error) {
+      showToast("Ошибка буфера обмена", {
+        description:
+          error instanceof Error
+            ? error.message
+            : "Не удалось прочитать буфер обмена.",
+        variant: "error",
+      });
+    }
   };
 
   const handleLogoutWithHaptic = () => {

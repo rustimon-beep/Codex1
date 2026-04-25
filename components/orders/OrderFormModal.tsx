@@ -8,7 +8,7 @@ type OrderFormModalProps = {
   saving: boolean;
   photoParsing: boolean;
   importReview: {
-    source: "photo" | "excel";
+    source: "photo" | "excel" | "clipboard";
     importedCount: number;
     reviewCount: number;
   } | null;
@@ -384,7 +384,9 @@ export function OrderFormModal({
                         <div className="font-semibold">
                           {importReview.source === "photo"
                             ? "Фото распознано"
-                            : "Excel импортирован"}
+                            : importReview.source === "excel"
+                            ? "Excel импортирован"
+                            : "Буфер обмена обработан"}
                         </div>
                         <div className="mt-1 leading-5">
                           Загружено позиций: {importReview.importedCount}.{" "}
@@ -422,7 +424,11 @@ export function OrderFormModal({
                         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                           <div className="flex flex-wrap items-center gap-2">
                             <div className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-600">
-                              {item.importSource === "photo" ? "Из фото" : "Из Excel"}
+                              {item.importSource === "photo"
+                                ? "Из фото"
+                                : item.importSource === "excel"
+                                ? "Из Excel"
+                                : "Из буфера"}
                             </div>
                             {item.importIssues?.length ? (
                               <div className="rounded-full border border-amber-200 bg-amber-100/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-900">

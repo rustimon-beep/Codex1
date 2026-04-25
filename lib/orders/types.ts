@@ -39,7 +39,7 @@ export type ItemForm = {
   status: string;
   deliveredDate: string;
   canceledDate: string;
-  importSource?: "photo" | "excel";
+  importSource?: "photo" | "excel" | "clipboard";
   importIssues?: string[];
 };
 

@@ -272,6 +272,83 @@ export function parseExcelItems(rows: Record<string, unknown>[]): ItemForm[] {
   return items;
 }
 
+export function parseClipboardItems(rawText: string): ItemForm[] {
+  const lines = rawText
+    .split(/\r?\n/g)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  const skipPatterns = [
+    /артикул/i,
+    /наименование/i,
+    /кол-?во/i,
+    /quantity/i,
+    /article/i,
+    /name/i,
+  ];
+
+  return lines
+    .map((line) => {
+      if (skipPatterns.some((pattern) => pattern.test(line))) {
+        return null;
+      }
+
+      const normalized = line.replace(/\s+/g, " ").trim();
+
+      let parts = normalized
+        .split(/\t|;|\|/g)
+        .map((part) => part.trim())
+        .filter(Boolean);
+
+      if (parts.length < 3) {
+        parts = normalized
+          .split(/\s{2,}/g)
+          .map((part) => part.trim())
+          .filter(Boolean);
+      }
+
+      let article = "";
+      let name = "";
+      let quantity = "";
+
+      if (parts.length >= 3) {
+        article = parts[0] || "";
+        quantity = parts[parts.length - 1] || "";
+        name = parts.slice(1, -1).join(" ").trim();
+      } else {
+        const quantityMatch = normalized.match(/(\d+(?:[.,]\d+)?)\s*$/);
+        quantity = quantityMatch?.[1] || "";
+
+        const withoutQuantity = quantity
+          ? normalized.slice(0, normalized.length - quantityMatch![0].length).trim()
+          : normalized;
+
+        const articleMatch = withoutQuantity.match(/^[A-Za-zА-Яа-я0-9._/-]+/);
+        article = articleMatch?.[0] || "";
+        name = article
+          ? withoutQuantity.slice(article.length).trim()
+          : withoutQuantity.trim();
+      }
+
+      const item: ItemForm = {
+        article,
+        hasReplacement: false,
+        replacementArticle: "",
+        name,
+        quantity,
+        plannedDate: "",
+        status: "Новый",
+        deliveredDate: "",
+        canceledDate: "",
+        importSource: "clipboard",
+        importIssues: getImportedItemIssues({ article, name, quantity } as ItemForm),
+      };
+
+      return item.article || item.name || item.quantity ? item : null;
+    })
+    .filter(Boolean) as ItemForm[];
+}
+
 export function getImportedItemIssues(item: Pick<ItemForm, "article" | "name" | "quantity">) {
   const issues: string[] = [];
 
