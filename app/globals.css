@@ -7,7 +7,8 @@
   --background-start-rgb: 241, 245, 249;
   --background-end-rgb: 248, 250, 252;
   --surface-rgb: 255, 255, 255;
-  --font-display: "Inter", "SF Pro Display", "Segoe UI", sans-serif;
+  --font-ui: "Manrope", "SF Pro Text", "Segoe UI", sans-serif;
+  --font-display: "Cormorant Garamond", "Times New Roman", serif;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -25,6 +26,7 @@ html {
 }
 
 body {
+  font-family: var(--font-ui);
   color: rgb(var(--foreground-rgb));
   min-height: 100vh;
   background:
@@ -38,7 +40,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-tap-highlight-color: transparent;
-  font-feature-settings: "cv11", "ss01";
+  font-feature-settings: "cv05", "cv11", "ss01", "ss03";
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 #__next,
@@ -86,11 +89,32 @@ img {
 
 .premium-title {
   font-family: var(--font-display);
-  letter-spacing: -0.04em;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  line-height: 0.98;
+}
+
+.premium-ui-title {
+  font-family: var(--font-ui);
+  letter-spacing: -0.035em;
+  font-weight: 700;
+}
+
+.premium-kicker {
+  font-family: var(--font-ui);
+  letter-spacing: 0.16em;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .premium-subtitle {
   letter-spacing: -0.02em;
+}
+
+.premium-number {
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.045em;
 }
 
 .premium-shell {

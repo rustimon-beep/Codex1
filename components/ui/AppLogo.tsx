@@ -31,14 +31,14 @@ export function AppLogo({
       {showText ? (
         <div className="min-w-0">
           <div
-            className={`font-semibold tracking-tight text-white ${
+            className={`premium-title leading-none text-white ${
               compact ? "text-base md:text-lg" : "text-2xl md:text-3xl"
             }`}
           >
             Автодом
           </div>
           <div
-            className={`text-slate-300 ${
+            className={`premium-kicker text-slate-300 ${
               compact ? "text-[11px] md:text-xs" : "text-[12px] md:text-sm"
             }`}
           >

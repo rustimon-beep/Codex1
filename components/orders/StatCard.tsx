@@ -45,8 +45,8 @@ export function StatCard({
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-sm font-medium text-slate-500">{title}</div>
-          <div className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl">
+          <div className="premium-kicker text-[11px] text-slate-500 md:text-[12px]">{title}</div>
+          <div className="premium-number mt-2 text-3xl font-semibold text-slate-900 md:text-4xl">
             {value}
           </div>
         </div>

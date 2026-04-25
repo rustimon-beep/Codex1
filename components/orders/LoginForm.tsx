@@ -30,7 +30,7 @@ export function LoginForm({
           <div className="hero-premium px-4 py-5 text-white md:px-8 md:py-10">
             <AppLogo className="mb-5 md:mb-6" />
 
-            <h1 className="mt-1 text-[21px] font-semibold tracking-tight md:text-3xl">Вход в систему</h1>
+            <h1 className="premium-title mt-1 text-[24px] text-white md:text-[38px]">Вход в систему</h1>
             <p className="mt-1.5 text-[12px] leading-5 text-slate-300 md:mt-2 md:text-sm md:leading-6">
               Введи данные учетной записи, чтобы продолжить работу с заказами.
             </p>

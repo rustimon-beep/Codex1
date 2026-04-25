@@ -1,8 +1,17 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Cormorant_Garamond, Manrope } from "next/font/google";
 
-const inter = Inter({ subsets: ["latin"] });
+const uiFont = Manrope({
+  subsets: ["latin", "cyrillic"],
+  variable: "--font-ui",
+});
+
+const displayFont = Cormorant_Garamond({
+  subsets: ["latin", "cyrillic"],
+  variable: "--font-display",
+  weight: ["500", "600", "700"],
+});
 
 export const metadata: Metadata = {
   title: "AVTODOM Orders",
@@ -68,7 +77,7 @@ export default function RootLayout({
           media="(prefers-color-scheme: dark)"
         />
       </head>
-      <body className={inter.className}>{children}</body>
+      <body className={`${uiFont.variable} ${displayFont.variable}`}>{children}</body>
     </html>
   );
 }
