@@ -88,11 +88,11 @@ export function OrdersAttentionWidget({
       } catch {}
     }
 
-    const defaultX = window.innerWidth - 210;
+    const defaultX = window.innerWidth - 180;
     const defaultY = Math.max(140, Math.round(window.innerHeight * 0.36));
     setPosition(clampPosition(defaultX, defaultY));
     setReady(true);
-  }, [open]);
+  }, []);
 
   useEffect(() => {
     if (!ready || typeof window === "undefined") return;
@@ -104,6 +104,7 @@ export function OrdersAttentionWidget({
 
     const handleMove = (event: PointerEvent) => {
       if (!draggingRef.current) return;
+      event.preventDefault();
       setPosition(clampPosition(event.clientX - dragOffsetRef.current.x, event.clientY - dragOffsetRef.current.y));
     };
 
@@ -111,16 +112,24 @@ export function OrdersAttentionWidget({
       draggingRef.current = false;
     };
 
-    window.addEventListener("pointermove", handleMove);
+    const handleResize = () => {
+      setPosition((prev) => clampPosition(prev.x, prev.y));
+    };
+
+    window.addEventListener("pointermove", handleMove, { passive: false });
     window.addEventListener("pointerup", handleUp);
+    window.addEventListener("resize", handleResize);
 
     return () => {
       window.removeEventListener("pointermove", handleMove);
       window.removeEventListener("pointerup", handleUp);
+      window.removeEventListener("resize", handleResize);
     };
   }, [open]);
 
   const handleDragStart = (event: React.PointerEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
     draggingRef.current = true;
     dragOffsetRef.current = {
       x: event.clientX - position.x,
