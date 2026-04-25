@@ -372,7 +372,7 @@ export default function OrderDetailsPage() {
                 <StatMini title="Полная поставка" value={formatDate(fullDeliveredDate)} />
               </div>
 
-              <div className="premium-enter premium-enter-delay-2 grid gap-4 md:gap-5 xl:grid-cols-[1.55fr_0.95fr]">
+              <div className="premium-enter premium-enter-delay-2 grid gap-4 md:gap-5 xl:grid-cols-[1.72fr_0.82fr]">
                 <div className="space-y-4 md:space-y-5">
                   <section className="premium-shell rounded-[22px] p-4 md:rounded-[28px] md:p-6">
                     <div className="flex items-start justify-between gap-3">
@@ -684,7 +684,7 @@ export default function OrderDetailsPage() {
                             </div>
 
                             <div className="p-4 md:p-5">
-                              <div className="grid grid-cols-1 gap-4 md:grid-cols-[1.45fr_1.35fr_0.55fr_0.85fr_0.85fr]">
+                              <div className="grid grid-cols-1 gap-4 md:grid-cols-[1.3fr_1.45fr_0.5fr_0.95fr_1.12fr]">
                                 <FieldBlock label="Артикул" compact>
                                   <input
                                     value={item.article}
@@ -751,7 +751,7 @@ export default function OrderDetailsPage() {
                                 </FieldBlock>
                               </div>
 
-                              <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-[220px_1.45fr_280px] md:items-end">
+                              <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-[180px_1.55fr_280px] md:items-end">
                                 <label className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm text-slate-700">
                                   <input
                                     type="checkbox"
@@ -826,7 +826,7 @@ export default function OrderDetailsPage() {
                 </div>
 
                 <div className="space-y-5">
-                  <section className="premium-shell rounded-[28px] p-5 md:p-6">
+                  <section className="premium-shell rounded-[26px] p-4 md:rounded-[28px] md:p-5">
                     <div className="flex items-start gap-3">
                       <PremiumIconTile
                         tone="emerald"
@@ -846,7 +846,7 @@ export default function OrderDetailsPage() {
                       </div>
                     </div>
 
-                    <div className="mt-6 grid grid-cols-1 gap-4">
+                    <div className="mt-5 grid grid-cols-1 gap-3.5">
                       <InfoRow label="Дата заказа" value={formatDate(form.orderDate || null)} />
                       <InfoRow
                         label="Последнее изменение"
@@ -873,7 +873,7 @@ export default function OrderDetailsPage() {
                     </div>
                   </section>
 
-                  <section className="premium-shell rounded-[28px] p-5 md:p-6">
+                  <section className="premium-shell rounded-[26px] p-4 md:rounded-[28px] md:p-5">
                     <div className="flex items-start gap-3">
                       <PremiumIconTile
                         tone="slate"
@@ -895,7 +895,7 @@ export default function OrderDetailsPage() {
                       </div>
                     </div>
 
-                    <div className="mt-6 max-h-80 space-y-3 overflow-y-auto pr-1">
+                    <div className="mt-5 max-h-80 space-y-3 overflow-y-auto pr-1">
                       {parsedComments.length === 0 ? (
                         <div className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3.5 text-sm text-slate-500">
                           Комментариев пока нет.
@@ -922,7 +922,7 @@ export default function OrderDetailsPage() {
                       )}
                     </div>
 
-                    <div className="mt-5">
+                    <div className="mt-4">
                       <FieldBlock label="Новый комментарий">
                         <textarea
                           value={form.newComment}
@@ -936,7 +936,7 @@ export default function OrderDetailsPage() {
                     </div>
                   </section>
 
-                  <section className="premium-shell rounded-[28px] p-5 md:p-6">
+                  <section className="premium-shell rounded-[26px] p-4 md:rounded-[28px] md:p-5">
                     <button
                       onClick={handleSaveOrderWithHaptic}
                       disabled={saving}

@@ -429,7 +429,7 @@ export function OrderFormModal({
                         </div>
                       ) : null}
 
-                      <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_1.45fr_0.55fr_0.85fr_0.85fr]">
+                      <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_1.5fr_0.5fr_0.95fr_1.1fr]">
                         <div>
                           <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500">
                             Артикул
@@ -499,7 +499,7 @@ export function OrderFormModal({
                         </div>
                       </div>
 
-                      <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-[220px_1fr_auto] md:items-end">
+                      <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-[180px_1fr_auto] md:items-end">
                         <label className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-700">
                           <input
                             type="checkbox"
