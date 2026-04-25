@@ -31,6 +31,8 @@ type OrderFormModalProps = {
   applyBulkPlannedDate: () => void;
   applyBulkStatus: () => void;
   addItemRow: () => void;
+  duplicateItemRow: (index: number) => void;
+  clearItemRow: (index: number) => void;
   updateItemField: (
     index: number,
     field: keyof ItemForm,
@@ -60,6 +62,8 @@ export function OrderFormModal({
   applyBulkPlannedDate,
   applyBulkStatus,
   addItemRow,
+  duplicateItemRow,
+  clearItemRow,
   updateItemField,
   removeItemRow,
   saveForm,
@@ -353,19 +357,52 @@ export function OrderFormModal({
                       }`}
                     >
                       {item.importSource ? (
-                        <div className="mb-3 flex flex-wrap items-center gap-2">
-                          <div className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-600">
-                            {item.importSource === "photo" ? "Из фото" : "Из Excel"}
+                        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <div className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-600">
+                              {item.importSource === "photo" ? "Из фото" : "Из Excel"}
+                            </div>
+                            {item.importIssues?.length ? (
+                              <div className="rounded-full border border-amber-200 bg-amber-100/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-900">
+                                Нужна проверка
+                              </div>
+                            ) : (
+                              <div className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-emerald-800">
+                                Выглядит нормально
+                              </div>
+                            )}
                           </div>
-                          {item.importIssues?.length ? (
-                            <div className="rounded-full border border-amber-200 bg-amber-100/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-900">
-                              Нужна проверка
-                            </div>
-                          ) : (
-                            <div className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-emerald-800">
-                              Выглядит нормально
-                            </div>
-                          )}
+
+                          <div className="flex flex-wrap gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => updateItemField(index, "hasReplacement", !item.hasReplacement)}
+                              disabled={!canEditItemStatusFields || saving || photoParsing}
+                              className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                                item.hasReplacement
+                                  ? "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-800"
+                                  : "border-slate-200 bg-white text-slate-600"
+                              }`}
+                            >
+                              Замена
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => duplicateItemRow(index)}
+                              disabled={saving || photoParsing}
+                              className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              Дублировать
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => clearItemRow(index)}
+                              disabled={saving || photoParsing}
+                              className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              Очистить
+                            </button>
+                          </div>
                         </div>
                       ) : null}
 

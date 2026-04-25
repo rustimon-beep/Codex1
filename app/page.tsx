@@ -452,6 +452,54 @@ export default function OrdersPage() {
     }));
   };
 
+  const duplicateItemRow = (index: number) => {
+    setForm((prev) => {
+      const currentItem = prev.items[index];
+      if (!currentItem) return prev;
+
+      const duplicatedItem: ItemForm = {
+        ...currentItem,
+        id: undefined,
+        importIssues: currentItem.importSource ? getImportedItemIssues(currentItem) : [],
+      };
+
+      const nextItems = [...prev.items];
+      nextItems.splice(index + 1, 0, duplicatedItem);
+
+      return {
+        ...prev,
+        items: nextItems,
+      };
+    });
+
+    showToast("Позиция дублирована", { variant: "success" });
+  };
+
+  const clearItemRow = (index: number) => {
+    setForm((prev) => {
+      const currentItem = prev.items[index];
+      if (!currentItem) return prev;
+
+      const nextItem: ItemForm = {
+        ...EMPTY_ITEM,
+        importSource: currentItem.importSource,
+        importIssues: currentItem.importSource
+          ? ["Нет артикула", "Нет наименования", "Нет количества"]
+          : [],
+      };
+
+      const nextItems = [...prev.items];
+      nextItems[index] = nextItem;
+
+      return {
+        ...prev,
+        items: nextItems,
+      };
+    });
+
+    showToast("Строка очищена", { variant: "info" });
+  };
+
   const removeItemRow = (index: number) => {
     setForm((prev) => {
       if (prev.items.length === 1) {
@@ -1430,6 +1478,8 @@ export default function OrdersPage() {
             applyBulkPlannedDate={applyBulkPlannedDate}
             applyBulkStatus={applyBulkStatus}
             addItemRow={addItemRow}
+            duplicateItemRow={duplicateItemRow}
+            clearItemRow={clearItemRow}
             updateItemField={updateItemField}
             removeItemRow={removeItemRow}
             saveForm={saveForm}
