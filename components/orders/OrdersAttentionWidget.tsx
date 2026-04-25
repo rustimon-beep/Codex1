@@ -132,7 +132,7 @@ export function OrdersAttentionWidget({
     >
       <div className="relative flex items-start gap-3">
         {open ? (
-          <div className="premium-shell w-[296px] rounded-[24px] p-3.5 shadow-[0_24px_80px_rgba(15,23,42,0.18)]">
+          <div className="premium-shell w-[276px] origin-right rounded-[24px] p-3.5 shadow-[0_24px_80px_rgba(15,23,42,0.18)] transition-all duration-200 ease-out animate-[attentionWidgetIn_180ms_ease-out]">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">
@@ -189,7 +189,7 @@ export function OrdersAttentionWidget({
                       sortDirection: card.sortDirection,
                     })
                   }
-                  className="rounded-[18px] border border-stone-200 bg-white px-3 py-2.5 text-left shadow-[0_10px_24px_rgba(15,23,42,0.04)] transition hover:bg-stone-50"
+                  className="rounded-[18px] border border-stone-200 bg-white px-3 py-2.5 text-left shadow-[0_10px_24px_rgba(15,23,42,0.04)] transition hover:-translate-y-0.5 hover:bg-stone-50"
                 >
                   <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-stone-500">
                     {card.title}
@@ -275,20 +275,20 @@ export function OrdersAttentionWidget({
           type="button"
           onClick={onToggle}
           onPointerDown={handleDragStart}
-          className={`premium-shell flex h-14 w-14 cursor-grab items-center justify-center rounded-full border shadow-[0_18px_48px_rgba(15,23,42,0.14)] transition active:cursor-grabbing ${
+          className={`group flex h-14 w-14 cursor-grab items-center justify-center rounded-full border transition active:cursor-grabbing ${
             open
-              ? "border-stone-300 bg-stone-100 text-stone-800"
-              : "border-stone-200 bg-white text-stone-700 hover:bg-stone-50"
+              ? "border-stone-300 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(243,244,246,0.96))] text-stone-800 shadow-[0_18px_48px_rgba(15,23,42,0.16)]"
+              : "border-stone-200 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.98),rgba(244,244,245,0.96)_55%,rgba(231,229,228,0.96))] text-stone-700 shadow-[0_18px_48px_rgba(15,23,42,0.12)] hover:scale-[1.03] hover:shadow-[0_22px_54px_rgba(15,23,42,0.16)]"
           }`}
           aria-label={open ? "Скрыть список внимания" : "Открыть список внимания"}
         >
-          <div className="relative flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white">
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+          <div className="relative flex h-10 w-10 items-center justify-center rounded-full border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(245,245,244,0.94))] shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_10px_20px_rgba(15,23,42,0.08)]">
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.1">
               <path d="M12 7V13" />
               <path d="M12 17H12.01" />
             </svg>
             {hasAttentionItems ? (
-              <span className="absolute -right-1 -top-1 h-3.5 w-3.5 rounded-full border border-white bg-amber-500" />
+              <span className="absolute -right-1 -top-1 h-3.5 w-3.5 rounded-full border border-white bg-[radial-gradient(circle_at_30%_30%,#fde68a,#f59e0b)] shadow-[0_0_0_4px_rgba(245,158,11,0.12)]" />
             ) : null}
           </div>
         </button>
