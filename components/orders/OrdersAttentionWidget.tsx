@@ -59,15 +59,15 @@ export function OrdersAttentionWidget({
   const clampPosition = (x: number, y: number) => {
     if (typeof window === "undefined") return { x, y };
 
-    const buttonWidth = 62;
+    const buttonWidth = 54;
     const panelWidth = open ? 296 + 12 + buttonWidth : buttonWidth;
-    const panelHeight = open ? 346 : 62;
+    const panelHeight = open ? 346 : 54;
     const maxX = Math.max(12, window.innerWidth - panelWidth - 12);
     const maxY = Math.max(12, window.innerHeight - panelHeight - 12);
 
     return {
       x: Math.min(Math.max(12, x), maxX),
-      y: Math.min(Math.max(96, y), maxY),
+      y: Math.min(Math.max(24, y), maxY),
     };
   };
 
@@ -134,7 +134,12 @@ export function OrdersAttentionWidget({
   return createPortal(
     <div
       className="fixed z-30 hidden md:block"
-      style={{ left: position.x, top: position.y }}
+      style={{
+        left: 0,
+        top: 0,
+        transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
+        willChange: "transform",
+      }}
     >
       <div className="relative flex items-start gap-3">
         {open ? (
@@ -280,18 +285,15 @@ export function OrdersAttentionWidget({
         <button
           type="button"
           onClick={onToggle}
-          className={`group flex h-[62px] w-[62px] items-center justify-center rounded-full border transition ${
+          className={`group flex h-[54px] w-[54px] items-center justify-center rounded-full border transition ${
             open
               ? "border-stone-300 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(243,244,246,0.96))] text-stone-800 shadow-[0_18px_48px_rgba(15,23,42,0.16)]"
               : "border-stone-200 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.98),rgba(244,244,245,0.96)_55%,rgba(231,229,228,0.96))] text-stone-700 shadow-[0_18px_48px_rgba(15,23,42,0.12)] hover:scale-[1.03] hover:shadow-[0_22px_54px_rgba(15,23,42,0.16)]"
           }`}
           aria-label={open ? "Скрыть список внимания" : "Открыть список внимания"}
         >
-          <div className="relative flex h-11 w-11 items-center justify-center rounded-full border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(245,245,244,0.94))] shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_10px_20px_rgba(15,23,42,0.08)]">
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.1">
-              <path d="M12 7V13" />
-              <path d="M12 17H12.01" />
-            </svg>
+          <div className="relative flex h-9 w-9 items-center justify-center rounded-full border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(245,245,244,0.94))] shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_10px_20px_rgba(15,23,42,0.08)]">
+            <span className="text-[22px] font-semibold leading-none">!</span>
             {hasAttentionItems ? (
               <span className="absolute -right-1 -top-1 h-3.5 w-3.5 rounded-full border border-white bg-[radial-gradient(circle_at_30%_30%,#fde68a,#f59e0b)] shadow-[0_0_0_4px_rgba(245,158,11,0.12)]" />
             ) : null}
@@ -300,10 +302,10 @@ export function OrdersAttentionWidget({
         <button
           type="button"
           onPointerDown={handleDragStart}
-          className="absolute -bottom-1 -right-1 flex h-6 w-6 cursor-grab items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 shadow-[0_8px_18px_rgba(15,23,42,0.08)] active:cursor-grabbing"
+          className="absolute -bottom-1 -right-1 flex h-5 w-5 cursor-grab items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 shadow-[0_8px_18px_rgba(15,23,42,0.08)] active:cursor-grabbing"
           aria-label="Переместить виджет внимания"
         >
-          <svg viewBox="0 0 20 20" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <svg viewBox="0 0 20 20" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="1.8">
             <path d="M7 5H7.01" />
             <path d="M13 5H13.01" />
             <path d="M7 10H7.01" />
