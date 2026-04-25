@@ -101,10 +101,10 @@ export function OrdersToolbar({
         <div className="flex flex-col gap-3.5 md:gap-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <div className="text-[16px] font-semibold tracking-tight text-slate-900 md:text-[28px]">
+              <div className="premium-ui-title text-[16px] text-slate-900 md:text-[28px]">
                 Поиск и фильтрация
               </div>
-              <p className="mt-1 text-[12px] text-slate-500 md:text-sm">
+              <p className="premium-subtitle mt-1 text-[12px] text-slate-500 md:text-sm">
                 Найди нужный заказ или отфильтруй список по типу и статусу.
               </p>
             </div>

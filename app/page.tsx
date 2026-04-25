@@ -1586,6 +1586,7 @@ export default function OrdersPage() {
                   orders={filteredOrders}
                   expandedOrders={expandedOrders}
                   copiedArticle={copiedArticle}
+                  search={search}
                   user={user}
                   toggleOrderExpand={toggleOrderExpand}
                   removeOrder={removeOrder}
@@ -1600,6 +1601,7 @@ export default function OrdersPage() {
                   orders={filteredOrders}
                   expandedOrders={expandedOrders}
                   copiedArticle={copiedArticle}
+                  search={search}
                   user={user}
                   toggleOrderExpand={toggleOrderExpand}
                   removeOrder={removeOrder}

@@ -145,7 +145,7 @@ export function CreateOrderMethodDialog({
                     </div>
 
                     <div className="min-w-0">
-                      <div className="text-[14px] font-semibold tracking-tight md:text-[16px]">
+                      <div className="premium-ui-title text-[14px] text-inherit md:text-[16px]">
                         {option.title}
                       </div>
                       <div className="mt-1 inline-flex rounded-full border border-white/60 bg-white/70 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] opacity-80 md:px-2.5 md:py-1 md:text-[10px]">

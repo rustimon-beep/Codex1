@@ -26,6 +26,7 @@ type OrdersTableProps = {
   orders: OrderWithItems[];
   expandedOrders: number[];
   copiedArticle: string | null;
+  search: string;
   user: UserProfile;
   toggleOrderExpand: (orderId: number) => void;
   removeOrder: (id: number) => void | Promise<void>;
@@ -44,12 +45,14 @@ export function OrdersTable({
   orders,
   expandedOrders,
   copiedArticle,
+  search,
   user,
   toggleOrderExpand,
   removeOrder,
   updateItemStatusQuick,
   copyArticle,
 }: OrdersTableProps) {
+  const highlightQuery = search.trim();
   const getQuickStatusOptions = (_currentStatus: string) => {
     return STATUS_OPTIONS;
   };
@@ -248,7 +251,11 @@ export function OrdersTable({
 
                             <div className="mt-2 flex items-center gap-2 whitespace-nowrap">
                               <Link
-                                href={`/orders/${order.id}`}
+                                href={
+                                  highlightQuery
+                                    ? `/orders/${order.id}?highlight=${encodeURIComponent(highlightQuery)}`
+                                    : `/orders/${order.id}`
+                                }
                                 onClick={(e) => e.stopPropagation()}
                                 className="route-link rounded-xl border border-slate-200 bg-white/92 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
                               >

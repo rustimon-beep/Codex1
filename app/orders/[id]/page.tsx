@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { FieldBlock, InfoRow, StatMini } from "../../../components/orders/details/OrderDetailPrimitives";
 import { OrderDetailSkeleton } from "../../../components/orders/LoadingSkeletons";
 import { LoginForm } from "../../../components/orders/LoginForm";
@@ -53,8 +53,10 @@ import {
 export default function OrderDetailsPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const orderId = Number(params?.id);
+  const highlightQuery = (searchParams.get("highlight") || "").trim().toLowerCase();
 
   const [order, setOrder] = useState<OrderWithItems | null>(null);
   const [loading, setLoading] = useState(true);
@@ -93,6 +95,13 @@ export default function OrderDetailsPage() {
   } = useDialog();
 
   const parsedComments = useMemo(() => parseComments(form.comment), [form.comment]);
+  const isHighlightedArticle = useCallback(
+    (value: string) => {
+      const normalizedValue = value.trim().toLowerCase();
+      return Boolean(highlightQuery && normalizedValue && normalizedValue.includes(highlightQuery));
+    },
+    [highlightQuery]
+  );
 
   const canEditOrderTextFields = user?.role === "admin";
   const canEditMainItemFields = canEditItemMainFields(user);
@@ -389,10 +398,10 @@ export default function OrderDetailsPage() {
                           }
                         />
                         <div>
-                          <div className="text-[10px] font-medium tracking-[0.06em] text-slate-400 md:text-[12px]">
+                          <div className="premium-kicker text-[10px] text-slate-400 md:text-[11px]">
                             Основная информация
                           </div>
-                          <h2 className="mt-1.5 text-[18px] font-medium tracking-tight text-slate-900 md:mt-2 md:text-[24px]">
+                          <h2 className="premium-ui-title mt-1.5 text-[18px] text-slate-900 md:mt-2 md:text-[24px]">
                             Параметры заказа
                           </h2>
                         </div>
@@ -458,10 +467,10 @@ export default function OrderDetailsPage() {
                             }
                           />
                           <div>
-                          <div className="text-[12px] font-medium tracking-[0.06em] text-slate-400">
+                          <div className="premium-kicker text-[10px] text-slate-400 md:text-[11px]">
                             Массовые действия
                           </div>
-                            <h2 className="mt-2 text-[24px] font-medium tracking-tight text-slate-900">
+                            <h2 className="premium-ui-title mt-2 text-[24px] text-slate-900">
                               Быстрое применение
                             </h2>
                           </div>
@@ -550,10 +559,10 @@ export default function OrderDetailsPage() {
                           }
                         />
                         <div>
-                          <div className="text-[12px] font-medium tracking-[0.06em] text-slate-400">
+                          <div className="premium-kicker text-[10px] text-slate-400 md:text-[11px]">
                             Позиции
                           </div>
-                          <h2 className="mt-2 text-[24px] font-medium tracking-tight text-slate-900">
+                          <h2 className="premium-ui-title mt-2 text-[24px] text-slate-900">
                             Состав заказа
                           </h2>
                         </div>
@@ -635,6 +644,9 @@ export default function OrderDetailsPage() {
                             className={`premium-card-hover overflow-hidden rounded-[26px] border bg-white shadow-[0_8px_22px_rgba(15,23,42,0.04)] transition ${
                               itemOverdue
                                 ? "border-rose-200 ring-1 ring-rose-100"
+                                : isHighlightedArticle(item.article) ||
+                                  isHighlightedArticle(item.replacementArticle)
+                                ? "border-amber-300 ring-2 ring-amber-100"
                                 : "border-slate-200"
                             }`}
                           >
@@ -689,7 +701,11 @@ export default function OrderDetailsPage() {
                                     onChange={(e) =>
                                       updateItemField(index, "article", e.target.value)
                                     }
-                                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 font-mono text-[13px] text-slate-900 outline-none focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500"
+                                    className={`w-full rounded-2xl border px-4 py-3.5 font-mono text-[13px] text-slate-900 outline-none focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500 ${
+                                      isHighlightedArticle(item.article)
+                                        ? "border-amber-300 bg-amber-50/80 ring-2 ring-amber-100"
+                                        : "border-slate-200 bg-slate-50"
+                                    }`}
                                   />
                                 </FieldBlock>
 
@@ -779,7 +795,11 @@ export default function OrderDetailsPage() {
                                       )
                                     }
                                     placeholder="Укажи актуальный артикул"
-                                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 font-mono text-[13px] text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500"
+                                    className={`w-full rounded-2xl border px-4 py-3.5 font-mono text-[13px] text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500 ${
+                                      isHighlightedArticle(item.replacementArticle)
+                                        ? "border-amber-300 bg-amber-50/80 ring-2 ring-amber-100"
+                                        : "border-slate-200 bg-slate-50"
+                                    }`}
                                   />
                                 </FieldBlock>
 
@@ -834,10 +854,10 @@ export default function OrderDetailsPage() {
                         }
                       />
                       <div>
-                        <div className="text-[12px] font-medium tracking-[0.06em] text-slate-400">
+                        <div className="premium-kicker text-[10px] text-slate-400 md:text-[11px]">
                           Сводка
                         </div>
-                        <h2 className="mt-2 text-[24px] font-medium tracking-tight text-slate-900">
+                        <h2 className="premium-ui-title mt-2 text-[24px] text-slate-900">
                           Ключевые данные
                         </h2>
                       </div>
@@ -883,10 +903,10 @@ export default function OrderDetailsPage() {
                         }
                       />
                       <div>
-                        <div className="text-[12px] font-medium tracking-[0.06em] text-slate-400">
+                        <div className="premium-kicker text-[10px] text-slate-400 md:text-[11px]">
                           История
                         </div>
-                        <h2 className="mt-2 text-[24px] font-medium tracking-tight text-slate-900">
+                        <h2 className="premium-ui-title mt-2 text-[24px] text-slate-900">
                           Комментарии и изменения
                         </h2>
                       </div>

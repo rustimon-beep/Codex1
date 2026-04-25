@@ -27,6 +27,7 @@ type OrdersListMobileProps = {
   orders: OrderWithItems[];
   expandedOrders: number[];
   copiedArticle: string | null;
+  search: string;
   user: UserProfile;
   toggleOrderExpand: (orderId: number) => void;
   removeOrder: (id: number) => Promise<void>;
@@ -43,12 +44,14 @@ export function OrdersListMobile({
   orders,
   expandedOrders,
   copiedArticle,
+  search,
   user,
   toggleOrderExpand,
   removeOrder,
   updateItemStatusQuick,
   copyArticle,
 }: OrdersListMobileProps) {
+  const highlightQuery = search.trim();
   const [swipedOrderId, setSwipedOrderId] = useState<number | null>(null);
   const touchStartXRef = useRef<number | null>(null);
   const touchStartYRef = useRef<number | null>(null);
@@ -137,7 +140,11 @@ export function OrdersListMobile({
           >
             <div className="absolute inset-y-0 right-0 flex items-center gap-2 px-3">
               <Link
-                href={`/orders/${order.id}`}
+                href={
+                  highlightQuery
+                    ? `/orders/${order.id}?highlight=${encodeURIComponent(highlightQuery)}`
+                    : `/orders/${order.id}`
+                }
                 onClick={(e) => {
                   e.stopPropagation();
                   triggerHapticFeedback("medium");
