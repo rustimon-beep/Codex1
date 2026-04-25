@@ -69,7 +69,7 @@ export function OrdersToolbar({
   };
 
   return (
-    <div className="space-y-2.5 md:space-y-5">
+    <div className="space-y-3 md:space-y-5">
       <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4 md:gap-4">
         <StatCard
           title="Всего заказов"
@@ -97,8 +97,8 @@ export function OrdersToolbar({
         />
       </div>
 
-      <div className="premium-shell rounded-[20px] p-3 md:rounded-[28px] md:p-6">
-        <div className="flex flex-col gap-3 md:gap-5">
+      <div className="premium-shell rounded-[20px] p-3.5 md:rounded-[26px] md:p-5">
+        <div className="flex flex-col gap-3.5 md:gap-4">
           <div className="flex items-start justify-between gap-3">
             <div>
               <div className="text-[16px] font-semibold tracking-tight text-slate-900 md:text-[28px]">
@@ -142,7 +142,7 @@ export function OrdersToolbar({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Поиск по заказу, артикулу, замене, наименованию"
-              className="h-[42px] w-full rounded-[18px] border border-slate-200/90 bg-white/80 pl-10 pr-3.5 text-[12px] text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-300 focus:bg-white md:h-[56px] md:rounded-2xl md:pl-11 md:pr-4 md:text-sm"
+              className="h-[42px] w-full rounded-[18px] border border-slate-200/90 bg-white/80 pl-10 pr-3.5 text-[12px] text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-300 focus:bg-white md:h-[54px] md:rounded-2xl md:pl-11 md:pr-4 md:text-sm"
             />
 
             {hasSearch ? (

@@ -69,19 +69,19 @@ export function OrdersTable({
   };
 
   return (
-    <div className="premium-shell route-stage overflow-hidden rounded-[28px]">
+    <div className="premium-shell route-stage overflow-hidden rounded-[26px]">
       <div className="overflow-x-auto">
         <table className="min-w-[1180px] w-full border-separate border-spacing-0 text-left text-sm">
           <thead className="premium-grid text-slate-600">
             <tr>
-              <th className="sticky top-0 z-10 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Заказ</th>
-              <th className="sticky top-0 z-10 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Тип</th>
-              <th className="sticky top-0 z-10 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Дата заказа</th>
-              <th className="sticky top-0 z-10 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Общий статус</th>
-              <th className="sticky top-0 z-10 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Прогресс</th>
-              <th className="sticky top-0 z-10 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Плановая</th>
-              <th className="sticky top-0 z-10 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Полная поставка</th>
-              <th className="sticky top-0 z-10 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Последнее изменение</th>
+              <th className="sticky top-0 z-10 px-5 py-3.5 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Заказ</th>
+              <th className="sticky top-0 z-10 px-5 py-3.5 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Тип</th>
+              <th className="sticky top-0 z-10 px-5 py-3.5 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Дата заказа</th>
+              <th className="sticky top-0 z-10 px-5 py-3.5 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Общий статус</th>
+              <th className="sticky top-0 z-10 px-5 py-3.5 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Прогресс</th>
+              <th className="sticky top-0 z-10 px-5 py-3.5 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Плановая</th>
+              <th className="sticky top-0 z-10 px-5 py-3.5 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Полная поставка</th>
+              <th className="sticky top-0 z-10 px-5 py-3.5 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Последнее изменение</th>
             </tr>
           </thead>
 

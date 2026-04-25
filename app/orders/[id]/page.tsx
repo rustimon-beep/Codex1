@@ -357,7 +357,7 @@ export default function OrderDetailsPage() {
             />
           ) : (
             <>
-              <div className="premium-enter premium-enter-delay-1 grid grid-cols-2 gap-2.5 md:grid-cols-4 md:gap-4">
+              <div className="premium-enter premium-enter-delay-1 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
                 <StatMini
                   title="Статус"
                   value={orderStatus}
@@ -374,7 +374,7 @@ export default function OrderDetailsPage() {
 
               <div className="premium-enter premium-enter-delay-2 grid gap-4 md:gap-5 xl:grid-cols-[1.72fr_0.82fr]">
                 <div className="space-y-4 md:space-y-5">
-                  <section className="premium-shell rounded-[22px] p-4 md:rounded-[28px] md:p-6">
+                  <section className="premium-shell rounded-[22px] p-4 md:rounded-[28px] md:p-5">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-start gap-3">
                         <PremiumIconTile
@@ -403,7 +403,7 @@ export default function OrderDetailsPage() {
                       </div>
                     </div>
 
-                    <div className="mt-4 grid grid-cols-1 gap-3 md:mt-6 md:gap-4 md:grid-cols-2">
+                    <div className="mt-4 grid grid-cols-1 gap-3 md:mt-5 md:gap-4 md:grid-cols-2">
                       <FieldBlock label="Номер клиентского заказа">
                         <input
                           value={form.clientOrder}
@@ -450,7 +450,7 @@ export default function OrderDetailsPage() {
                   </section>
 
                   {canBulkEditItems ? (
-                    <section className="premium-shell rounded-[28px] p-5 md:p-6">
+                    <section className="premium-shell rounded-[26px] p-4 md:rounded-[28px] md:p-5">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex items-start gap-3">
                           <PremiumIconTile
@@ -477,8 +477,8 @@ export default function OrderDetailsPage() {
                         </div>
                       </div>
 
-                      <div className="mt-6 grid grid-cols-1 gap-4">
-                        <div className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-4">
+                      <div className="mt-5 grid grid-cols-1 gap-3.5">
+                        <div className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-3.5 md:p-4">
                           <div className="grid grid-cols-1 gap-3 md:grid-cols-[260px_auto] md:items-end">
                             <FieldBlock label="Плановая дата для всех позиций" compact>
                               <input
@@ -506,7 +506,7 @@ export default function OrderDetailsPage() {
                           </div>
                         </div>
 
-                        <div className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-4">
+                        <div className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-3.5 md:p-4">
                           <div className="grid grid-cols-1 gap-3 md:grid-cols-[260px_auto] md:items-end">
                             <FieldBlock label="Статус для всех позиций" compact>
                               <select
@@ -541,7 +541,7 @@ export default function OrderDetailsPage() {
                     </section>
                   ) : null}
 
-                  <section className="premium-shell rounded-[28px] p-5 md:p-6">
+                  <section className="premium-shell rounded-[26px] p-4 md:rounded-[28px] md:p-5">
                     <div className="mb-5 flex items-start justify-between gap-3">
                       <div className="flex items-start gap-3">
                         <PremiumIconTile
@@ -569,7 +569,7 @@ export default function OrderDetailsPage() {
                       </div>
                     </div>
 
-                    <div className="mb-5 rounded-[24px] border border-slate-200 bg-[linear-gradient(180deg,rgba(248,250,252,0.96),rgba(241,245,249,0.92))] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
+                    <div className="mb-5 rounded-[24px] border border-slate-200 bg-[linear-gradient(180deg,rgba(248,250,252,0.96),rgba(241,245,249,0.92))] px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
                       <div className="mb-2 flex items-center justify-between text-[11px] font-medium text-slate-500">
                         <span>Прогресс исполнения</span>
                         <span className="text-slate-700">
