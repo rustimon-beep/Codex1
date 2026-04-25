@@ -7,7 +7,7 @@ import { OrderFormModal } from "../components/orders/OrderFormModal";
 import { OrdersTable } from "../components/orders/OrdersTable";
 import { OrdersToolbar } from "../components/orders/OrdersToolbar";
 import { OrdersListMobile } from "../components/orders/OrdersListMobile";
-import { OrdersAttentionPanel } from "../components/orders/OrdersAttentionPanel";
+import { OrdersAttentionWidget } from "../components/orders/OrdersAttentionWidget";
 import { CreateOrderMethodDialog } from "../components/orders/CreateOrderMethodDialog";
 import { QuickDateDialog } from "../components/orders/QuickDateDialog";
 import { OrdersOverviewSkeleton } from "../components/orders/LoadingSkeletons";
@@ -1325,16 +1325,6 @@ export default function OrdersPage() {
             </div>
           ) : filteredOrders.length === 0 ? (
             <>
-              {orders.length > 0 && showAttentionPanel ? (
-                <div className="premium-enter premium-enter-delay-1 hidden md:block">
-                  <OrdersAttentionPanel
-                    cards={attention.cards}
-                    topAttentionOrders={attention.topAttentionOrders}
-                    onApplyFocus={applyFocusFilter}
-                  />
-                </div>
-              ) : null}
-
               <div className="premium-enter premium-enter-delay-1">
                 <OrdersToolbar
                   stats={stats}
@@ -1348,9 +1338,6 @@ export default function OrdersPage() {
                   sortDirection={sortDirection}
                   setSortField={setSortField}
                   setSortDirection={setSortDirection}
-                  showAttentionPanel={showAttentionPanel}
-                  setShowAttentionPanel={setShowAttentionPanel}
-                  hasAttentionItems={hasAttentionItems}
                 />
               </div>
               <div className="premium-enter premium-enter-delay-2">
@@ -1362,16 +1349,6 @@ export default function OrdersPage() {
             </>
           ) : (
             <>
-              {showAttentionPanel ? (
-                <div className="premium-enter premium-enter-delay-1 hidden md:block">
-                  <OrdersAttentionPanel
-                    cards={attention.cards}
-                    topAttentionOrders={attention.topAttentionOrders}
-                    onApplyFocus={applyFocusFilter}
-                  />
-                </div>
-              ) : null}
-
               <div className="premium-enter premium-enter-delay-1">
                 <OrdersToolbar
                   stats={stats}
@@ -1385,9 +1362,6 @@ export default function OrdersPage() {
                   sortDirection={sortDirection}
                   setSortField={setSortField}
                   setSortDirection={setSortDirection}
-                  showAttentionPanel={showAttentionPanel}
-                  setShowAttentionPanel={setShowAttentionPanel}
-                  hasAttentionItems={hasAttentionItems}
                 />
               </div>
 
@@ -1420,6 +1394,17 @@ export default function OrdersPage() {
               </div>
             </>
           )}
+
+          {!loading && orders.length > 0 ? (
+            <OrdersAttentionWidget
+              open={showAttentionPanel}
+              hasAttentionItems={hasAttentionItems}
+              cards={attention.cards}
+              topAttentionOrders={attention.topAttentionOrders}
+              onToggle={() => setShowAttentionPanel((prev) => !prev)}
+              onApplyFocus={applyFocusFilter}
+            />
+          ) : null}
 
           <CreateOrderMethodDialog
             open={createMethodOpen}

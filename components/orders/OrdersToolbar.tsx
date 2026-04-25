@@ -20,9 +20,6 @@ type OrdersToolbarProps = {
   sortDirection: SortDirection;
   setSortField: (value: SortField) => void;
   setSortDirection: (value: SortDirection) => void;
-  showAttentionPanel?: boolean;
-  setShowAttentionPanel?: (value: boolean) => void;
-  hasAttentionItems?: boolean;
 };
 
 export function OrdersToolbar({
@@ -37,9 +34,6 @@ export function OrdersToolbar({
   sortDirection,
   setSortField,
   setSortDirection,
-  showAttentionPanel = false,
-  setShowAttentionPanel,
-  hasAttentionItems = false,
 }: OrdersToolbarProps) {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const hasSearch = search.trim().length > 0;
@@ -115,24 +109,6 @@ export function OrdersToolbar({
               </p>
             </div>
 
-            {setShowAttentionPanel ? (
-              <button
-                type="button"
-                onClick={() => setShowAttentionPanel(!showAttentionPanel)}
-                className={`hidden rounded-2xl border px-4 py-2 text-sm font-medium transition md:inline-flex md:items-center md:gap-2 ${
-                  showAttentionPanel
-                    ? "border-stone-300 bg-stone-100 text-stone-800"
-                    : "border-stone-200 bg-white text-stone-700 hover:bg-stone-50"
-                }`}
-              >
-                <span>Фокус дня</span>
-                {hasAttentionItems ? (
-                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-900">
-                    Есть
-                  </span>
-                ) : null}
-              </button>
-            ) : null}
           </div>
 
           {activeFilterCount > 0 ? (
