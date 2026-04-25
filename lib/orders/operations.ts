@@ -85,6 +85,7 @@ export function buildPlannedDateChangeComments(params: {
     const newPlanned = normalizeDateForCompare(newPlannedRaw);
 
     if (oldPlanned === newPlanned) continue;
+    if (!oldPlanned && newPlanned) continue;
 
     autoCommentEntries.push(
       buildCommentEntry(
