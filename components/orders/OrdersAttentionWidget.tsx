@@ -142,12 +142,12 @@ export function OrdersAttentionWidget({
 
   return createPortal(
     <div
-      className="fixed z-30 hidden md:block"
+      className="hidden md:block"
       style={{
-        left: 0,
-        top: 0,
-        transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
-        willChange: "transform",
+        position: "fixed",
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+        zIndex: 30,
       }}
     >
       <div className="relative flex items-start gap-3">
