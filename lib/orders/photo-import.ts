@@ -56,22 +56,33 @@ function stripLineJunk(value: string) {
   );
 }
 
+function normalizeOcrArtifacts(value: string) {
+  return cleanCell(
+    value
+      .replace(/[“”„"]/g, "")
+      .replace(/[‐‑‒–—]/g, "-")
+      .replace(/[•·]/g, " ")
+      .replace(/\bI(?=\d)/g, "1")
+      .replace(/(?<=\d)O\b/g, "0")
+  );
+}
+
 function looksLikeArticle(value: string) {
-  const normalized = stripLineJunk(value);
+  const normalized = normalizeOcrArtifacts(stripLineJunk(value));
   return /^[A-Za-zА-Яа-я0-9][A-Za-zА-Яа-я0-9\-_.\/]{1,}$/.test(normalized);
 }
 
 function looksLikeQuantity(value: string) {
-  const normalized = stripLineJunk(value).replace(",", ".");
+  const normalized = normalizeOcrArtifacts(stripLineJunk(value)).replace(",", ".");
   return /^\d+([.]\d+)?$/.test(normalized);
 }
 
 function lineToRecognizedItem(line: string): RecognizedOrderItem | null {
-  const normalized = stripLineJunk(line);
+  const normalized = normalizeOcrArtifacts(stripLineJunk(line));
   if (!normalized) return null;
 
   if (
-    /артикул|наименование|колич|кол-во|итого|сумма|цена|товар/i.test(normalized)
+    /артикул|наименование|колич|кол-во|итого|сумма|цена|товар|номер|дата|заказ/i.test(normalized)
   ) {
     return null;
   }
@@ -123,17 +134,69 @@ function lineToRecognizedItem(line: string): RecognizedOrderItem | null {
   return null;
 }
 
+function scoreRecognizedItem(item: RecognizedOrderItem | null) {
+  if (!item) return -1;
+
+  let score = 0;
+  if (item.article) score += 2;
+  if (item.name) score += 3;
+  if (item.quantity) score += 2;
+  if (item.name.length > 6) score += 1;
+  if (looksLikeArticle(item.article)) score += 1;
+  if (looksLikeQuantity(item.quantity)) score += 1;
+
+  return score;
+}
+
 export function parseOcrTextToRecognizedItems(text: string) {
   const lines = text
     .split(/\r?\n/)
-    .map(cleanCell)
+    .map((line) => normalizeOcrArtifacts(cleanCell(line)))
     .filter(Boolean)
-    .filter((line) => line.length > 3);
+    .filter((line) => line.length > 2);
 
-  return lines
-    .map(lineToRecognizedItem)
-    .filter((item): item is RecognizedOrderItem => Boolean(item))
-    .filter((item) => item.article || item.name || item.quantity);
+  const items: RecognizedOrderItem[] = [];
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const single = lineToRecognizedItem(lines[index]);
+    const double = index + 1 < lines.length
+      ? lineToRecognizedItem(`${lines[index]} ${lines[index + 1]}`)
+      : null;
+    const triple = index + 2 < lines.length
+      ? lineToRecognizedItem(`${lines[index]} ${lines[index + 1]} ${lines[index + 2]}`)
+      : null;
+
+    const variants = [
+      { span: 1, item: single },
+      { span: 2, item: double },
+      { span: 3, item: triple },
+    ];
+
+    const bestVariant = variants
+      .map((variant) => ({ ...variant, score: scoreRecognizedItem(variant.item) }))
+      .sort((a, b) => b.score - a.score)[0];
+
+    if (bestVariant && bestVariant.score >= 7 && bestVariant.item) {
+      items.push(bestVariant.item);
+      index += bestVariant.span - 1;
+      continue;
+    }
+
+    if (single) {
+      items.push(single);
+    }
+  }
+
+  const deduped = items.filter((item, index, array) => {
+    const key = `${item.article}|${item.name}|${item.quantity}`.toLowerCase();
+    return array.findIndex((candidate) => {
+      const candidateKey =
+        `${candidate.article}|${candidate.name}|${candidate.quantity}`.toLowerCase();
+      return candidateKey === key;
+    }) === index;
+  });
+
+  return deduped.filter((item) => item.article || item.name || item.quantity);
 }
 
 export async function prepareImageFileForUpload(file: File) {
@@ -151,7 +214,7 @@ export async function prepareImageFileForUpload(file: File) {
       img.src = objectUrl;
     });
 
-    const maxSide = 1600;
+    const maxSide = 2000;
     const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
     const width = Math.max(1, Math.round(image.width * scale));
     const height = Math.max(1, Math.round(image.height * scale));
@@ -169,6 +232,20 @@ export async function prepareImageFileForUpload(file: File) {
     ctx.fillRect(0, 0, width, height);
     ctx.drawImage(image, 0, 0, width, height);
 
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const { data } = imageData;
+
+    for (let i = 0; i < data.length; i += 4) {
+      const luminance = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+      const boosted = luminance > 170 ? 255 : luminance < 110 ? 0 : luminance;
+
+      data[i] = boosted;
+      data[i + 1] = boosted;
+      data[i + 2] = boosted;
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+
     const blob = await new Promise<Blob>((resolve, reject) => {
       canvas.toBlob(
         (result) => {
@@ -176,7 +253,7 @@ export async function prepareImageFileForUpload(file: File) {
           else reject(new Error("Не удалось уменьшить фото."));
         },
         "image/jpeg",
-        0.82
+        0.9
       );
     });
 
