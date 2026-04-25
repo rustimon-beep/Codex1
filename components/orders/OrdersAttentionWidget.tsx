@@ -65,7 +65,7 @@ export function OrdersAttentionWidget({
         className="pointer-events-auto absolute"
         style={{
           right: "20px",
-          top: "34%",
+          top: "18%",
         }}
       >
         <div className="relative flex items-start gap-3">

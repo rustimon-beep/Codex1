@@ -816,57 +816,6 @@ export default function OrderDetailsPage() {
                                   </FieldBlock>
                                 </div>
 
-                                {canEditItemStatusFields ? (
-                                  <div className="mt-4 rounded-[20px] border border-slate-200 bg-slate-50/70 p-3">
-                                    <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                                      Быстрые действия
-                                    </div>
-
-                                    <div className="mt-2 flex flex-wrap gap-2">
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          updateItemField(index, "plannedDate", getTodayDate())
-                                        }
-                                        disabled={saving || user?.role === "buyer"}
-                                        className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-                                      >
-                                        Плановая: сегодня
-                                      </button>
-
-                                      {["В работе", "В пути", "Поставлен"].map((quickStatus) => (
-                                        <button
-                                          key={quickStatus}
-                                          type="button"
-                                          onClick={() =>
-                                            updateItemField(index, "status", quickStatus)
-                                          }
-                                          disabled={saving}
-                                          className={`rounded-full border px-3 py-1.5 text-[11px] font-medium transition disabled:cursor-not-allowed disabled:opacity-60 ${
-                                            item.status === quickStatus
-                                              ? "border-slate-300 bg-slate-900 text-white"
-                                              : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                                          }`}
-                                        >
-                                          {quickStatus}
-                                        </button>
-                                      ))}
-
-                                      {!item.hasReplacement ? (
-                                        <button
-                                          type="button"
-                                          onClick={() =>
-                                            updateItemField(index, "hasReplacement", true)
-                                          }
-                                          disabled={saving || user?.role === "buyer"}
-                                          className="rounded-full border border-fuchsia-200 bg-fuchsia-50 px-3 py-1.5 text-[11px] font-medium text-fuchsia-800 transition hover:bg-fuchsia-100 disabled:cursor-not-allowed disabled:opacity-60"
-                                        >
-                                          Пометить как замену
-                                        </button>
-                                      ) : null}
-                                    </div>
-                                  </div>
-                                ) : null}
                               </div>
                             </div>
                           </div>
