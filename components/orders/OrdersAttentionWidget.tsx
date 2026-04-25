@@ -51,6 +51,7 @@ export function OrdersAttentionWidget({
   onApplyFocus,
 }: OrdersAttentionWidgetProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [scrollOffset, setScrollOffset] = useState({ x: 0, y: 0 });
   const [ready, setReady] = useState(false);
   const [mounted, setMounted] = useState(false);
   const dragOffsetRef = useRef({ x: 0, y: 0 });
@@ -91,6 +92,7 @@ export function OrdersAttentionWidget({
     const defaultX = window.innerWidth - 180;
     const defaultY = Math.max(140, Math.round(window.innerHeight * 0.36));
     setPosition(clampPosition(defaultX, defaultY));
+    setScrollOffset({ x: window.scrollX, y: window.scrollY });
     setReady(true);
   }, []);
 
@@ -115,15 +117,20 @@ export function OrdersAttentionWidget({
     const handleResize = () => {
       setPosition((prev) => clampPosition(prev.x, prev.y));
     };
+    const handleScroll = () => {
+      setScrollOffset({ x: window.scrollX, y: window.scrollY });
+    };
 
     window.addEventListener("pointermove", handleMove, { passive: false });
     window.addEventListener("pointerup", handleUp);
     window.addEventListener("resize", handleResize);
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
       window.removeEventListener("pointermove", handleMove);
       window.removeEventListener("pointerup", handleUp);
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, [open]);
 
@@ -131,6 +138,9 @@ export function OrdersAttentionWidget({
     event.preventDefault();
     event.stopPropagation();
     draggingRef.current = true;
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {}
     dragOffsetRef.current = {
       x: event.clientX - position.x,
       y: event.clientY - position.y,
@@ -144,9 +154,9 @@ export function OrdersAttentionWidget({
     <div
       className="hidden md:block"
       style={{
-        position: "fixed",
-        left: `${position.x}px`,
-        top: `${position.y}px`,
+        position: "absolute",
+        left: `${position.x + scrollOffset.x}px`,
+        top: `${position.y + scrollOffset.y}px`,
         zIndex: 30,
       }}
     >
