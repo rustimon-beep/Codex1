@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { SortDirection, SortField } from "../../lib/orders/types";
 import { formatDateTimeForView, orderTypeClasses, statusClasses } from "../../lib/orders/utils";
@@ -51,15 +52,16 @@ export function OrdersAttentionWidget({
 }: OrdersAttentionWidgetProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [ready, setReady] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const dragOffsetRef = useRef({ x: 0, y: 0 });
   const draggingRef = useRef(false);
 
   const clampPosition = (x: number, y: number) => {
     if (typeof window === "undefined") return { x, y };
 
-    const buttonWidth = 56;
+    const buttonWidth = 62;
     const panelWidth = open ? 296 + 12 + buttonWidth : buttonWidth;
-    const panelHeight = open ? 420 : 64;
+    const panelHeight = open ? 346 : 62;
     const maxX = Math.max(12, window.innerWidth - panelWidth - 12);
     const maxY = Math.max(12, window.innerHeight - panelHeight - 12);
 
@@ -68,6 +70,10 @@ export function OrdersAttentionWidget({
       y: Math.min(Math.max(96, y), maxY),
     };
   };
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -123,26 +129,26 @@ export function OrdersAttentionWidget({
   };
 
   const topOrders = useMemo(() => topAttentionOrders.slice(0, 2), [topAttentionOrders]);
-  if (!ready) return null;
+  if (!ready || !mounted) return null;
 
-  return (
+  return createPortal(
     <div
       className="fixed z-30 hidden md:block"
       style={{ left: position.x, top: position.y }}
     >
       <div className="relative flex items-start gap-3">
         {open ? (
-          <div className="premium-shell w-[276px] origin-right rounded-[24px] p-3.5 shadow-[0_24px_80px_rgba(15,23,42,0.18)] transition-all duration-200 ease-out animate-[attentionWidgetIn_180ms_ease-out]">
+          <div className="premium-shell w-[276px] origin-right rounded-[22px] border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.97),rgba(247,244,239,0.95))] p-3 shadow-[0_24px_80px_rgba(15,23,42,0.18)] transition-all duration-200 ease-out animate-[attentionWidgetIn_180ms_ease-out]">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">
                   Фокус дня
                 </div>
-                <div className="premium-title mt-1.5 text-[18px] font-semibold tracking-tight text-slate-900">
+                <div className="premium-title mt-1 text-[17px] font-semibold tracking-tight text-slate-900">
                   Что проверить
                 </div>
-                <div className="mt-1 text-[12px] leading-5 text-slate-500">
-                  Коротко и по делу.
+                <div className="mt-1 text-[11px] leading-4.5 text-slate-500">
+                  Только самое важное.
                 </div>
               </div>
 
@@ -189,12 +195,12 @@ export function OrdersAttentionWidget({
                       sortDirection: card.sortDirection,
                     })
                   }
-                  className="rounded-[18px] border border-stone-200 bg-white px-3 py-2.5 text-left shadow-[0_10px_24px_rgba(15,23,42,0.04)] transition hover:-translate-y-0.5 hover:bg-stone-50"
+                  className="rounded-[16px] border border-stone-200 bg-white px-3 py-2 text-left shadow-[0_10px_24px_rgba(15,23,42,0.04)] transition hover:-translate-y-0.5 hover:bg-stone-50"
                 >
                   <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-stone-500">
                     {card.title}
                   </div>
-                  <div className="mt-1 text-[22px] font-semibold tracking-tight text-slate-900">
+                  <div className="mt-1 text-[20px] font-semibold tracking-tight text-slate-900">
                     {card.count}
                   </div>
                   <div className="mt-1 text-[11px] leading-4 text-slate-500">
@@ -206,7 +212,7 @@ export function OrdersAttentionWidget({
 
             <div className="mt-3 space-y-2">
               {topOrders.length === 0 ? (
-                <div className="rounded-[18px] border border-stone-200 bg-stone-50/80 px-4 py-4 text-sm text-stone-600">
+                <div className="rounded-[16px] border border-stone-200 bg-stone-50/80 px-4 py-4 text-sm text-stone-600">
                   Сейчас критичных заказов не видно.
                 </div>
               ) : (
@@ -216,7 +222,7 @@ export function OrdersAttentionWidget({
                   return (
                     <div
                       key={order.id}
-                      className="rounded-[18px] border border-stone-200 bg-white px-3 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.04)]"
+                      className="rounded-[16px] border border-stone-200 bg-white px-3 py-2.5 shadow-[0_10px_24px_rgba(15,23,42,0.04)]"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
@@ -274,15 +280,14 @@ export function OrdersAttentionWidget({
         <button
           type="button"
           onClick={onToggle}
-          onPointerDown={handleDragStart}
-          className={`group flex h-14 w-14 cursor-grab items-center justify-center rounded-full border transition active:cursor-grabbing ${
+          className={`group flex h-[62px] w-[62px] items-center justify-center rounded-full border transition ${
             open
               ? "border-stone-300 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(243,244,246,0.96))] text-stone-800 shadow-[0_18px_48px_rgba(15,23,42,0.16)]"
               : "border-stone-200 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.98),rgba(244,244,245,0.96)_55%,rgba(231,229,228,0.96))] text-stone-700 shadow-[0_18px_48px_rgba(15,23,42,0.12)] hover:scale-[1.03] hover:shadow-[0_22px_54px_rgba(15,23,42,0.16)]"
           }`}
           aria-label={open ? "Скрыть список внимания" : "Открыть список внимания"}
         >
-          <div className="relative flex h-10 w-10 items-center justify-center rounded-full border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(245,245,244,0.94))] shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_10px_20px_rgba(15,23,42,0.08)]">
+          <div className="relative flex h-11 w-11 items-center justify-center rounded-full border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(245,245,244,0.94))] shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_10px_20px_rgba(15,23,42,0.08)]">
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.1">
               <path d="M12 7V13" />
               <path d="M12 17H12.01" />
@@ -292,7 +297,23 @@ export function OrdersAttentionWidget({
             ) : null}
           </div>
         </button>
+        <button
+          type="button"
+          onPointerDown={handleDragStart}
+          className="absolute -bottom-1 -right-1 flex h-6 w-6 cursor-grab items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 shadow-[0_8px_18px_rgba(15,23,42,0.08)] active:cursor-grabbing"
+          aria-label="Переместить виджет внимания"
+        >
+          <svg viewBox="0 0 20 20" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <path d="M7 5H7.01" />
+            <path d="M13 5H13.01" />
+            <path d="M7 10H7.01" />
+            <path d="M13 10H13.01" />
+            <path d="M7 15H7.01" />
+            <path d="M13 15H13.01" />
+          </svg>
+        </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
