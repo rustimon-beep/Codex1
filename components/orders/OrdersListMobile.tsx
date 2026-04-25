@@ -52,6 +52,7 @@ export function OrdersListMobile({
   copyArticle,
 }: OrdersListMobileProps) {
   const highlightQuery = search.trim();
+  const normalizedHighlightQuery = highlightQuery.toLowerCase();
   const [swipedOrderId, setSwipedOrderId] = useState<number | null>(null);
   const touchStartXRef = useRef<number | null>(null);
   const touchStartYRef = useRef<number | null>(null);
@@ -91,6 +92,13 @@ export function OrdersListMobile({
       triggerHapticFeedback("light");
     }
   };
+
+  const matchesHighlight = (value: string | null | undefined) =>
+    Boolean(
+      normalizedHighlightQuery &&
+        value &&
+        value.toLowerCase().includes(normalizedHighlightQuery)
+    );
 
   if (loading) {
     return (
@@ -333,12 +341,20 @@ export function OrdersListMobile({
                     <div className="space-y-2.5 md:space-y-3">
                       {items.map((item) => {
                         const itemOverdue = isItemOverdue(item);
+                        const articleMatched = matchesHighlight(item.article);
+                        const replacementMatched = matchesHighlight(item.replacement_article);
+                        const nameMatched = matchesHighlight(item.name);
+                        const itemMatched = articleMatched || replacementMatched || nameMatched;
 
                         return (
                           <div
                             key={item.id}
                             className={`premium-card-hover rounded-[18px] border bg-[linear-gradient(180deg,rgba(248,250,252,0.96),rgba(255,255,255,0.94))] p-2.5 md:rounded-[22px] md:p-3 ${
-                              itemOverdue ? "border-rose-200" : "border-slate-200"
+                              itemOverdue
+                                ? "border-rose-200"
+                                : itemMatched
+                                ? "border-amber-300 ring-2 ring-amber-100 bg-amber-50/30"
+                                : "border-slate-200"
                             }`}
                           >
                             <div className="flex items-start justify-between gap-3">
@@ -351,7 +367,9 @@ export function OrdersListMobile({
                                     triggerHapticFeedback("light");
                                     void copyArticle(item.article);
                                   }}
-                                  className="mt-1 rounded-md px-1 py-0.5 text-left text-[12px] font-semibold text-slate-900 transition hover:bg-white md:text-sm"
+                                  className={`mt-1 rounded-md px-1 py-0.5 text-left text-[12px] font-semibold text-slate-900 transition hover:bg-white md:text-sm ${
+                                    articleMatched ? "bg-amber-100 ring-1 ring-amber-200" : ""
+                                  }`}
                                 >
                                   {item.article || "—"}
                                 </button>
@@ -378,12 +396,20 @@ export function OrdersListMobile({
                               </div>
                             </div>
 
-                            <div className="mt-2 text-[12px] leading-[1.1rem] text-slate-700 md:text-sm md:leading-5">
+                            <div
+                              className={`mt-2 rounded-xl px-2 py-1 text-[12px] leading-[1.1rem] text-slate-700 md:text-sm md:leading-5 ${
+                                nameMatched ? "bg-amber-100 ring-1 ring-amber-200" : ""
+                              }`}
+                            >
                               {item.name || "—"}
                             </div>
 
                             {item.replacement_article ? (
-                              <div className="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[9px] font-medium text-amber-700 md:py-2 md:text-[10px]">
+                              <div
+                                className={`mt-2 rounded-xl border border-amber-200 px-2.5 py-1.5 text-[9px] font-medium text-amber-700 md:py-2 md:text-[10px] ${
+                                  replacementMatched ? "bg-amber-100 ring-1 ring-amber-200" : "bg-amber-50"
+                                }`}
+                              >
                                 Актуальный артикул: {item.replacement_article}
                               </div>
                             ) : null}

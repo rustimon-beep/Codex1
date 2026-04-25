@@ -53,6 +53,7 @@ export function OrdersTable({
   copyArticle,
 }: OrdersTableProps) {
   const highlightQuery = search.trim();
+  const normalizedHighlightQuery = highlightQuery.toLowerCase();
   const getQuickStatusOptions = (_currentStatus: string) => {
     return STATUS_OPTIONS;
   };
@@ -71,6 +72,13 @@ export function OrdersTable({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [detailsOrderId]);
+
+  const matchesHighlight = (value: string | null | undefined) =>
+    Boolean(
+      normalizedHighlightQuery &&
+        value &&
+        value.toLowerCase().includes(normalizedHighlightQuery)
+    );
 
   return (
     <div className="premium-shell route-stage overflow-hidden rounded-[26px]">
@@ -400,6 +408,10 @@ export function OrdersTable({
                             <div className="space-y-3">
                               {items.map((item) => {
                                 const itemOverdue = isItemOverdue(item);
+                                const articleMatched = matchesHighlight(item.article);
+                                const replacementMatched = matchesHighlight(item.replacement_article);
+                                const nameMatched = matchesHighlight(item.name);
+                                const itemMatched = articleMatched || replacementMatched || nameMatched;
 
                                 return (
                                   <div
@@ -407,6 +419,8 @@ export function OrdersTable({
                                     className={`premium-card-hover grid grid-cols-[1.05fr_1.6fr_0.55fr_0.9fr_0.8fr_0.8fr_0.8fr] gap-4 rounded-2xl border bg-white px-4 py-4 shadow-[0_2px_10px_rgba(15,23,42,0.03)] ${
                                       itemOverdue
                                         ? "border-rose-200 ring-1 ring-rose-100"
+                                        : itemMatched
+                                        ? "border-amber-300 ring-2 ring-amber-100 bg-amber-50/30"
                                         : "border-slate-200"
                                     }`}
                                   >
@@ -417,7 +431,9 @@ export function OrdersTable({
 
                                       <button
                                         onClick={() => copyArticle(item.article)}
-                                        className="rounded px-1 py-0.5 text-left text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
+                                        className={`rounded px-1 py-0.5 text-left text-sm font-semibold text-slate-900 transition hover:bg-slate-100 ${
+                                          articleMatched ? "bg-amber-100 ring-1 ring-amber-200" : ""
+                                        }`}
                                         title="Нажми, чтобы скопировать артикул"
                                       >
                                         {item.article || "—"}
@@ -428,7 +444,11 @@ export function OrdersTable({
                                           <span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">
                                             Замена
                                           </span>
-                                          <div className="rounded-xl border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[11px] font-medium text-amber-700">
+                                          <div
+                                            className={`rounded-xl border border-amber-200 px-2.5 py-1.5 text-[11px] font-medium text-amber-700 ${
+                                              replacementMatched ? "bg-amber-100 ring-1 ring-amber-200" : "bg-amber-50"
+                                            }`}
+                                          >
                                             {item.replacement_article}
                                           </div>
                                         </div>
@@ -445,7 +465,11 @@ export function OrdersTable({
                                       <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
                                         Наименование
                                       </div>
-                                      <div className="text-sm leading-6 text-slate-700">
+                                      <div
+                                        className={`rounded-xl px-2 py-1 text-sm leading-6 text-slate-700 ${
+                                          nameMatched ? "bg-amber-100 ring-1 ring-amber-200" : ""
+                                        }`}
+                                      >
                                         {item.name || "—"}
                                       </div>
                                     </div>
