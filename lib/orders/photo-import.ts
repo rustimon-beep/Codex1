@@ -214,7 +214,7 @@ export async function prepareImageFileForUpload(file: File) {
       img.src = objectUrl;
     });
 
-    const maxSide = 2000;
+    const maxSide = 1500;
     const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
     const width = Math.max(1, Math.round(image.width * scale));
     const height = Math.max(1, Math.round(image.height * scale));
@@ -246,16 +246,26 @@ export async function prepareImageFileForUpload(file: File) {
 
     ctx.putImageData(imageData, 0, 0);
 
-    const blob = await new Promise<Blob>((resolve, reject) => {
-      canvas.toBlob(
-        (result) => {
-          if (result) resolve(result);
-          else reject(new Error("Не удалось уменьшить фото."));
-        },
-        "image/jpeg",
-        0.9
-      );
-    });
+    const createBlob = (quality: number) =>
+      new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          (result) => {
+            if (result) resolve(result);
+            else reject(new Error("Не удалось уменьшить фото."));
+          },
+          "image/jpeg",
+          quality
+        );
+      });
+
+    const maxBytes = 950 * 1024;
+    let quality = 0.86;
+    let blob = await createBlob(quality);
+
+    while (blob.size > maxBytes && quality > 0.42) {
+      quality -= 0.08;
+      blob = await createBlob(quality);
+    }
 
     const safeName = (file.name || "photo")
       .replace(/\.[^.]+$/, "")
