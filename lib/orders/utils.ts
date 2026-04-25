@@ -74,31 +74,31 @@ export function compareValues(
 
 export function statusClasses(status: string) {
   if (status === "Поставлен") {
-    return "border border-emerald-200/80 bg-[linear-gradient(180deg,rgba(236,253,245,0.98),rgba(209,250,229,0.92))] text-emerald-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
+    return "border border-emerald-200 bg-emerald-50 text-emerald-700";
   }
   if (status === "Отменен" || status === "Частично отменен") {
     if (status === "Частично отменен") {
-      return "border border-orange-200/80 bg-[linear-gradient(180deg,rgba(255,247,237,0.98),rgba(254,215,170,0.9))] text-orange-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
+      return "border border-amber-200 bg-amber-50 text-amber-700";
     }
-    return "border border-rose-200/80 bg-[linear-gradient(180deg,rgba(255,241,242,0.98),rgba(254,226,226,0.92))] text-rose-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
+    return "border border-rose-200 bg-rose-50 text-rose-700";
   }
   if (status === "В пути") {
-    return "border border-fuchsia-200/80 bg-[linear-gradient(180deg,rgba(253,244,255,0.98),rgba(250,232,255,0.94))] text-fuchsia-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
+    return "border border-violet-200 bg-violet-50 text-violet-700";
   }
   if (status === "Частично поставлен") {
-    return "border border-teal-200/80 bg-[linear-gradient(180deg,rgba(240,253,250,0.98),rgba(204,251,241,0.92))] text-teal-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
+    return "border border-teal-200 bg-teal-50 text-teal-700";
   }
   if (status === "В работе") {
-    return "border border-sky-200/80 bg-[linear-gradient(180deg,rgba(240,249,255,0.98),rgba(224,242,254,0.92))] text-sky-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
+    return "border border-blue-200 bg-blue-50 text-blue-700";
   }
-  return "border border-stone-200/80 bg-[linear-gradient(180deg,rgba(250,250,249,0.98),rgba(245,245,244,0.94))] text-stone-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
+  return "border border-slate-200 bg-slate-50 text-slate-700";
 }
 
 export function orderTypeClasses(orderType: string) {
   if (orderType === "Срочный") {
-    return "border border-violet-200/80 bg-[linear-gradient(180deg,rgba(245,243,255,0.98),rgba(221,214,254,0.92))] text-violet-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
+    return "border border-amber-200 bg-amber-50 text-amber-700";
   }
-  return "border border-stone-200/80 bg-[linear-gradient(180deg,rgba(250,250,249,0.98),rgba(245,245,244,0.92))] text-stone-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
+  return "border border-slate-200 bg-slate-50 text-slate-700";
 }
 
 export function statusSelectClasses(status: string) {

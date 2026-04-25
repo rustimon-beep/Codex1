@@ -4,11 +4,11 @@
 
 :root {
   --foreground-rgb: 15, 23, 42;
-  --background-start-rgb: 241, 245, 249;
-  --background-end-rgb: 248, 250, 252;
+  --background-start-rgb: 243, 245, 247;
+  --background-end-rgb: 243, 245, 247;
   --surface-rgb: 255, 255, 255;
-  --font-ui: "Manrope", "SF Pro Text", "Segoe UI", sans-serif;
-  --font-display: "Cormorant Garamond", "Times New Roman", serif;
+  --font-ui: "Inter", "SF Pro Text", "Segoe UI", sans-serif;
+  --font-display: "Inter", "SF Pro Display", "Segoe UI", sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -29,13 +29,7 @@ body {
   font-family: var(--font-ui);
   color: rgb(var(--foreground-rgb));
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top center, rgba(180, 138, 76, 0.08), transparent 32%),
-    linear-gradient(
-      180deg,
-      rgb(var(--background-start-rgb)) 0%,
-      rgb(var(--background-end-rgb)) 100%
-    );
+  background: rgb(var(--background-start-rgb));
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -89,20 +83,20 @@ img {
 
 .premium-title {
   font-family: var(--font-display);
-  letter-spacing: -0.035em;
-  font-weight: 600;
-  line-height: 0.98;
+  letter-spacing: -0.04em;
+  font-weight: 700;
+  line-height: 1.02;
 }
 
 .premium-ui-title {
   font-family: var(--font-ui);
-  letter-spacing: -0.035em;
+  letter-spacing: -0.03em;
   font-weight: 700;
 }
 
 .premium-kicker {
   font-family: var(--font-ui);
-  letter-spacing: 0.16em;
+  letter-spacing: 0.08em;
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -120,12 +114,9 @@ img {
 .premium-shell {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(226, 232, 240, 0.9);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(250, 247, 242, 0.94) 100%);
-  box-shadow:
-    0 20px 50px rgba(15, 23, 42, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
 }
 
 .premium-shell::before {
@@ -133,18 +124,13 @@ img {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    radial-gradient(circle at top left, rgba(180, 138, 76, 0.09), transparent 26%),
-    radial-gradient(circle at bottom right, rgba(15, 23, 42, 0.04), transparent 24%);
+  background: none;
 }
 
 .hero-premium {
   position: relative;
   overflow: hidden;
-  background:
-    radial-gradient(circle at top right, rgba(176, 133, 74, 0.22), transparent 32%),
-    radial-gradient(circle at bottom left, rgba(120, 98, 68, 0.12), transparent 26%),
-    linear-gradient(135deg, #111318 0%, #191c22 52%, #252933 100%);
+  background: linear-gradient(180deg, #151a22 0%, #111827 100%);
 }
 
 .hero-premium::before {
@@ -152,21 +138,18 @@ img {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    linear-gradient(120deg, rgba(255, 255, 255, 0.08), transparent 30%),
-    radial-gradient(circle at top, rgba(255, 255, 255, 0.06), transparent 34%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 45%);
 }
 
 .glass-chip {
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(8px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .premium-grid {
-  background:
-    linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(241, 245, 249, 0.94));
+  background: #ffffff;
 }
 
 .premium-card-hover {
@@ -178,7 +161,7 @@ img {
 
 .premium-card-hover:hover {
   transform: translateY(-1px);
-  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.1);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
 }
 
 .route-stage {
@@ -208,18 +191,14 @@ img {
 }
 
 .premium-input {
-  border: 1px solid rgba(226, 232, 240, 0.95);
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    0 8px 18px rgba(15, 23, 42, 0.03);
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  box-shadow: none;
 }
 
 .premium-input:focus {
-  border-color: rgba(148, 163, 184, 0.85);
-  box-shadow:
-    0 0 0 4px rgba(148, 163, 184, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  border-color: rgba(37, 99, 235, 0.4);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
 }
 
 .premium-button {

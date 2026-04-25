@@ -1,16 +1,11 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Manrope } from "next/font/google";
+import { Inter } from "next/font/google";
 
-const uiFont = Manrope({
+const uiFont = Inter({
   subsets: ["latin", "cyrillic"],
   variable: "--font-ui",
-});
-
-const displayFont = Cormorant_Garamond({
-  subsets: ["latin", "cyrillic"],
-  variable: "--font-display",
-  weight: ["500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -77,7 +72,7 @@ export default function RootLayout({
           media="(prefers-color-scheme: dark)"
         />
       </head>
-      <body className={`${uiFont.variable} ${displayFont.variable}`}>{children}</body>
+      <body className={uiFont.variable}>{children}</body>
     </html>
   );
 }

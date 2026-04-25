@@ -1466,40 +1466,36 @@ export default function OrdersPage() {
         confirmDialog={confirmQuickDateDialog}
       />
 
-      <div className="min-h-screen bg-slate-100/80 p-2 md:p-8">
-        <div className="bottom-nav-safe mx-auto max-w-7xl space-y-3 md:space-y-7 md:pb-0">
-          <div className="premium-enter overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-[0_12px_36px_rgba(15,23,42,0.08)] md:rounded-[28px]">
-            <div className="hero-premium relative px-3.5 py-3.5 text-white md:px-8 md:py-7">
-              <div className="absolute inset-y-0 right-0 w-[38%] bg-[radial-gradient(circle_at_top_right,rgba(180,138,76,0.18),transparent_55%)] pointer-events-none" />
-              <div className="pointer-events-none absolute -left-8 top-8 h-24 w-24 rounded-full bg-white/5 blur-2xl" />
-              <div className="pointer-events-none absolute bottom-0 right-6 h-28 w-28 rounded-full bg-amber-300/10 blur-3xl" />
-
-              <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <div className="min-h-screen bg-[#F3F5F7] p-2 md:p-6">
+        <div className="bottom-nav-safe mx-auto max-w-7xl space-y-3 md:space-y-5 md:pb-0">
+          <div className="premium-enter overflow-hidden rounded-[20px] border border-[#E5E7EB] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:rounded-[24px]">
+            <div className="hero-premium relative px-4 py-3 text-white md:px-6 md:py-5">
+              <div className="relative flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0">
-                  <div className="flex items-start gap-4 md:gap-6">
-                    <div className="shrink-0 pt-1">
+                  <div className="flex items-start gap-3 md:gap-4">
+                    <div className="shrink-0 pt-0.5">
                       <AppLogo compact showText={false} />
                     </div>
 
                     <div className="min-w-0">
-                      <div className="glass-chip inline-flex items-center gap-2 rounded-full px-2 py-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-slate-200 md:px-3 md:text-[11px]">
+                      <div className="glass-chip inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-[10px] font-medium text-slate-300 md:px-3 md:text-[11px]">
                         Центр управления заказами
                       </div>
 
-                      <h1 className="mt-2 text-[19px] font-semibold tracking-tight text-white md:mt-2.5 md:text-[30px] md:leading-[1.02]">
+                      <h1 className="premium-ui-title mt-2 text-[22px] text-white md:text-[31px] md:leading-[1.04]">
                         Общая таблица заказов
                       </h1>
 
-                      <p className="mt-1.5 max-w-3xl text-[12px] leading-[1.1rem] text-slate-300 md:mt-3 md:text-[17px] md:leading-6">
+                      <p className="premium-subtitle mt-1 max-w-3xl text-[13px] leading-5 text-slate-300 md:text-[15px] md:leading-6">
                         Система обработки и мониторинга заказов Автодом – Союз.
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="relative flex flex-col gap-2.5 lg:min-w-[320px] lg:items-end">
+                <div className="relative flex flex-col gap-2 lg:min-w-[300px] lg:items-end">
                   <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center lg:justify-end">
-                    <div className="glass-chip rounded-[18px] px-2.5 py-1.5 text-[12px] text-white md:rounded-2xl md:px-4 md:py-2.5 md:text-sm">
+                    <div className="glass-chip rounded-[14px] px-3 py-1.5 text-[12px] text-white md:rounded-[14px] md:px-3.5 md:py-2 md:text-[13px]">
                       {profileLoading
                         ? "Загрузка профиля..."
                         : `${user.name} · ${
@@ -1515,7 +1511,7 @@ export default function OrdersPage() {
 
                     <button
                       onClick={handleLogoutWithHaptic}
-                      className="glass-chip rounded-[18px] px-2.5 py-1.5 text-[12px] font-medium text-slate-100 transition hover:bg-white/10 md:rounded-2xl md:px-4 md:py-2.5 md:text-sm"
+                      className="glass-chip rounded-[14px] px-3 py-1.5 text-[12px] font-medium text-slate-100 transition hover:bg-white/10 md:rounded-[14px] md:px-3.5 md:py-2 md:text-[13px]"
                     >
                       Выйти
                     </button>
@@ -1524,7 +1520,7 @@ export default function OrdersPage() {
                   {user.role === "admin" || user.role === "buyer" ? (
                     <button
                       onClick={handleOpenCreateWithHaptic}
-                      className="w-full rounded-[18px] bg-white px-4 py-2 text-[12px] font-semibold text-slate-900 shadow-[0_18px_32px_rgba(255,255,255,0.12)] transition hover:bg-slate-100 lg:w-auto md:rounded-2xl md:px-5 md:py-3 md:text-sm"
+                      className="w-full rounded-[14px] bg-white px-4 py-2 text-[12px] font-semibold text-slate-900 shadow-none transition hover:bg-slate-100 lg:w-auto md:rounded-[14px] md:px-4 md:py-2.5 md:text-[13px]"
                     >
                       Добавить заказ
                     </button>

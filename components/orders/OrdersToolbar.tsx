@@ -69,7 +69,7 @@ export function OrdersToolbar({
   };
 
   return (
-    <div className="space-y-3 md:space-y-5">
+    <div className="space-y-3 md:space-y-4">
       <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4 md:gap-4">
         <StatCard
           title="Всего заказов"
@@ -97,14 +97,14 @@ export function OrdersToolbar({
         />
       </div>
 
-      <div className="premium-shell rounded-[20px] p-3.5 md:rounded-[26px] md:p-5">
-        <div className="flex flex-col gap-3.5 md:gap-4">
+      <div className="premium-shell rounded-[20px] p-3 md:rounded-[24px] md:p-4">
+        <div className="flex flex-col gap-3 md:gap-3.5">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <div className="premium-ui-title text-[16px] text-slate-900 md:text-[28px]">
+              <div className="premium-ui-title text-[18px] text-slate-900 md:text-[30px]">
                 Поиск и фильтрация
               </div>
-              <p className="premium-subtitle mt-1 text-[12px] text-slate-500 md:text-sm">
+              <p className="premium-subtitle mt-1 text-[13px] text-slate-500 md:text-[15px]">
                 Найди нужный заказ или отфильтруй список по типу и статусу.
               </p>
             </div>
@@ -112,14 +112,14 @@ export function OrdersToolbar({
           </div>
 
           {activeFilterCount > 0 ? (
-            <div className="flex items-center justify-between gap-2 rounded-[18px] border border-stone-200 bg-stone-50/80 px-3 py-2 md:rounded-2xl md:px-4">
-              <div className="text-[11px] font-medium text-stone-700 md:text-sm">
+            <div className="flex items-center justify-between gap-2 rounded-[14px] border border-stone-200 bg-stone-50/80 px-3 py-2 md:px-4">
+              <div className="text-[12px] font-medium text-stone-700 md:text-[13px]">
                 Активных фильтров: {activeFilterCount}
               </div>
               <button
                 type="button"
                 onClick={clearAllFilters}
-                className="rounded-full border border-stone-200 bg-white px-3 py-1 text-[11px] font-medium text-stone-700 transition hover:bg-stone-100 md:text-xs"
+                className="rounded-[12px] border border-slate-200 bg-transparent px-3 py-1.5 text-[11px] font-medium text-slate-600 transition hover:bg-white md:text-[12px]"
               >
                 Сбросить всё
               </button>
@@ -142,14 +142,14 @@ export function OrdersToolbar({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Поиск по заказу, артикулу, замене, наименованию"
-              className="h-[42px] w-full rounded-[18px] border border-slate-200/90 bg-white/80 pl-10 pr-3.5 text-[12px] text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-300 focus:bg-white md:h-[54px] md:rounded-2xl md:pl-11 md:pr-4 md:text-sm"
+              className="h-[42px] w-full rounded-[14px] border border-[#E5E7EB] bg-white pl-10 pr-3.5 text-[13px] text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-300 focus:bg-white md:h-[48px] md:rounded-[14px] md:pl-11 md:pr-4 md:text-[14px]"
             />
 
             {hasSearch ? (
               <button
                 type="button"
                 onClick={() => setSearch("")}
-                className="absolute right-2.5 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 md:right-3 md:h-8 md:w-8"
+                className="absolute right-2.5 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-[12px] border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 md:right-3 md:h-8 md:w-8"
                 aria-label="Очистить поиск"
               >
                 <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -397,10 +397,10 @@ function QuickFilterPill({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full px-3.5 py-2 text-[12px] font-medium transition md:px-4 md:py-2.5 md:text-sm ${
+      className={`rounded-[14px] px-3.5 py-2 text-[12px] font-medium transition md:px-4 md:py-2.5 md:text-[13px] ${
         active
-          ? activeClassName || "bg-slate-900 text-white shadow-[0_10px_24px_rgba(15,23,42,0.12)]"
-          : "border border-slate-200 bg-white/85 text-slate-700"
+          ? activeClassName || "bg-slate-900 text-white shadow-none"
+          : "border border-slate-200 bg-white text-slate-700"
       }`}
     >
       {children}
@@ -421,20 +421,19 @@ function StatCard({
 }) {
   return (
     <div
-      className={`premium-card-hover relative overflow-hidden rounded-[18px] bg-white p-3 shadow-[0_10px_28px_rgba(15,23,42,0.06)] ring-1 md:rounded-[28px] md:p-5 ${ring}`}
+      className="premium-card-hover relative overflow-hidden rounded-[20px] border border-[#E5E7EB] bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:rounded-[22px] md:p-5"
     >
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-14 bg-[radial-gradient(circle_at_top,rgba(180,138,76,0.08),transparent_65%)]" />
       <div className="flex items-start justify-between gap-3">
-        <div className="text-[12px] font-medium text-slate-500 md:text-sm">{title}</div>
-        <div className={`mt-1 h-2.5 w-2.5 rounded-full md:h-3 md:w-3 ${accent}`} />
+        <div className="text-[13px] font-medium text-slate-500 md:text-[14px]">{title}</div>
+        <div className={`mt-1 h-2 w-2 rounded-full opacity-70 ${accent}`} />
       </div>
 
-      <div className="mt-3 text-[34px] font-semibold tracking-tight text-slate-900 md:mt-4 md:text-4xl">
+      <div className="mt-3 text-[34px] font-semibold tracking-tight text-slate-900 md:mt-4 md:text-[38px]">
         {value}
       </div>
 
-      <div className="mt-2.5 h-1.5 w-14 rounded-full bg-slate-100 md:mt-3 md:w-16">
-        <div className={`h-1.5 w-7 rounded-full md:w-8 ${accent}`} />
+      <div className="mt-3 h-1 w-14 rounded-full bg-slate-100 md:w-16">
+        <div className={`h-1 w-7 rounded-full opacity-70 md:w-8 ${accent}`} />
       </div>
     </div>
   );

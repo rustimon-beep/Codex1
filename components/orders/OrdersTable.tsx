@@ -106,7 +106,7 @@ export function OrdersTable({
   };
 
   return (
-    <div className="premium-shell route-stage overflow-hidden rounded-[26px]">
+    <div className="premium-shell route-stage overflow-hidden rounded-[24px]">
       <div className="overflow-x-auto">
         <table className="min-w-[1180px] w-full border-separate border-spacing-0 text-left text-sm">
           <thead className="premium-grid text-slate-600">
@@ -169,7 +169,7 @@ export function OrdersTable({
                         detailsOpen ? "relative z-30" : ""
                       }`}
                     >
-                      <td className={`border-t border-slate-100 px-5 py-3 ${detailsOpen ? "relative z-30" : ""}`}>
+                      <td className={`border-t border-[#E5E7EB] px-5 py-2.5 ${detailsOpen ? "relative z-30" : ""}`}>
                         <div className="flex items-start gap-4">
                           <div
                             className={`mt-1 h-9 w-1.5 rounded-full ${
@@ -290,7 +290,7 @@ export function OrdersTable({
                                     : `/orders/${order.id}`
                                 }
                                 onClick={(e) => e.stopPropagation()}
-                                className="route-link rounded-xl border border-slate-200 bg-white/92 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                                className="route-link rounded-[12px] border border-slate-200 bg-transparent px-3 py-1.5 text-[12px] font-medium text-slate-700 transition hover:bg-slate-50"
                               >
                                 Открыть
                               </Link>
@@ -301,7 +301,7 @@ export function OrdersTable({
                                     e.stopPropagation();
                                     void removeOrder(order.id);
                                   }}
-                                  className="rounded-xl border border-rose-200 bg-white/92 px-3 py-1.5 text-xs font-medium text-rose-600 transition hover:bg-rose-50"
+                                  className="rounded-[12px] border border-rose-200 bg-transparent px-3 py-1.5 text-[12px] font-medium text-rose-600 transition hover:bg-rose-50"
                                 >
                                   Удалить
                                 </button>
@@ -319,7 +319,7 @@ export function OrdersTable({
                         </div>
                       </td>
 
-                      <td className="border-t border-slate-100 px-5 py-3">
+                      <td className="border-t border-[#E5E7EB] px-5 py-2.5">
                         <span
                           className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-medium ${orderTypeClasses(
                             orderType
@@ -329,11 +329,11 @@ export function OrdersTable({
                         </span>
                       </td>
 
-                      <td className="border-t border-slate-100 px-5 py-3 text-slate-700">
+                      <td className="border-t border-[#E5E7EB] px-5 py-2.5 text-[14px] text-slate-700">
                         {formatDate(order.order_date)}
                       </td>
 
-                      <td className="border-t border-slate-100 px-5 py-3">
+                      <td className="border-t border-[#E5E7EB] px-5 py-2.5">
                         <span
                           className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${statusClasses(
                             orderStatus
@@ -343,16 +343,16 @@ export function OrdersTable({
                         </span>
                       </td>
 
-                      <td className="border-t border-slate-100 px-5 py-3">
+                      <td className="border-t border-[#E5E7EB] px-5 py-2.5">
                         <div className="min-w-[160px]">
-                          <div className="mb-2 flex items-center justify-between text-[11px] font-medium text-slate-500">
+                          <div className="mb-1.5 flex items-center justify-between text-[11px] font-medium text-slate-500">
                             <span>Готовность</span>
                             <span className="text-slate-700">
                               {progress.delivered}/{progress.total}
                             </span>
                           </div>
 
-                          <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-slate-100 shadow-[inset_0_1px_2px_rgba(15,23,42,0.06)]">
+                          <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
                             <div
                               className="bg-emerald-500"
                               style={{
@@ -384,15 +384,15 @@ export function OrdersTable({
                         </div>
                       </td>
 
-                      <td className="border-t border-slate-100 px-5 py-3 text-slate-700">
+                      <td className="border-t border-[#E5E7EB] px-5 py-2.5 text-[14px] text-slate-700">
                         {formatDate(plannedDate)}
                       </td>
 
-                      <td className="border-t border-slate-100 px-5 py-3 text-slate-700">
+                      <td className="border-t border-[#E5E7EB] px-5 py-2.5 text-[14px] text-slate-700">
                         {formatDate(fullDeliveredDate)}
                       </td>
 
-                      <td className="border-t border-slate-100 px-5 py-3">
+                      <td className="border-t border-[#E5E7EB] px-5 py-2.5">
                         {order.updated_at ? (
                           <div className="max-w-[170px]">
                             <div className="premium-ui-title text-[13px] text-slate-800">
@@ -412,7 +412,7 @@ export function OrdersTable({
                       <tr>
                         <td
                           colSpan={8}
-                          className="border-t border-slate-100 bg-slate-50/70 px-5 py-4"
+                          className="border-t border-[#E5E7EB] bg-slate-50/60 px-5 py-3.5"
                         >
                           <div className="premium-shell rounded-[24px] p-4 shadow-[0_8px_22px_rgba(15,23,42,0.04)]">
                             <div className="mb-4 flex items-center justify-between">
