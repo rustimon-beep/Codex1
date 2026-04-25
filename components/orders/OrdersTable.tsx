@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, type ReactNode, useEffect, useRef, useState } from "react";
 import type { OrderItem, OrderWithItems, UserProfile } from "../../lib/orders/types";
 import { EmptyStateCard } from "../ui/EmptyStateCard";
 import {
@@ -80,20 +80,45 @@ export function OrdersTable({
         value.toLowerCase().includes(normalizedHighlightQuery)
     );
 
+  const renderHighlightedText = (
+    value: string | null | undefined,
+    emptyFallback = "—"
+  ): ReactNode => {
+    if (!value) return emptyFallback;
+    if (!normalizedHighlightQuery) return value;
+
+    const normalizedValue = value.toLowerCase();
+    const start = normalizedValue.indexOf(normalizedHighlightQuery);
+
+    if (start === -1) return value;
+
+    const end = start + normalizedHighlightQuery.length;
+
+    return (
+      <>
+        {value.slice(0, start)}
+        <mark className="rounded-md bg-amber-200/80 px-1 py-0.5 text-inherit shadow-[inset_0_0_0_1px_rgba(180,138,76,0.18)]">
+          {value.slice(start, end)}
+        </mark>
+        {value.slice(end)}
+      </>
+    );
+  };
+
   return (
     <div className="premium-shell route-stage overflow-hidden rounded-[26px]">
       <div className="overflow-x-auto">
         <table className="min-w-[1180px] w-full border-separate border-spacing-0 text-left text-sm">
           <thead className="premium-grid text-slate-600">
             <tr>
-              <th className="sticky top-0 z-10 px-5 py-3.5 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Заказ</th>
-              <th className="sticky top-0 z-10 px-5 py-3.5 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Тип</th>
-              <th className="sticky top-0 z-10 px-5 py-3.5 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Дата заказа</th>
-              <th className="sticky top-0 z-10 px-5 py-3.5 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Общий статус</th>
-              <th className="sticky top-0 z-10 px-5 py-3.5 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Прогресс</th>
-              <th className="sticky top-0 z-10 px-5 py-3.5 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Плановая</th>
-              <th className="sticky top-0 z-10 px-5 py-3.5 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Полная поставка</th>
-              <th className="sticky top-0 z-10 px-5 py-3.5 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Последнее изменение</th>
+              <th className="premium-kicker sticky top-0 z-10 px-5 py-3 text-[10px] text-slate-500 backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Заказ</th>
+              <th className="premium-kicker sticky top-0 z-10 px-5 py-3 text-[10px] text-slate-500 backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Тип</th>
+              <th className="premium-kicker sticky top-0 z-10 px-5 py-3 text-[10px] text-slate-500 backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Дата заказа</th>
+              <th className="premium-kicker sticky top-0 z-10 px-5 py-3 text-[10px] text-slate-500 backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Общий статус</th>
+              <th className="premium-kicker sticky top-0 z-10 px-5 py-3 text-[10px] text-slate-500 backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Прогресс</th>
+              <th className="premium-kicker sticky top-0 z-10 px-5 py-3 text-[10px] text-slate-500 backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Плановая</th>
+              <th className="premium-kicker sticky top-0 z-10 px-5 py-3 text-[10px] text-slate-500 backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Полная поставка</th>
+              <th className="premium-kicker sticky top-0 z-10 px-5 py-3 text-[10px] text-slate-500 backdrop-blur supports-[backdrop-filter]:bg-[rgba(250,247,242,0.88)]">Последнее изменение</th>
             </tr>
           </thead>
 
@@ -169,7 +194,7 @@ export function OrdersTable({
                           <div className="min-w-0">
                             <div className="rounded-xl px-1 py-0.5 text-left">
                               <div className="flex items-center gap-2">
-                                <span className="text-lg font-semibold tracking-tight text-slate-900">
+                                <span className="premium-ui-title text-[15px] text-slate-900 md:text-[17px]">
                                   {order.client_order || "Без номера"}
                                 </span>
 
@@ -370,10 +395,10 @@ export function OrdersTable({
                       <td className="border-t border-slate-100 px-5 py-3">
                         {order.updated_at ? (
                           <div className="max-w-[170px]">
-                            <div className="text-sm font-medium text-slate-800">
+                            <div className="premium-ui-title text-[13px] text-slate-800">
                               {order.updated_by || "—"}
                             </div>
-                            <div className="mt-1 text-xs text-slate-500">
+                            <div className="mt-1 text-[12px] leading-5 text-slate-500">
                               {formatDateTimeForView(order.updated_at)}
                             </div>
                           </div>
@@ -392,10 +417,10 @@ export function OrdersTable({
                           <div className="premium-shell rounded-[24px] p-4 shadow-[0_8px_22px_rgba(15,23,42,0.04)]">
                             <div className="mb-4 flex items-center justify-between">
                               <div>
-                                <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                                <div className="premium-kicker text-[10px] text-slate-400">
                                   Позиции заказа
                                 </div>
-                                <div className="mt-1 text-sm text-slate-500">
+                                <div className="premium-subtitle mt-1 text-sm text-slate-500">
                                   Детали по каждой позиции, статусу и срокам
                                 </div>
                               </div>
@@ -436,7 +461,7 @@ export function OrdersTable({
                                         }`}
                                         title="Нажми, чтобы скопировать артикул"
                                       >
-                                        {item.article || "—"}
+                                        {renderHighlightedText(item.article)}
                                       </button>
 
                                       {item.replacement_article ? (
@@ -449,7 +474,7 @@ export function OrdersTable({
                                               replacementMatched ? "bg-amber-100 ring-1 ring-amber-200" : "bg-amber-50"
                                             }`}
                                           >
-                                            {item.replacement_article}
+                                            {renderHighlightedText(item.replacement_article)}
                                           </div>
                                         </div>
                                       ) : null}
@@ -470,7 +495,7 @@ export function OrdersTable({
                                           nameMatched ? "bg-amber-100 ring-1 ring-amber-200" : ""
                                         }`}
                                       >
-                                        {item.name || "—"}
+                                        {renderHighlightedText(item.name)}
                                       </div>
                                     </div>
 

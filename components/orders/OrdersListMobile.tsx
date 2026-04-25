@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { type ReactNode, useRef, useState } from "react";
 import type { OrderItem, OrderWithItems, UserProfile } from "../../lib/orders/types";
 import { triggerHapticFeedback } from "../../lib/ui/haptics";
 import { EmptyStateCard } from "../ui/EmptyStateCard";
@@ -99,6 +99,31 @@ export function OrdersListMobile({
         value &&
         value.toLowerCase().includes(normalizedHighlightQuery)
     );
+
+  const renderHighlightedText = (
+    value: string | null | undefined,
+    emptyFallback = "—"
+  ): ReactNode => {
+    if (!value) return emptyFallback;
+    if (!normalizedHighlightQuery) return value;
+
+    const normalizedValue = value.toLowerCase();
+    const start = normalizedValue.indexOf(normalizedHighlightQuery);
+
+    if (start === -1) return value;
+
+    const end = start + normalizedHighlightQuery.length;
+
+    return (
+      <>
+        {value.slice(0, start)}
+        <mark className="rounded-md bg-amber-200/80 px-1 py-0.5 text-inherit shadow-[inset_0_0_0_1px_rgba(180,138,76,0.18)]">
+          {value.slice(start, end)}
+        </mark>
+        {value.slice(end)}
+      </>
+    );
+  };
 
   if (loading) {
     return (
@@ -371,7 +396,7 @@ export function OrdersListMobile({
                                     articleMatched ? "bg-amber-100 ring-1 ring-amber-200" : ""
                                   }`}
                                 >
-                                  {item.article || "—"}
+                                  {renderHighlightedText(item.article)}
                                 </button>
 
                                 {copiedArticle === item.article ? (
@@ -401,7 +426,7 @@ export function OrdersListMobile({
                                 nameMatched ? "bg-amber-100 ring-1 ring-amber-200" : ""
                               }`}
                             >
-                              {item.name || "—"}
+                              {renderHighlightedText(item.name)}
                             </div>
 
                             {item.replacement_article ? (
@@ -410,7 +435,9 @@ export function OrdersListMobile({
                                   replacementMatched ? "bg-amber-100 ring-1 ring-amber-200" : "bg-amber-50"
                                 }`}
                               >
-                                Актуальный артикул: {item.replacement_article}
+                                <>
+                                  Актуальный артикул: {renderHighlightedText(item.replacement_article)}
+                                </>
                               </div>
                             ) : null}
 
