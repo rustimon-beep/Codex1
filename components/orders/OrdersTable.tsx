@@ -129,9 +129,11 @@ export function OrdersTable({
                           : orderStatus === "Поставлен"
                           ? "bg-emerald-50/40 hover:bg-emerald-50"
                           : "bg-white hover:bg-slate-50"
-                      } ${expanded ? "ring-1 ring-slate-200 bg-slate-50" : ""}`}
+                      } ${expanded ? "ring-1 ring-slate-200 bg-slate-50" : ""} ${
+                        detailsOpen ? "relative z-30" : ""
+                      }`}
                     >
-                      <td className="border-t border-slate-100 px-5 py-3">
+                      <td className={`border-t border-slate-100 px-5 py-3 ${detailsOpen ? "relative z-30" : ""}`}>
                         <div className="flex items-start gap-4">
                           <div
                             className={`mt-1 h-9 w-1.5 rounded-full ${
@@ -175,7 +177,7 @@ export function OrdersTable({
                                     </button>
 
                                     {detailsOpen ? (
-                                      <div className="absolute left-0 top-full z-20 mt-2 w-[320px] max-w-[min(320px,calc(100vw-3rem))] rounded-[22px] border border-slate-200 bg-white p-3 shadow-[0_18px_44px_rgba(15,23,42,0.14)]">
+                                      <div className="absolute left-0 top-full z-50 mt-2 w-[320px] max-w-[min(320px,calc(100vw-3rem))] rounded-[22px] border border-slate-200 bg-white p-3 shadow-[0_18px_44px_rgba(15,23,42,0.14)]">
                                         <div className="flex items-center justify-between gap-3">
                                           <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
                                             Детали заказа

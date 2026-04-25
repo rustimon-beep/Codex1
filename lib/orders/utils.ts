@@ -80,7 +80,7 @@ export function statusClasses(status: string) {
     return "border border-rose-200/80 bg-[linear-gradient(180deg,rgba(255,241,242,0.98),rgba(254,226,226,0.92))] text-rose-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
   }
   if (status === "В пути") {
-    return "border border-fuchsia-200/80 bg-[linear-gradient(180deg,rgba(253,244,255,0.98),rgba(245,208,254,0.9))] text-fuchsia-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
+    return "border border-fuchsia-200/80 bg-[linear-gradient(180deg,rgba(253,244,255,0.98),rgba(250,232,255,0.94))] text-fuchsia-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
   }
   if (status === "Частично поставлен") {
     return "border border-emerald-200/80 bg-[linear-gradient(180deg,rgba(247,254,231,0.98),rgba(220,252,231,0.92))] text-emerald-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]";
