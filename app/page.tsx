@@ -115,6 +115,10 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [photoParsing, setPhotoParsing] = useState(false);
+  const [photoGuideOpen, setPhotoGuideOpen] = useState(false);
+  const [photoPreviewOpen, setPhotoPreviewOpen] = useState(false);
+  const [pendingPhotoFile, setPendingPhotoFile] = useState<File | null>(null);
+  const [pendingPhotoPreviewUrl, setPendingPhotoPreviewUrl] = useState<string | null>(null);
   const [excelImporting, setExcelImporting] = useState(false);
   const [copiedArticle, setCopiedArticle] = useState<string | null>(null);
   const [expandedOrders, setExpandedOrders] = useState<number[]>([]);
@@ -269,13 +273,29 @@ export default function OrdersPage() {
 
     window.setTimeout(() => {
       if (mode === "photo") {
-        photoInputRef.current?.click();
+        setPhotoGuideOpen(true);
       } else if (mode === "clipboard") {
         void handleClipboardImport();
       } else {
         fileInputRef.current?.click();
       }
     }, 120);
+  };
+
+  const openPhotoPicker = () => {
+    setPhotoGuideOpen(false);
+    window.setTimeout(() => {
+      photoInputRef.current?.click();
+    }, 120);
+  };
+
+  const closePhotoPreview = () => {
+    if (pendingPhotoPreviewUrl) {
+      URL.revokeObjectURL(pendingPhotoPreviewUrl);
+    }
+    setPendingPhotoPreviewUrl(null);
+    setPendingPhotoFile(null);
+    setPhotoPreviewOpen(false);
   };
 
   const handleClipboardImport = async () => {
@@ -664,12 +684,7 @@ export default function OrdersPage() {
     }
   };
 
-  const handlePhotoUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
+  const processPhotoFile = async (file: File) => {
     setPhotoParsing(true);
 
     try {
@@ -730,10 +745,35 @@ export default function OrdersPage() {
       });
     } finally {
       setPhotoParsing(false);
-      if (event.target) {
-        event.target.value = "";
-      }
     }
+  };
+
+  const handlePhotoUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (pendingPhotoPreviewUrl) {
+      URL.revokeObjectURL(pendingPhotoPreviewUrl);
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setPendingPhotoFile(file);
+    setPendingPhotoPreviewUrl(previewUrl);
+    setPhotoPreviewOpen(true);
+
+    if (event.target) {
+      event.target.value = "";
+    }
+  };
+
+  const confirmPhotoPreview = () => {
+    if (!pendingPhotoFile) return;
+
+    const file = pendingPhotoFile;
+    closePhotoPreview();
+    void processPhotoFile(file);
   };
 
   const saveForm = async () => {
@@ -1324,6 +1364,100 @@ export default function OrdersPage() {
         onConfirm={() => closePromptDialog(promptDialog.value)}
         onCancel={() => closePromptDialog(null)}
       />
+
+      {photoGuideOpen ? (
+        <div className="fixed inset-0 z-[90] bg-slate-950/45 backdrop-blur-[2px]">
+          <div className="flex min-h-screen items-end justify-center p-0 md:items-center md:p-4">
+            <div className="premium-shell w-full rounded-t-[24px] p-4 shadow-[0_24px_80px_rgba(15,23,42,0.18)] md:max-w-lg md:rounded-[30px] md:p-6">
+              <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-slate-200 md:hidden" />
+              <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">
+                Фото документа
+              </div>
+              <h3 className="mt-2 text-[20px] font-semibold tracking-tight text-slate-900 md:text-[28px]">
+                Как снять лучше
+              </h3>
+              <div className="mt-4 space-y-2.5 text-[13px] leading-5 text-slate-600 md:text-sm md:leading-6">
+                <div>Держи телефон ровно и снимай сверху, без сильного угла.</div>
+                <div>Старайся, чтобы весь список попал в кадр и был при хорошем свете.</div>
+                <div>После снимка ты ещё увидишь предпросмотр и сможешь переснять.</div>
+              </div>
+              <div className="mt-5 flex flex-col gap-2 md:flex-row md:justify-end">
+                <button
+                  type="button"
+                  onClick={() => setPhotoGuideOpen(false)}
+                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                >
+                  Отмена
+                </button>
+                <button
+                  type="button"
+                  onClick={openPhotoPicker}
+                  className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
+                >
+                  Продолжить
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {photoPreviewOpen && pendingPhotoPreviewUrl ? (
+        <div className="fixed inset-0 z-[91] bg-slate-950/55 backdrop-blur-[2px]">
+          <div className="flex min-h-screen items-end justify-center p-0 md:items-center md:p-4">
+            <div className="premium-shell flex h-[88dvh] w-full flex-col overflow-hidden rounded-t-[24px] shadow-[0_24px_80px_rgba(15,23,42,0.18)] md:h-auto md:max-h-[92vh] md:max-w-2xl md:rounded-[30px]">
+              <div className="shrink-0 border-b border-slate-100 px-4 py-3 md:px-6 md:py-5">
+                <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-slate-200 md:hidden" />
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">
+                  Предпросмотр
+                </div>
+                <h3 className="mt-2 text-[20px] font-semibold tracking-tight text-slate-900 md:text-[28px]">
+                  Проверь фото перед распознаванием
+                </h3>
+                <p className="mt-1.5 text-[12px] text-slate-500 md:text-sm">
+                  Если текст читается плохо или кадр под углом, лучше переснять.
+                </p>
+              </div>
+
+              <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 md:px-6 md:py-5">
+                <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-2">
+                  <img
+                    src={pendingPhotoPreviewUrl}
+                    alt="Предпросмотр фото документа"
+                    className="max-h-[58vh] w-full rounded-[18px] object-contain bg-white"
+                  />
+                </div>
+
+                <div className="mt-4 rounded-[20px] border border-stone-200 bg-stone-50/80 px-4 py-3 text-[12px] leading-5 text-stone-700 md:text-sm md:leading-6">
+                  Хороший кадр: текст ровный, без сильных теней, список почти горизонтален.
+                </div>
+              </div>
+
+              <div className="shrink-0 border-t border-slate-100 bg-white px-4 py-3 md:px-6 md:py-4">
+                <div className="flex flex-col gap-2 md:flex-row md:justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      closePhotoPreview();
+                      window.setTimeout(() => photoInputRef.current?.click(), 120);
+                    }}
+                    className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  >
+                    Переснять
+                  </button>
+                  <button
+                    type="button"
+                    onClick={confirmPhotoPreview}
+                    className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
+                  >
+                    Использовать фото
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <QuickDateDialog
         dialog={quickDateDialog}
