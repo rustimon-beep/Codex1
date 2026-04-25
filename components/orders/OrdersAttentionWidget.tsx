@@ -51,7 +51,6 @@ export function OrdersAttentionWidget({
   onApplyFocus,
 }: OrdersAttentionWidgetProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [scrollOffset, setScrollOffset] = useState({ x: 0, y: 0 });
   const [ready, setReady] = useState(false);
   const [mounted, setMounted] = useState(false);
   const dragOffsetRef = useRef({ x: 0, y: 0 });
@@ -92,7 +91,6 @@ export function OrdersAttentionWidget({
     const defaultX = window.innerWidth - 180;
     const defaultY = Math.max(140, Math.round(window.innerHeight * 0.36));
     setPosition(clampPosition(defaultX, defaultY));
-    setScrollOffset({ x: window.scrollX, y: window.scrollY });
     setReady(true);
   }, []);
 
@@ -117,20 +115,15 @@ export function OrdersAttentionWidget({
     const handleResize = () => {
       setPosition((prev) => clampPosition(prev.x, prev.y));
     };
-    const handleScroll = () => {
-      setScrollOffset({ x: window.scrollX, y: window.scrollY });
-    };
 
     window.addEventListener("pointermove", handleMove, { passive: false });
     window.addEventListener("pointerup", handleUp);
     window.addEventListener("resize", handleResize);
-    window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
       window.removeEventListener("pointermove", handleMove);
       window.removeEventListener("pointerup", handleUp);
       window.removeEventListener("resize", handleResize);
-      window.removeEventListener("scroll", handleScroll);
     };
   }, [open]);
 
@@ -152,14 +145,19 @@ export function OrdersAttentionWidget({
 
   return createPortal(
     <div
-      className="hidden md:block"
+      className="pointer-events-none fixed inset-0 z-30 hidden md:block"
       style={{
-        position: "absolute",
-        left: `${position.x + scrollOffset.x}px`,
-        top: `${position.y + scrollOffset.y}px`,
-        zIndex: 30,
+        position: "fixed",
+        inset: 0,
       }}
     >
+      <div
+        className="pointer-events-auto absolute"
+        style={{
+          left: `${position.x}px`,
+          top: `${position.y}px`,
+        }}
+      >
       <div className="relative flex items-start gap-3">
         {open ? (
           <div className="premium-shell w-[276px] origin-right rounded-[22px] border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.97),rgba(247,244,239,0.95))] p-3 shadow-[0_24px_80px_rgba(15,23,42,0.18)] transition-all duration-200 ease-out animate-[attentionWidgetIn_180ms_ease-out]">
@@ -333,6 +331,7 @@ export function OrdersAttentionWidget({
             <path d="M13 15H13.01" />
           </svg>
         </button>
+      </div>
       </div>
     </div>,
     document.body
