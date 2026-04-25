@@ -160,6 +160,16 @@ export function OrderFormModal({
     (item) => (item.importIssues || []).length > 0
   );
   const readyImportedItems = importedItems.length - problematicImportedItems.length;
+  const orderedItems = [...form.items].sort((a, b) => {
+    const aHasIssues = (a.importIssues || []).length > 0 ? 1 : 0;
+    const bHasIssues = (b.importIssues || []).length > 0 ? 1 : 0;
+
+    if (aHasIssues !== bHasIssues) {
+      return bHasIssues - aHasIssues;
+    }
+
+    return 0;
+  });
 
   const getFieldIssueState = (item: ItemForm, field: "article" | "name" | "quantity") => {
     const issues = item.importIssues || [];
@@ -473,8 +483,17 @@ export function OrderFormModal({
                   </div>
                 ) : null}
 
+                {problematicImportedItems.length > 0 ? (
+                  <div className="mb-3 rounded-[20px] border border-amber-200 bg-amber-50/80 px-3 py-3 text-[12px] text-amber-950 md:px-4 md:text-sm">
+                    Сначала проверь строки с жёлтой подсветкой. Они подняты наверх списка.
+                  </div>
+                ) : null}
+
                 <div className="space-y-3">
-                  {form.items.map((item, index) => (
+                  {orderedItems.map((item) => {
+                    const index = form.items.indexOf(item);
+
+                    return (
                     <div
                       key={item.id || `new-${index}`}
                       className={`rounded-2xl border bg-white p-3 md:p-4 ${
@@ -662,7 +681,7 @@ export function OrderFormModal({
                         </div>
                       </div>
                     </div>
-                  ))}
+                  )})}
                 </div>
               </section>
 
