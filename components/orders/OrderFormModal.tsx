@@ -549,36 +549,24 @@ export function OrderFormModal({
                         </div>
                       </div>
 
-                      <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-[180px_1fr_auto] md:items-end">
-                        <label className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-700">
-                          <input
-                            type="checkbox"
-                            checked={item.hasReplacement}
-                            disabled={!canEditItemStatusFields || saving || photoParsing}
-                            onChange={(e) =>
-                              updateItemField(index, "hasReplacement", e.target.checked)
-                            }
-                            className="h-4 w-4 rounded border-slate-300"
-                          />
-                          Есть замена
-                        </label>
-
+                      <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto] md:items-end">
                         <div>
                           <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500">
                             Актуальный артикул
                           </label>
                           <input
                             value={item.replacementArticle}
-                            disabled={
-                              !canEditItemStatusFields ||
-                              !item.hasReplacement ||
-                              saving ||
-                              photoParsing
-                            }
-                            onChange={(e) =>
-                              updateItemField(index, "replacementArticle", e.target.value)
-                            }
-                            placeholder="Укажи актуальный артикул"
+                            disabled={!canEditItemStatusFields || saving || photoParsing}
+                            onChange={(e) => {
+                              const nextValue = e.target.value;
+                              updateItemField(index, "replacementArticle", nextValue);
+                              updateItemField(
+                                index,
+                                "hasReplacement",
+                                nextValue.trim().length > 0
+                              );
+                            }}
+                            placeholder="Укажи актуальный артикул, если есть замена"
                             className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500"
                           />
                         </div>
