@@ -141,14 +141,16 @@ export function OrdersTable({
                                 ? "bg-rose-500"
                                 : orderStatus === "Поставлен"
                                 ? "bg-emerald-500"
-                                : orderStatus === "Отменен" ||
-                                  orderStatus === "Частично отменен"
+                                : orderStatus === "Частично поставлен"
+                                ? "bg-teal-500"
+                                : orderStatus === "Частично отменен"
+                                ? "bg-orange-500"
+                                : orderStatus === "Отменен"
                                 ? "bg-rose-400"
-                                : orderStatus === "В пути" ||
-                                  orderStatus === "Частично поставлен"
-                                ? "bg-violet-500"
+                                : orderStatus === "В пути"
+                                ? "bg-fuchsia-500"
                                 : orderStatus === "В работе"
-                                ? "bg-amber-500"
+                                ? "bg-sky-500"
                                 : "bg-slate-300"
                             }`}
                           />

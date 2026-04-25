@@ -108,14 +108,17 @@ export function statusSelectClasses(status: string) {
   if (status === "Отменен") {
     return "border-rose-200 bg-rose-50 text-rose-800";
   }
+  if (status === "Частично отменен") {
+    return "border-orange-200 bg-orange-50 text-orange-800";
+  }
   if (status === "В пути") {
     return "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-800";
   }
   if (status === "Частично поставлен") {
-    return "border-emerald-200 bg-emerald-50 text-emerald-800";
+    return "border-teal-200 bg-teal-50 text-teal-800";
   }
   if (status === "В работе") {
-    return "border-amber-200 bg-amber-50 text-amber-800";
+    return "border-sky-200 bg-sky-50 text-sky-800";
   }
   return "border-stone-200 bg-stone-50 text-stone-700";
 }
