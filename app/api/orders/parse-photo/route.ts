@@ -23,7 +23,7 @@ async function requestOcr(
 ) {
   const formData = new FormData();
   formData.append("file", imageFile, imageFile.name || "upload.jpg");
-  formData.append("language", "auto");
+  formData.append("language", "rus");
   formData.append("isOverlayRequired", "false");
   formData.append("detectOrientation", "true");
   formData.append("scale", "true");
