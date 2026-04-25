@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { createPortal } from "react-dom";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { SortDirection, SortField } from "../../lib/orders/types";
 import { formatDateTimeForView, orderTypeClasses, statusClasses } from "../../lib/orders/utils";
 
@@ -50,98 +50,14 @@ export function OrdersAttentionWidget({
   onToggle,
   onApplyFocus,
 }: OrdersAttentionWidgetProps) {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [ready, setReady] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const dragOffsetRef = useRef({ x: 0, y: 0 });
-  const draggingRef = useRef(false);
-
-  const clampPosition = (x: number, y: number) => {
-    if (typeof window === "undefined") return { x, y };
-
-    const buttonWidth = 54;
-    const panelWidth = open ? 296 + 12 + buttonWidth : buttonWidth;
-    const panelHeight = open ? 346 : 54;
-    const maxX = Math.max(12, window.innerWidth - panelWidth - 12);
-    const maxY = Math.max(12, window.innerHeight - panelHeight - 12);
-
-    return {
-      x: Math.min(Math.max(12, x), maxX),
-      y: Math.min(Math.max(24, y), maxY),
-    };
-  };
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const saved = window.localStorage.getItem("orders-attention-widget-position");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved) as { x: number; y: number };
-        setPosition(clampPosition(parsed.x, parsed.y));
-        setReady(true);
-        return;
-      } catch {}
-    }
-
-    const defaultX = window.innerWidth - 180;
-    const defaultY = Math.max(140, Math.round(window.innerHeight * 0.36));
-    setPosition(clampPosition(defaultX, defaultY));
-    setReady(true);
-  }, []);
-
-  useEffect(() => {
-    if (!ready || typeof window === "undefined") return;
-    window.localStorage.setItem("orders-attention-widget-position", JSON.stringify(position));
-  }, [position, ready]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const handleMove = (event: PointerEvent) => {
-      if (!draggingRef.current) return;
-      event.preventDefault();
-      setPosition(clampPosition(event.clientX - dragOffsetRef.current.x, event.clientY - dragOffsetRef.current.y));
-    };
-
-    const handleUp = () => {
-      draggingRef.current = false;
-    };
-
-    const handleResize = () => {
-      setPosition((prev) => clampPosition(prev.x, prev.y));
-    };
-
-    window.addEventListener("pointermove", handleMove, { passive: false });
-    window.addEventListener("pointerup", handleUp);
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("pointermove", handleMove);
-      window.removeEventListener("pointerup", handleUp);
-      window.removeEventListener("resize", handleResize);
-    };
-  }, [open]);
-
-  const handleDragStart = (event: React.PointerEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    draggingRef.current = true;
-    try {
-      event.currentTarget.setPointerCapture(event.pointerId);
-    } catch {}
-    dragOffsetRef.current = {
-      x: event.clientX - position.x,
-      y: event.clientY - position.y,
-    };
-  };
-
   const topOrders = useMemo(() => topAttentionOrders.slice(0, 2), [topAttentionOrders]);
-  if (!ready || !mounted) return null;
+  if (!mounted) return null;
 
   return createPortal(
     <div
@@ -154,8 +70,8 @@ export function OrdersAttentionWidget({
       <div
         className="pointer-events-auto absolute"
         style={{
-          left: `${position.x}px`,
-          top: `${position.y}px`,
+          right: "20px",
+          top: "34%",
         }}
       >
       <div className="relative flex items-start gap-3">
@@ -173,35 +89,17 @@ export function OrdersAttentionWidget({
                   Только самое важное.
                 </div>
               </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onPointerDown={handleDragStart}
-                  className="cursor-grab rounded-full border border-stone-200 bg-white p-2 text-stone-500 transition hover:bg-stone-50 active:cursor-grabbing"
-                  aria-label="Переместить фокус дня"
-                >
-                  <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
-                    <path d="M7 5H7.01" />
-                    <path d="M13 5H13.01" />
-                    <path d="M7 10H7.01" />
-                    <path d="M13 10H13.01" />
-                    <path d="M7 15H7.01" />
-                    <path d="M13 15H13.01" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={onToggle}
-                  className="rounded-full border border-stone-200 bg-white p-2 text-stone-500 transition hover:bg-stone-50"
-                  aria-label="Скрыть фокус дня"
-                >
-                  <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
-                    <path d="M5 5L15 15" />
-                    <path d="M15 5L5 15" />
-                  </svg>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={onToggle}
+                className="rounded-full border border-stone-200 bg-white p-2 text-stone-500 transition hover:bg-stone-50"
+                aria-label="Скрыть фокус дня"
+              >
+                <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M5 5L15 15" />
+                  <path d="M15 5L5 15" />
+                </svg>
+              </button>
             </div>
 
             <div className="mt-3 grid grid-cols-2 gap-2">
@@ -315,21 +213,6 @@ export function OrdersAttentionWidget({
               <span className="absolute -right-1 -top-1 h-3.5 w-3.5 rounded-full border border-white bg-[radial-gradient(circle_at_30%_30%,#fde68a,#f59e0b)] shadow-[0_0_0_4px_rgba(245,158,11,0.12)]" />
             ) : null}
           </div>
-        </button>
-        <button
-          type="button"
-          onPointerDown={handleDragStart}
-          className="absolute -bottom-1 -right-1 flex h-5 w-5 cursor-grab items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 shadow-[0_8px_18px_rgba(15,23,42,0.08)] active:cursor-grabbing"
-          aria-label="Переместить виджет внимания"
-        >
-          <svg viewBox="0 0 20 20" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="1.8">
-            <path d="M7 5H7.01" />
-            <path d="M13 5H13.01" />
-            <path d="M7 10H7.01" />
-            <path d="M13 10H13.01" />
-            <path d="M7 15H7.01" />
-            <path d="M13 15H13.01" />
-          </svg>
         </button>
       </div>
       </div>
