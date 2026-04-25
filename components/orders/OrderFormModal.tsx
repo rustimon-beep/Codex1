@@ -33,6 +33,7 @@ type OrderFormModalProps = {
   addItemRow: () => void;
   duplicateItemRow: (index: number) => void;
   clearItemRow: (index: number) => void;
+  keepOnlyProblemItems: () => void;
   updateItemField: (
     index: number,
     field: keyof ItemForm,
@@ -64,6 +65,7 @@ export function OrderFormModal({
   addItemRow,
   duplicateItemRow,
   clearItemRow,
+  keepOnlyProblemItems,
   updateItemField,
   removeItemRow,
   saveForm,
@@ -332,16 +334,31 @@ export function OrderFormModal({
 
                 {importReview ? (
                   <div className="mb-4 rounded-[20px] border border-amber-200 bg-amber-50/90 px-3 py-3 text-[12px] text-amber-950 md:px-4 md:text-sm">
-                    <div className="font-semibold">
-                      {importReview.source === "photo"
-                        ? "Фото распознано"
-                        : "Excel импортирован"}
-                    </div>
-                    <div className="mt-1 leading-5">
-                      Загружено позиций: {importReview.importedCount}.{" "}
-                      {importReview.reviewCount > 0
-                        ? `Проверь строки с подсветкой: ${importReview.reviewCount}.`
-                        : "Все строки выглядят заполненными."}
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                      <div>
+                        <div className="font-semibold">
+                          {importReview.source === "photo"
+                            ? "Фото распознано"
+                            : "Excel импортирован"}
+                        </div>
+                        <div className="mt-1 leading-5">
+                          Загружено позиций: {importReview.importedCount}.{" "}
+                          {importReview.reviewCount > 0
+                            ? `Проверь строки с подсветкой: ${importReview.reviewCount}.`
+                            : "Все строки выглядят заполненными."}
+                        </div>
+                      </div>
+
+                      {importReview.reviewCount > 0 ? (
+                        <button
+                          type="button"
+                          onClick={keepOnlyProblemItems}
+                          disabled={saving || photoParsing}
+                          className="rounded-full border border-amber-200 bg-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-900 transition hover:bg-amber-100/70 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          Оставить только проблемные
+                        </button>
+                      ) : null}
                     </div>
                   </div>
                 ) : null}

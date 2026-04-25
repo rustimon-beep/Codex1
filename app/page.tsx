@@ -500,6 +500,26 @@ export default function OrdersPage() {
     showToast("Строка очищена", { variant: "info" });
   };
 
+  const keepOnlyProblemItems = () => {
+    setForm((prev) => {
+      const problemItems = prev.items.filter((item) => (item.importIssues || []).length > 0);
+
+      if (problemItems.length === 0) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        items: problemItems,
+      };
+    });
+
+    showToast("Оставлены проблемные строки", {
+      description: "В форме остались только позиции, которые требуют проверки.",
+      variant: "info",
+    });
+  };
+
   const removeItemRow = (index: number) => {
     setForm((prev) => {
       if (prev.items.length === 1) {
@@ -1465,6 +1485,7 @@ export default function OrdersPage() {
             addItemRow={addItemRow}
             duplicateItemRow={duplicateItemRow}
             clearItemRow={clearItemRow}
+            keepOnlyProblemItems={keepOnlyProblemItems}
             updateItemField={updateItemField}
             removeItemRow={removeItemRow}
             saveForm={saveForm}
