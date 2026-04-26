@@ -308,25 +308,26 @@ export function OrdersTable({
                               ) : null}
                             </div>
 
-                            {overdue && (
-                              <div className="mt-2.5 flex flex-wrap gap-1.5">
-                                <span className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[10px] font-medium text-rose-700">
-                                  Просрочен
-                                </span>
-                              </div>
-                            )}
                           </div>
                         </div>
                       </td>
 
                       <td className="border-t border-[#E5E7EB] px-5 py-2.5">
-                        <span
-                          className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-medium ${orderTypeClasses(
-                            orderType
-                          )}`}
-                        >
-                          {orderType}
-                        </span>
+                        <div className="flex flex-col items-start gap-1.5">
+                          <span
+                            className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-medium ${orderTypeClasses(
+                              orderType
+                            )}`}
+                          >
+                            {orderType}
+                          </span>
+
+                          {overdue ? (
+                            <span className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[10px] font-medium text-rose-700">
+                              Просрочен
+                            </span>
+                          ) : null}
+                        </div>
                       </td>
 
                       <td className="border-t border-[#E5E7EB] px-5 py-2.5 text-[14px] text-slate-700">

@@ -285,14 +285,17 @@ export function OrdersListMobile({
                           </span>
                         )}
 
-                        {overdue ? (
-                          <span className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[8px] font-medium text-rose-700 md:text-[9px]">
-                            Просрочено
-                          </span>
-                        ) : null}
                       </div>
                     </div>
                   </div>
+
+                  {overdue ? (
+                    <div className="mt-1.5">
+                      <span className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[8px] font-medium text-rose-700 md:text-[9px]">
+                        Просрочено
+                      </span>
+                    </div>
+                  ) : null}
 
                   <div className="mt-2.5 grid grid-cols-2 gap-x-2 gap-y-2 text-[12px] md:mt-3 md:gap-x-2.5 md:gap-y-2.5 md:text-[13px]">
                     <MobileInfo label="Дата заказа" value={formatDate(order.order_date)} />
