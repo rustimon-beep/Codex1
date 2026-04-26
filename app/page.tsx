@@ -17,6 +17,7 @@ import { MobileBottomNav } from "../components/ui/MobileBottomNav";
 import { ToastViewport } from "../components/ui/ToastViewport";
 import { AppLogo } from "../components/ui/AppLogo";
 import { EmptyStateCard } from "../components/ui/EmptyStateCard";
+import { NotificationPrompt } from "../components/ui/NotificationPrompt";
 import { useOrdersAuthActions } from "../lib/auth/useOrdersAuthActions";
 import { useProfileAuth } from "../lib/auth/useProfileAuth";
 import {
@@ -70,6 +71,7 @@ import type {
 } from "../lib/orders/types";
 import { triggerHapticFeedback } from "../lib/ui/haptics";
 import { useDialog } from "../lib/ui/useDialog";
+import { useOrdersNotifications } from "../lib/ui/notifications";
 import {
   getFriendlyErrorMessage,
   isOffline,
@@ -244,6 +246,10 @@ export default function OrdersPage() {
 
   const stats = useMemo(() => getOrdersStats(orders), [orders]);
   const attention = useMemo(() => getOrdersAttention(orders), [orders]);
+  const notifications = useOrdersNotifications({
+    orders,
+    showToast,
+  });
   const hasAttentionItems = attention.cards.some((card) => card.count > 0);
   const currentImportReview = useMemo(() => {
     if (!importReview) return null;
@@ -1679,6 +1685,16 @@ export default function OrdersPage() {
             </div>
           ) : filteredOrders.length === 0 ? (
             <>
+              <div className="premium-enter premium-enter-delay-1 md:hidden">
+                <NotificationPrompt
+                  supported={notifications.supported}
+                  permission={notifications.permission}
+                  requesting={notifications.requesting}
+                  isIos={notifications.isIos}
+                  isStandalone={notifications.isStandalone}
+                  onEnable={notifications.requestPermission}
+                />
+              </div>
               <div className="premium-enter premium-enter-delay-1">
                 <OrdersToolbar
                   stats={stats}
@@ -1703,6 +1719,17 @@ export default function OrdersPage() {
             </>
           ) : (
             <>
+              <div className="premium-enter premium-enter-delay-1 md:hidden">
+                <NotificationPrompt
+                  supported={notifications.supported}
+                  permission={notifications.permission}
+                  requesting={notifications.requesting}
+                  isIos={notifications.isIos}
+                  isStandalone={notifications.isStandalone}
+                  onEnable={notifications.requestPermission}
+                />
+              </div>
+
               <div className="premium-enter premium-enter-delay-1">
                 <OrdersToolbar
                   stats={stats}
