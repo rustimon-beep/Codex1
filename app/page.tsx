@@ -70,6 +70,12 @@ import type {
 } from "../lib/orders/types";
 import { triggerHapticFeedback } from "../lib/ui/haptics";
 import { useDialog } from "../lib/ui/useDialog";
+import {
+  getFriendlyErrorMessage,
+  isOffline,
+  normalizeToastOptions,
+  useConnectionFeedback,
+} from "../lib/ui/network";
 import { useToast } from "../lib/ui/useToast";
 import {
   appendCommentEntries,
@@ -127,6 +133,7 @@ export default function OrdersPage() {
   const [expandedOrders, setExpandedOrders] = useState<number[]>([]);
   const [showAttentionPanel, setShowAttentionPanel] = useState(false);
   const [createMethodOpen, setCreateMethodOpen] = useState(false);
+  const [modalInitialSnapshot, setModalInitialSnapshot] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
@@ -141,7 +148,16 @@ export default function OrdersPage() {
     password: "",
   });
   const [loginError, setLoginError] = useState("");
-  const { toasts, showToast, closeToast } = useToast();
+  const { toasts, showToast: baseShowToast, closeToast } = useToast();
+  const showToast = useCallback(
+    (
+      title: string,
+      options?: { description?: string; variant?: "success" | "error" | "info" }
+    ) => {
+      baseShowToast(title, normalizeToastOptions(options));
+    },
+    [baseShowToast]
+  );
   const {
     confirmDialog,
     promptDialog,
@@ -163,6 +179,22 @@ export default function OrdersPage() {
   });
 
   const parsedComments = useMemo(() => parseComments(form.comment), [form.comment]);
+  const serializeOrderForm = useCallback(
+    (value: OrderFormState) =>
+      JSON.stringify({
+        ...value,
+        items: value.items.map((item) => ({
+          ...item,
+          importSource: item.importSource || null,
+          importIssues: item.importIssues || [],
+        })),
+      }),
+    []
+  );
+  const isFormDirty =
+    open && modalInitialSnapshot !== "" && serializeOrderForm(form) !== modalInitialSnapshot;
+
+  useConnectionFeedback(showToast);
 
   useEffect(() => {
     if (!copiedArticle) return;
@@ -178,7 +210,10 @@ export default function OrdersPage() {
     if (error) {
       console.error("Ошибка загрузки:", error);
       showToast("Ошибка загрузки", {
-        description: error.message,
+        description: getFriendlyErrorMessage(
+          error,
+          "Не удалось загрузить список заказов."
+        ),
         variant: "error",
       });
     } else {
@@ -229,16 +264,17 @@ export default function OrdersPage() {
     showToast,
   });
 
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setForm({
       ...createEmptyOrderForm(EMPTY_ITEM),
       orderDate: getTodayDate(),
       items: [{ ...EMPTY_ITEM }],
     });
+    setModalInitialSnapshot("");
     setEditingOrderId(null);
-  };
+  }, []);
 
-  const prepareCreateDraft = () => {
+  const prepareCreateDraft = useCallback(() => {
     if (!canCreateOrder(user)) return;
 
     setEditingOrderId(null);
@@ -248,14 +284,55 @@ export default function OrdersPage() {
       orderDate: getTodayDate(),
       items: [{ ...EMPTY_ITEM }],
     });
-  };
+    setModalInitialSnapshot("");
+  }, [user]);
 
-  const openCreate = () => {
+  const openCreate = useCallback(() => {
     if (!canCreateOrder(user)) return;
 
     prepareCreateDraft();
     setOpen(true);
-  };
+  }, [prepareCreateDraft, user]);
+
+  useEffect(() => {
+    if (!open) return;
+    setModalInitialSnapshot(serializeOrderForm(form));
+  }, [open, serializeOrderForm]);
+
+  useEffect(() => {
+    if (!open || !isFormDirty) return;
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [open, isFormDirty]);
+
+  const requestCloseModal = useCallback(async () => {
+    if (saving || photoParsing) return;
+
+    if (!isFormDirty) {
+      setOpen(false);
+      return;
+    }
+
+    const confirmed = await requestConfirmation({
+      title: "Закрыть без сохранения?",
+      description:
+        "Есть несохранённые изменения. Если закрыть окно сейчас, они потеряются.",
+      confirmText: "Закрыть без сохранения",
+      variant: "danger",
+    });
+
+    if (!confirmed) return;
+
+    setOpen(false);
+    resetForm();
+    setImportReview(null);
+  }, [isFormDirty, photoParsing, requestConfirmation, resetForm, saving]);
 
   const handleOpenCreateWithHaptic = () => {
     triggerHapticFeedback("medium");
@@ -302,6 +379,14 @@ export default function OrdersPage() {
   };
 
   const handleClipboardImport = async () => {
+    if (isOffline()) {
+      showToast("Нет соединения", {
+        description: "Интернет недоступен. Попробуй импорт из буфера чуть позже.",
+        variant: "error",
+      });
+      return;
+    }
+
     if (!navigator.clipboard?.readText) {
       showToast("Буфер недоступен", {
         description: "Браузер не дал доступ к буферу обмена.",
@@ -348,10 +433,10 @@ export default function OrdersPage() {
       });
     } catch (error) {
       showToast("Ошибка буфера обмена", {
-        description:
-          error instanceof Error
-            ? error.message
-            : "Не удалось прочитать буфер обмена.",
+        description: getFriendlyErrorMessage(
+          error,
+          "Не удалось прочитать буфер обмена."
+        ),
         variant: "error",
       });
     }
@@ -631,6 +716,10 @@ export default function OrdersPage() {
     setExcelImporting(true);
 
     try {
+      if (isOffline()) {
+        throw new Error("offline");
+      }
+
       const arrayBuffer = await file.arrayBuffer();
       const workbook = XLSX.read(arrayBuffer, { type: "array" });
       const firstSheetName = workbook.SheetNames[0];
@@ -676,7 +765,10 @@ export default function OrdersPage() {
     } catch (error) {
       console.error(error);
       showToast("Ошибка импорта", {
-        description: "Не удалось прочитать Excel-файл.",
+        description: getFriendlyErrorMessage(
+          error,
+          "Не удалось прочитать Excel-файл."
+        ),
         variant: "error",
       });
     } finally {
@@ -691,6 +783,10 @@ export default function OrdersPage() {
     setPhotoParsing(true);
 
     try {
+      if (isOffline()) {
+        throw new Error("offline");
+      }
+
       const preparedFile = await prepareImageFileForUpload(file);
       const formData = new FormData();
       formData.append("file", preparedFile, preparedFile.name);
@@ -743,7 +839,10 @@ export default function OrdersPage() {
       });
     } catch (error) {
       showToast("Ошибка распознавания фото", {
-        description: error instanceof Error ? error.message : "Не удалось обработать фото.",
+        description: getFriendlyErrorMessage(
+          error,
+          "Не удалось обработать фото."
+        ),
         variant: "error",
       });
     } finally {
@@ -782,6 +881,14 @@ export default function OrdersPage() {
   const saveForm = async () => {
     if (!user) return;
     if (saving) return;
+
+    if (isOffline()) {
+      showToast("Нет соединения", {
+        description: "Сейчас интернет недоступен. Сохранить заказ не получится.",
+        variant: "error",
+      });
+      return;
+    }
 
     if (user.role === "viewer") {
       showToast("Действие недоступно", {
@@ -908,7 +1015,10 @@ export default function OrdersPage() {
         if (error) {
           console.error("Ошибка обновления заказа:", error);
           showToast("Ошибка обновления заказа", {
-            description: error.message,
+            description: getFriendlyErrorMessage(
+              error,
+              "Не удалось обновить шапку заказа."
+            ),
             variant: "error",
           });
           return;
@@ -919,7 +1029,10 @@ export default function OrdersPage() {
         if (error) {
           console.error("Ошибка создания заказа:", error);
           showToast("Ошибка создания заказа", {
-            description: error.message,
+            description: getFriendlyErrorMessage(
+              error,
+              "Не удалось создать заказ."
+            ),
             variant: "error",
           });
           return;
@@ -957,7 +1070,10 @@ export default function OrdersPage() {
         if (error) {
           console.error("Ошибка удаления позиций:", error);
           showToast("Ошибка удаления позиций", {
-            description: error.message,
+            description: getFriendlyErrorMessage(
+              error,
+              "Не удалось удалить лишние позиции."
+            ),
             variant: "error",
           });
           return;
@@ -973,7 +1089,10 @@ export default function OrdersPage() {
           if (error) {
             console.error("Ошибка обновления позиции:", error);
             showToast("Ошибка обновления позиции", {
-              description: error.message,
+              description: getFriendlyErrorMessage(
+                error,
+                "Не удалось обновить одну из позиций."
+              ),
               variant: "error",
             });
             return;
@@ -984,7 +1103,10 @@ export default function OrdersPage() {
           if (error) {
             console.error("Ошибка добавления позиции:", error);
             showToast("Ошибка добавления позиции", {
-              description: error.message,
+              description: getFriendlyErrorMessage(
+                error,
+                "Не удалось добавить одну из позиций."
+              ),
               variant: "error",
             });
             return;
@@ -1026,7 +1148,10 @@ export default function OrdersPage() {
     if (itemsError) {
       console.error("Ошибка удаления позиций:", itemsError);
       showToast("Ошибка удаления позиций", {
-        description: itemsError.message,
+        description: getFriendlyErrorMessage(
+          itemsError,
+          "Не удалось удалить позиции заказа."
+        ),
         variant: "error",
       });
       return;
@@ -1037,7 +1162,10 @@ export default function OrdersPage() {
     if (orderError) {
       console.error("Ошибка удаления заказа:", orderError);
       showToast("Ошибка удаления заказа", {
-        description: orderError.message,
+        description: getFriendlyErrorMessage(
+          orderError,
+          "Не удалось удалить заказ."
+        ),
         variant: "error",
       });
       return;
@@ -1119,7 +1247,10 @@ export default function OrdersPage() {
     if (error) {
       console.error("Ошибка обновления статуса позиции:", error);
       showToast("Ошибка обновления статуса", {
-        description: error.message,
+        description: getFriendlyErrorMessage(
+          error,
+          "Не удалось обновить статус позиции."
+        ),
         variant: "error",
       });
       return;
@@ -1135,7 +1266,10 @@ export default function OrdersPage() {
     if (orderError) {
       console.error("Ошибка обновления заказа:", orderError);
       showToast("Ошибка обновления заказа", {
-        description: orderError.message,
+        description: getFriendlyErrorMessage(
+          orderError,
+          "Не удалось обновить служебные данные заказа."
+        ),
         variant: "error",
       });
       return;
@@ -1245,7 +1379,10 @@ export default function OrdersPage() {
     if (error) {
       console.error("Ошибка обновления статуса позиции:", error);
       showToast("Ошибка обновления статуса", {
-        description: error.message,
+        description: getFriendlyErrorMessage(
+          error,
+          "Не удалось обновить статус позиции."
+        ),
         variant: "error",
       });
       return;
@@ -1261,7 +1398,10 @@ export default function OrdersPage() {
     if (orderError) {
       console.error("Ошибка обновления заказа:", orderError);
       showToast("Ошибка обновления заказа", {
-        description: orderError.message,
+        description: getFriendlyErrorMessage(
+          orderError,
+          "Не удалось обновить служебные данные заказа."
+        ),
         variant: "error",
       });
       return;
@@ -1677,7 +1817,7 @@ export default function OrdersPage() {
             canUseBulkStatusActions={canUseBulkStatusActions(user)}
             canUseBulkPlannedDateActions={canUseBulkPlannedDateActions(user)}
             canEditOrderDate={canEditOrderDate(user)}
-            setOpen={setOpen}
+            onRequestClose={requestCloseModal}
             setForm={setForm}
             applyBulkPlannedDate={applyBulkPlannedDate}
             applyBulkStatus={applyBulkStatus}

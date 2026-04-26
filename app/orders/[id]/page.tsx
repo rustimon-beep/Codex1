@@ -37,6 +37,12 @@ import type {
 } from "../../../lib/orders/types";
 import { useDialog } from "../../../lib/ui/useDialog";
 import { triggerHapticFeedback } from "../../../lib/ui/haptics";
+import {
+  getFriendlyErrorMessage,
+  isOffline,
+  normalizeToastOptions,
+  useConnectionFeedback,
+} from "../../../lib/ui/network";
 import { useToast } from "../../../lib/ui/useToast";
 import {
   formatDate,
@@ -88,7 +94,16 @@ export default function OrderDetailsPage() {
   });
   const [loginError, setLoginError] = useState("");
 
-  const { toasts, showToast, closeToast } = useToast();
+  const { toasts, showToast: baseShowToast, closeToast } = useToast();
+  const showToast = useCallback(
+    (
+      title: string,
+      options?: { description?: string; variant?: "success" | "error" | "info" }
+    ) => {
+      baseShowToast(title, normalizeToastOptions(options));
+    },
+    [baseShowToast]
+  );
   const {
     confirmDialog,
     promptDialog,
@@ -100,6 +115,26 @@ export default function OrderDetailsPage() {
   } = useDialog();
 
   const parsedComments = useMemo(() => parseComments(form.comment), [form.comment]);
+  const serializeOrderForm = useCallback(
+    (value: OrderFormState) =>
+      JSON.stringify({
+        ...value,
+        items: value.items.map((item) => ({
+          ...item,
+          importSource: item.importSource || null,
+          importIssues: item.importIssues || [],
+        })),
+      }),
+    []
+  );
+  const initialFormSnapshot = useMemo(
+    () => (order ? serializeOrderForm(mapOrderToFormState(order, EMPTY_ITEM)) : ""),
+    [order, serializeOrderForm]
+  );
+  const isFormDirty =
+    !!order && initialFormSnapshot !== "" && serializeOrderForm(form) !== initialFormSnapshot;
+
+  useConnectionFeedback(showToast);
   const isHighlightedArticle = useCallback(
     (value: string) => {
       const normalizedValue = value.trim().toLowerCase();
@@ -140,10 +175,12 @@ export default function OrderDetailsPage() {
     if (error) {
       console.error("Ошибка загрузки заказа:", error);
       showToast("Ошибка загрузки заказа", {
-        description: error.message,
+        description: getFriendlyErrorMessage(
+          error,
+          "Не удалось загрузить карточку заказа."
+        ),
         variant: "error",
       });
-      setOrder(null);
       setLoading(false);
       return;
     }
@@ -166,6 +203,18 @@ export default function OrderDetailsPage() {
       setLoading(false);
     }
   }, [user, loadOrder]);
+
+  useEffect(() => {
+    if (!isFormDirty || saving) return;
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isFormDirty, saving]);
 
   const { login, logout } = useOrdersAuthActions({
     loginForm,
@@ -208,12 +257,20 @@ export default function OrderDetailsPage() {
   };
 
   const handleSaveOrder = () => {
+    if (isOffline()) {
+      showToast("Нет соединения", {
+        description: "Сейчас интернет недоступен. Сохранить изменения не получится.",
+        variant: "error",
+      });
+      return;
+    }
+
     void saveOrder();
   };
 
   const handleSaveOrderWithHaptic = () => {
     triggerHapticFeedback("success");
-    void saveOrder();
+    handleSaveOrder();
   };
 
   const handleRemoveOrder = () => {
@@ -228,6 +285,27 @@ export default function OrderDetailsPage() {
   const handleReloadOrder = () => {
     void loadOrder();
   };
+
+  const handleBackNavigation = useCallback(
+    async (event?: React.MouseEvent<HTMLAnchorElement>) => {
+      if (!isFormDirty || saving) return;
+
+      event?.preventDefault();
+
+      const confirmed = await requestConfirmation({
+        title: "Выйти без сохранения?",
+        description:
+          "Есть несохранённые изменения. Если вернуться к списку сейчас, они потеряются.",
+        confirmText: "Выйти без сохранения",
+        variant: "danger",
+      });
+
+      if (!confirmed) return;
+
+      router.push("/");
+    },
+    [isFormDirty, requestConfirmation, router, saving]
+  );
 
   if (authLoading) {
     return (
@@ -343,6 +421,7 @@ export default function OrderDetailsPage() {
                   <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
                     <Link
                       href="/"
+                      onClick={handleBackNavigation}
                       className="route-link glass-chip rounded-[18px] px-3.5 py-2 text-center text-[12px] font-medium text-white transition hover:bg-white/15 md:rounded-2xl md:px-5 md:py-3 md:text-sm"
                     >
                       Назад к списку
@@ -979,7 +1058,9 @@ export default function OrderDetailsPage() {
         items={[
           {
             label: "Заказы",
-            href: "/",
+            onClick: () => {
+              void handleBackNavigation();
+            },
             haptic: "light",
             icon: (
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">

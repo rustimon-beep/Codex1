@@ -29,7 +29,7 @@ type OrderFormModalProps = {
   canUseBulkStatusActions: boolean;
   canUseBulkPlannedDateActions: boolean;
   canEditOrderDate: boolean;
-  setOpen: (value: boolean) => void;
+  onRequestClose: () => void | Promise<void>;
   setForm: Dispatch<SetStateAction<OrderFormState>>;
   applyBulkPlannedDate: () => void;
   applyBulkStatus: () => void;
@@ -113,7 +113,7 @@ export function OrderFormModal({
   canUseBulkStatusActions,
   canUseBulkPlannedDateActions,
   canEditOrderDate,
-  setOpen,
+  onRequestClose,
   setForm,
   applyBulkPlannedDate,
   applyBulkStatus,
@@ -228,7 +228,7 @@ export function OrderFormModal({
               </div>
 
               <button
-                onClick={() => !saving && setOpen(false)}
+                onClick={() => !saving && void onRequestClose()}
                 disabled={saving}
                 className="glass-chip shrink-0 rounded-[18px] px-3 py-1.5 text-[12px] font-medium text-slate-100 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60 md:rounded-2xl md:px-3 md:py-2 md:text-sm"
               >
@@ -771,7 +771,7 @@ export function OrderFormModal({
 
               <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <button
-                onClick={() => !saving && setOpen(false)}
+                onClick={() => !saving && void onRequestClose()}
                 disabled={saving || photoParsing}
                 className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
               >
