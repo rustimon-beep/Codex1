@@ -131,6 +131,10 @@ export default function OrderDetailsPage() {
     () => (order ? serializeOrderForm(mapOrderToFormState(order, EMPTY_ITEM)) : ""),
     [order, serializeOrderForm]
   );
+  const initialFormState = useMemo(
+    () => (order ? mapOrderToFormState(order, EMPTY_ITEM) : null),
+    [order]
+  );
   const isFormDirty =
     !!order && initialFormSnapshot !== "" && serializeOrderForm(form) !== initialFormSnapshot;
 
@@ -161,6 +165,65 @@ export default function OrderDetailsPage() {
   const progress = getOrderProgress(viewItems);
   const plannedDate = getOrderPlannedDate(viewItems);
   const fullDeliveredDate = getOrderDeliveredDate(viewItems);
+  const changedItemsCount = useMemo(() => {
+    if (!initialFormState) return 0;
+
+    return form.items.filter((item, index) => {
+      const original = initialFormState.items[index];
+      if (!original) return true;
+
+      return (
+        item.article !== original.article ||
+        item.name !== original.name ||
+        item.quantity !== original.quantity ||
+        item.plannedDate !== original.plannedDate ||
+        item.status !== original.status ||
+        item.hasReplacement !== original.hasReplacement ||
+        item.replacementArticle !== original.replacementArticle ||
+        item.deliveredDate !== original.deliveredDate ||
+        item.canceledDate !== original.canceledDate
+      );
+    }).length;
+  }, [form.items, initialFormState]);
+
+  const getChangedFields = useCallback(
+    (item: ItemForm, index: number) => {
+      const original = initialFormState?.items[index];
+
+      if (!original) {
+        return {
+          article: true,
+          name: true,
+          quantity: true,
+          plannedDate: true,
+          status: true,
+          hasReplacement: true,
+          replacementArticle: !!item.replacementArticle || item.hasReplacement,
+          deliveredDate: !!item.deliveredDate,
+          canceledDate: !!item.canceledDate,
+          any: true,
+        };
+      }
+
+      const changes = {
+        article: item.article !== original.article,
+        name: item.name !== original.name,
+        quantity: item.quantity !== original.quantity,
+        plannedDate: item.plannedDate !== original.plannedDate,
+        status: item.status !== original.status,
+        hasReplacement: item.hasReplacement !== original.hasReplacement,
+        replacementArticle: item.replacementArticle !== original.replacementArticle,
+        deliveredDate: item.deliveredDate !== original.deliveredDate,
+        canceledDate: item.canceledDate !== original.canceledDate,
+      };
+
+      return {
+        ...changes,
+        any: Object.values(changes).some(Boolean),
+      };
+    },
+    [initialFormState]
+  );
 
   const loadOrder = useCallback(async () => {
     if (!orderId || Number.isNaN(orderId)) {
@@ -698,8 +761,18 @@ export default function OrderDetailsPage() {
                       </div>
                     </div>
 
+                    {isFormDirty ? (
+                      <div className="mb-5 rounded-[20px] border border-amber-200 bg-amber-50/85 px-4 py-3.5 text-sm text-amber-900">
+                        <div className="font-medium">Есть несохранённые изменения</div>
+                        <div className="mt-1 text-amber-800">
+                          Изменено позиций: {changedItemsCount}. Перед уходом со страницы не забудь сохранить заказ.
+                        </div>
+                      </div>
+                    ) : null}
+
                     <div className="space-y-4">
                       {form.items.map((item, index) => {
+                        const changedFields = getChangedFields(item, index);
                         const itemOverdue = isItemOverdue({
                           id: item.id || -(index + 1),
                           order_id: order.id,
@@ -730,6 +803,8 @@ export default function OrderDetailsPage() {
                             className={`premium-card-hover overflow-hidden rounded-[26px] border bg-white shadow-[0_8px_22px_rgba(15,23,42,0.04)] transition ${
                               itemOverdue
                                 ? "border-rose-200 ring-1 ring-rose-100"
+                                : changedFields.any
+                                ? "border-amber-200 ring-1 ring-amber-100"
                                 : isHighlightedArticle(item.article) ||
                                   isHighlightedArticle(item.replacementArticle)
                                 ? "border-amber-300 ring-2 ring-amber-100"
@@ -768,6 +843,12 @@ export default function OrderDetailsPage() {
                                       Есть замена
                                     </div>
                                   ) : null}
+
+                                  {changedFields.any ? (
+                                    <div className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-medium text-amber-700">
+                                      Не сохранено
+                                    </div>
+                                  ) : null}
                                 </div>
 
                                 {eventLabel ? (
@@ -790,6 +871,8 @@ export default function OrderDetailsPage() {
                                     className={`w-full rounded-2xl border px-4 py-3.5 font-mono text-[13px] text-slate-900 outline-none focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500 ${
                                       isHighlightedArticle(item.article)
                                         ? "border-amber-300 bg-amber-50/80 ring-2 ring-amber-100"
+                                        : changedFields.article
+                                        ? "border-blue-200 bg-blue-50/70"
                                         : "border-slate-200 bg-slate-50"
                                     }`}
                                   />
@@ -802,7 +885,11 @@ export default function OrderDetailsPage() {
                                     onChange={(e) =>
                                       updateItemField(index, "name", e.target.value)
                                     }
-                                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm text-slate-900 outline-none focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500"
+                                    className={`w-full rounded-2xl border px-4 py-3.5 text-sm text-slate-900 outline-none focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500 ${
+                                      changedFields.name
+                                        ? "border-blue-200 bg-blue-50/70"
+                                        : "border-slate-200 bg-slate-50"
+                                    }`}
                                   />
                                 </FieldBlock>
 
@@ -813,7 +900,11 @@ export default function OrderDetailsPage() {
                                     onChange={(e) =>
                                       updateItemField(index, "quantity", e.target.value)
                                     }
-                                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm text-slate-900 outline-none focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500"
+                                    className={`w-full rounded-2xl border px-4 py-3.5 text-sm text-slate-900 outline-none focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500 ${
+                                      changedFields.quantity
+                                        ? "border-blue-200 bg-blue-50/70"
+                                        : "border-slate-200 bg-slate-50"
+                                    }`}
                                   />
                                 </FieldBlock>
 
@@ -826,7 +917,11 @@ export default function OrderDetailsPage() {
                                     onChange={(e) =>
                                       updateItemField(index, "plannedDate", e.target.value)
                                     }
-                                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm text-slate-900 outline-none focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500"
+                                    className={`w-full rounded-2xl border px-4 py-3.5 text-sm text-slate-900 outline-none focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500 ${
+                                      changedFields.plannedDate
+                                        ? "border-blue-200 bg-blue-50/70"
+                                        : "border-slate-200 bg-slate-50"
+                                    }`}
                                   />
                                 </FieldBlock>
 
@@ -837,9 +932,9 @@ export default function OrderDetailsPage() {
                                     onChange={(e) =>
                                       updateItemField(index, "status", e.target.value)
                                     }
-                                    className={`w-full rounded-2xl border px-4 py-3.5 text-sm outline-none disabled:bg-slate-100 disabled:text-slate-500 ${statusSelectClasses(
-                                      item.status || "Новый"
-                                    )}`}
+                                    className={`w-full rounded-2xl border px-4 py-3.5 text-sm outline-none disabled:bg-slate-100 disabled:text-slate-500 ${
+                                      changedFields.status ? "ring-2 ring-blue-100" : ""
+                                    } ${statusSelectClasses(item.status || "Новый")}`}
                                   >
                                     {getAvailableStatuses(item.status || "Новый").map((status) => (
                                       <option key={status} value={status}>
@@ -883,6 +978,8 @@ export default function OrderDetailsPage() {
                                     className={`w-full rounded-2xl border px-4 py-3.5 font-mono text-[13px] text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500 ${
                                       isHighlightedArticle(item.replacementArticle)
                                         ? "border-amber-300 bg-amber-50/80 ring-2 ring-amber-100"
+                                        : changedFields.replacementArticle || changedFields.hasReplacement
+                                        ? "border-blue-200 bg-blue-50/70"
                                         : "border-slate-200 bg-slate-50"
                                     }`}
                                   />
@@ -902,17 +999,33 @@ export default function OrderDetailsPage() {
                                             e.target.value
                                           )
                                         }
-                                        className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm text-slate-900 outline-none focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500"
+                                        className={`w-full rounded-2xl border px-4 py-3.5 text-sm text-slate-900 outline-none focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500 ${
+                                          changedFields.deliveredDate
+                                            ? "border-blue-200 bg-blue-50/70"
+                                            : "border-slate-200 bg-slate-50"
+                                        }`}
                                       />
                                     ) : (
-                                      <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm text-slate-700">
+                                      <div
+                                        className={`rounded-2xl border px-4 py-3.5 text-sm text-slate-700 ${
+                                          changedFields.deliveredDate
+                                            ? "border-blue-200 bg-blue-50/70"
+                                            : "border-slate-200 bg-slate-50"
+                                        }`}
+                                      >
                                         {formatDate(item.deliveredDate || null)}
                                       </div>
                                     )}
                                   </FieldBlock>
 
                                   <FieldBlock label="Отмена" compact>
-                                    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm text-slate-700">
+                                    <div
+                                      className={`rounded-2xl border px-4 py-3.5 text-sm text-slate-700 ${
+                                        changedFields.canceledDate
+                                          ? "border-blue-200 bg-blue-50/70"
+                                          : "border-slate-200 bg-slate-50"
+                                      }`}
+                                    >
                                       {formatDate(item.canceledDate || null)}
                                     </div>
                                   </FieldBlock>
@@ -1039,6 +1152,15 @@ export default function OrderDetailsPage() {
                   </section>
 
                   <section className="premium-shell rounded-[26px] p-4 md:rounded-[28px] md:p-5">
+                    {isFormDirty ? (
+                      <div className="mb-3 rounded-2xl border border-amber-200 bg-amber-50/85 px-4 py-3 text-sm text-amber-900">
+                        Несохранённых изменений: {changedItemsCount}
+                      </div>
+                    ) : (
+                      <div className="mb-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+                        Все изменения сохранены
+                      </div>
+                    )}
                     <button
                       onClick={handleSaveOrderWithHaptic}
                       disabled={saving}
