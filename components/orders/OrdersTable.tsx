@@ -159,7 +159,7 @@ export function OrdersTable({
                   <Fragment key={order.id}>
                     <tr
                       onClick={() => toggleOrderExpand(order.id)}
-                      className={`align-top cursor-pointer transition-all duration-200 group premium-card-hover ${
+                      className={`align-middle cursor-pointer transition-all duration-200 group premium-card-hover ${
                         overdue
                           ? "bg-rose-50/40 hover:bg-rose-50"
                           : orderStatus === "Поставлен"
@@ -170,9 +170,9 @@ export function OrdersTable({
                       }`}
                     >
                       <td className={`border-t border-[#E5E7EB] px-5 py-2.5 ${detailsOpen ? "relative z-30" : ""}`}>
-                        <div className="flex items-start gap-4">
+                        <div className="flex items-start gap-3.5">
                           <div
-                            className={`mt-1 h-9 w-1.5 rounded-full ${
+                            className={`mt-1 h-8 w-1.5 rounded-full ${
                               overdue
                                 ? "bg-rose-500"
                                 : orderStatus === "Поставлен"
@@ -208,7 +208,7 @@ export function OrdersTable({
                                           prev === order.id ? null : order.id
                                         );
                                       }}
-                                      className="inline-flex h-6 min-w-[20px] items-center justify-center rounded-md border border-stone-200 bg-stone-50 px-1.5 text-[11px] leading-none text-stone-600 transition hover:border-stone-300 hover:bg-stone-100"
+                                      className="inline-flex h-7 min-w-[24px] items-center justify-center rounded-[10px] border border-stone-200 bg-stone-50 px-1.5 text-[11px] leading-none text-stone-600 transition hover:border-stone-300 hover:bg-stone-100"
                                       aria-label="Показать детали заказа"
                                     >
                                       ⚑
@@ -273,7 +273,7 @@ export function OrdersTable({
                                 ) : null}
 
                                 <span
-                                  className={`inline-flex h-6 w-6 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 transition ${expanded ? "rotate-180" : ""}`}
+                                  className={`inline-flex h-7 w-7 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 transition ${expanded ? "rotate-180" : ""}`}
                                 >
                                   <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor">
                                     <path d="M5.25 7.5L10 12.25L14.75 7.5H5.25Z" />
@@ -395,11 +395,11 @@ export function OrdersTable({
 
                       <td className="border-t border-[#E5E7EB] px-5 py-2.5">
                         {order.updated_at ? (
-                          <div className="max-w-[170px]">
+                          <div className="max-w-[170px] leading-5">
                             <div className="premium-ui-title text-[13px] text-slate-800">
                               {order.updated_by || "—"}
                             </div>
-                            <div className="mt-1 text-[12px] leading-5 text-slate-500">
+                            <div className="mt-0.5 text-[12px] leading-5 text-slate-500">
                               {formatDateTimeForView(order.updated_at)}
                             </div>
                           </div>
