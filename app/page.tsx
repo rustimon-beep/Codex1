@@ -47,10 +47,13 @@ import {
   canComment,
   canCreateOrder,
   canEditItemMainFields,
+  canEditItemPlannedDate,
   canEditItemStatusFields,
   canEditOrderDate,
   canEditOrderTextFields,
   canUseBulkActions,
+  canUseBulkPlannedDateActions,
+  canUseBulkStatusActions,
 } from "../lib/orders/permissions";
 import {
   getFilteredAndSortedOrders,
@@ -1668,8 +1671,11 @@ export default function OrdersPage() {
             canEditOrderTextFields={canEditOrderTextFields(user)}
             canEditItemMainFields={canEditItemMainFields(user)}
             canEditItemStatusFields={canEditItemStatusFields(user)}
+            canEditItemPlannedDate={canEditItemPlannedDate(user)}
             canComment={canComment(user)}
             canUseBulkActions={canUseBulkActions(user)}
+            canUseBulkStatusActions={canUseBulkStatusActions(user)}
+            canUseBulkPlannedDateActions={canUseBulkPlannedDateActions(user)}
             canEditOrderDate={canEditOrderDate(user)}
             setOpen={setOpen}
             setForm={setForm}

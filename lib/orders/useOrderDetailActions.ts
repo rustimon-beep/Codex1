@@ -69,47 +69,7 @@ export function useOrderDetailActions(params: {
   const updateItemField = useCallback(
     (index: number, field: keyof ItemForm, value: string | boolean) => {
       void (async () => {
-        if (user?.role === "buyer") {
-          if (field === "status") {
-            setForm((prev) => {
-              const updatedItems = [...prev.items];
-              const current = updatedItems[index];
-
-              const nextItem = {
-                ...current,
-                status: String(value),
-              } as ItemForm;
-
-              if (value === "Поставлен") {
-                nextItem.canceledDate = "";
-              } else {
-                nextItem.deliveredDate = "";
-              }
-
-              if (value === "Отменен") {
-                nextItem.canceledDate = getTodayDate();
-                nextItem.deliveredDate = "";
-              } else if (value !== "Поставлен") {
-                nextItem.canceledDate = "";
-              }
-
-              updatedItems[index] = nextItem;
-              return { ...prev, items: updatedItems };
-            });
-            return;
-          }
-
-          if (field === "deliveredDate") {
-            setForm((prev) => {
-              const updatedItems = [...prev.items];
-              const current = updatedItems[index];
-              updatedItems[index] = {
-                ...current,
-                deliveredDate: String(value),
-              };
-              return { ...prev, items: updatedItems };
-            });
-          }
+        if (user?.role === "buyer" && field === "plannedDate") {
           return;
         }
 

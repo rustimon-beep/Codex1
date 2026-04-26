@@ -21,7 +21,12 @@ import { mapFormItemsToOrderItems, mapOrderToFormState } from "../../../lib/orde
 import {
   canComment,
   canEditItemMainFields,
+  canEditItemPlannedDate,
+  canEditItemStatusFields as canEditItemStatusFieldsByRole,
+  canEditOrderTextFields as canEditOrderTextFieldsByRole,
   canUseBulkActions,
+  canUseBulkPlannedDateActions,
+  canUseBulkStatusActions,
 } from "../../../lib/orders/permissions";
 import { useOrderDetailActions } from "../../../lib/orders/useOrderDetailActions";
 import type {
@@ -103,11 +108,13 @@ export default function OrderDetailsPage() {
     [highlightQuery]
   );
 
-  const canEditOrderTextFields = user?.role === "admin";
+  const canEditOrderTextFields = canEditOrderTextFieldsByRole(user);
   const canEditMainItemFields = canEditItemMainFields(user);
-  const canEditItemStatusFields =
-    user?.role === "admin" || user?.role === "supplier" || user?.role === "buyer";
+  const canEditItemStatusFields = canEditItemStatusFieldsByRole(user);
+  const canEditPlannedDateFields = canEditItemPlannedDate(user);
   const canBulkEditItems = canUseBulkActions(user);
+  const canBulkStatusItems = canUseBulkStatusActions(user);
+  const canBulkPlannedDateItems = canUseBulkPlannedDateActions(user);
   const canCommentOnOrder = canComment(user);
 
   const viewItems: OrderItem[] = useMemo(
@@ -489,7 +496,7 @@ export default function OrderDetailsPage() {
                                 type="date"
                                 min={getTodayDate()}
                                 value={form.bulkPlannedDate}
-                                disabled={saving}
+                                disabled={!canBulkPlannedDateItems || saving}
                                 onChange={(e) =>
                                   setForm((prev) => ({
                                     ...prev,
@@ -502,7 +509,7 @@ export default function OrderDetailsPage() {
 
                             <button
                               onClick={applyBulkPlannedDate}
-                              disabled={saving}
+                              disabled={!canBulkPlannedDateItems || saving}
                               className="w-full rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 md:w-auto"
                             >
                               Применить дату ко всем
@@ -515,7 +522,7 @@ export default function OrderDetailsPage() {
                             <FieldBlock label="Статус для всех позиций" compact>
                               <select
                                 value={form.bulkStatus}
-                                disabled={saving}
+                                disabled={!canBulkStatusItems || saving}
                                 onChange={(e) =>
                                   setForm((prev) => ({
                                     ...prev,
@@ -534,7 +541,7 @@ export default function OrderDetailsPage() {
 
                             <button
                               onClick={applyBulkStatus}
-                              disabled={saving}
+                              disabled={!canBulkStatusItems || saving}
                               className="w-full rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 md:w-auto"
                             >
                               Применить статус ко всем
@@ -736,7 +743,7 @@ export default function OrderDetailsPage() {
                                     type="date"
                                     min={getTodayDate()}
                                     value={item.plannedDate}
-                                    disabled={!canEditItemStatusFields || saving || user?.role === "buyer"}
+                                    disabled={!canEditPlannedDateFields || saving}
                                     onChange={(e) =>
                                       updateItemField(index, "plannedDate", e.target.value)
                                     }
@@ -769,7 +776,7 @@ export default function OrderDetailsPage() {
                                   <input
                                     type="checkbox"
                                     checked={item.hasReplacement}
-                                    disabled={!canEditItemStatusFields || saving || user?.role === "buyer"}
+                                    disabled={!canEditMainItemFields || saving}
                                     onChange={(e) =>
                                       updateItemField(index, "hasReplacement", e.target.checked)
                                     }
@@ -782,10 +789,9 @@ export default function OrderDetailsPage() {
                                   <input
                                     value={item.replacementArticle}
                                     disabled={
-                                      !canEditItemStatusFields ||
+                                      !canEditMainItemFields ||
                                       !item.hasReplacement ||
-                                      saving ||
-                                      user?.role === "buyer"
+                                      saving
                                     }
                                     onChange={(e) =>
                                       updateItemField(
@@ -805,7 +811,7 @@ export default function OrderDetailsPage() {
 
                                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                   <FieldBlock label="Поставка" compact>
-                                    {item.status === "Поставлен" && user?.role === "buyer" ? (
+                                    {item.status === "Поставлен" && canEditItemStatusFields ? (
                                       <input
                                         type="date"
                                         value={item.deliveredDate}

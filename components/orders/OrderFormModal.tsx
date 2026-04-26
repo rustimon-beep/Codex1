@@ -23,8 +23,11 @@ type OrderFormModalProps = {
   canEditOrderTextFields: boolean;
   canEditItemMainFields: boolean;
   canEditItemStatusFields: boolean;
+  canEditItemPlannedDate: boolean;
   canComment: boolean;
   canUseBulkActions: boolean;
+  canUseBulkStatusActions: boolean;
+  canUseBulkPlannedDateActions: boolean;
   canEditOrderDate: boolean;
   setOpen: (value: boolean) => void;
   setForm: Dispatch<SetStateAction<OrderFormState>>;
@@ -104,8 +107,11 @@ export function OrderFormModal({
   canEditOrderTextFields,
   canEditItemMainFields,
   canEditItemStatusFields,
+  canEditItemPlannedDate,
   canComment,
   canUseBulkActions,
+  canUseBulkStatusActions,
+  canUseBulkPlannedDateActions,
   canEditOrderDate,
   setOpen,
   setForm,
@@ -312,6 +318,7 @@ export function OrderFormModal({
                   </div>
 
                   <div className="grid grid-cols-1 gap-3 md:gap-4">
+                    {canUseBulkPlannedDateActions ? (
                     <div className="rounded-2xl border border-slate-200 bg-white p-3">
                       <div className="grid grid-cols-1 gap-3 md:grid-cols-[240px_auto] md:items-end">
                         <div>
@@ -320,7 +327,7 @@ export function OrderFormModal({
                           </label>
                           <input
                             value={formatDateInputValue(form.bulkPlannedDate)}
-                            disabled={saving || photoParsing}
+                            disabled={!canEditItemPlannedDate || saving || photoParsing}
                             placeholder="ДД.ММ.ГГГГ"
                             onChange={(e) =>
                               setForm({
@@ -335,7 +342,7 @@ export function OrderFormModal({
                         <div>
                           <button
                             onClick={applyBulkPlannedDate}
-                            disabled={saving || photoParsing}
+                            disabled={!canEditItemPlannedDate || saving || photoParsing}
                             className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 md:w-auto"
                           >
                             Применить ко всем позициям
@@ -343,7 +350,9 @@ export function OrderFormModal({
                         </div>
                       </div>
                     </div>
+                    ) : null}
 
+                    {canUseBulkStatusActions ? (
                     <div className="rounded-2xl border border-slate-200 bg-white p-3">
                       <div className="grid grid-cols-1 gap-3 md:grid-cols-[240px_auto] md:items-end">
                         <div>
@@ -352,7 +361,7 @@ export function OrderFormModal({
                           </label>
                           <select
                             value={form.bulkStatus}
-                            disabled={saving || photoParsing}
+                            disabled={!canEditItemStatusFields || saving || photoParsing}
                             onChange={(e) =>
                               setForm({ ...form, bulkStatus: e.target.value })
                             }
@@ -369,7 +378,7 @@ export function OrderFormModal({
                         <div>
                           <button
                             onClick={applyBulkStatus}
-                            disabled={saving || photoParsing}
+                            disabled={!canEditItemStatusFields || saving || photoParsing}
                             className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 md:w-auto"
                           >
                             Применить статус ко всем
@@ -377,6 +386,7 @@ export function OrderFormModal({
                         </div>
                       </div>
                     </div>
+                    ) : null}
                   </div>
                 </section>
               ) : null}
@@ -527,7 +537,7 @@ export function OrderFormModal({
                             <button
                               type="button"
                               onClick={() => updateItemField(index, "hasReplacement", !item.hasReplacement)}
-                              disabled={!canEditItemStatusFields || saving || photoParsing}
+                              disabled={!canEditItemMainFields || saving || photoParsing}
                               className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] transition disabled:cursor-not-allowed disabled:opacity-60 ${
                                 item.hasReplacement
                                   ? "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-800"
@@ -614,7 +624,7 @@ export function OrderFormModal({
                           </label>
                           <input
                             value={formatDateInputValue(item.plannedDate)}
-                            disabled={!canEditItemStatusFields || saving || photoParsing}
+                            disabled={!canEditItemPlannedDate || saving || photoParsing}
                             placeholder="ДД.ММ.ГГГГ"
                             onChange={(e) =>
                               updateItemField(
@@ -633,7 +643,7 @@ export function OrderFormModal({
                           </label>
                           <select
                             value={item.status}
-                            disabled={!canEditItemStatusFields || saving || photoParsing}
+                            disabled={!canEditItemMainFields || saving || photoParsing}
                             onChange={(e) => updateItemField(index, "status", e.target.value)}
                             className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500"
                           >
