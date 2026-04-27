@@ -48,7 +48,14 @@ async function ensureServiceWorker() {
   return registration;
 }
 
-async function showSystemNotification(title: string, body: string) {
+async function showSystemNotification(
+  title: string,
+  body: string,
+  options?: {
+    tag?: string;
+    requireInteraction?: boolean;
+  }
+) {
   const icon = "/icon-192.png";
 
   try {
@@ -58,7 +65,8 @@ async function showSystemNotification(title: string, body: string) {
         body,
         icon,
         badge: icon,
-        tag: `avtodom-${title}`,
+        tag: options?.tag || `avtodom-${title}`,
+        requireInteraction: options?.requireInteraction,
       });
       return;
     }
@@ -68,6 +76,8 @@ async function showSystemNotification(title: string, body: string) {
     new Notification(title, {
       body,
       icon,
+      tag: options?.tag,
+      requireInteraction: options?.requireInteraction,
     });
   }
 }
@@ -101,7 +111,13 @@ export function useOrdersNotifications(params: {
 
         await showSystemNotification(
           recipient.notification_events.title,
-          recipient.notification_events.body
+          recipient.notification_events.body,
+          {
+            tag: recipient.notification_events.event_key,
+            requireInteraction:
+              recipient.notification_events.event_type === "overdue" ||
+              recipient.notification_events.event_type === "cancellation",
+          }
         );
         await markNotificationDelivered(recipient.id);
       }
@@ -204,7 +220,13 @@ export function useOrdersNotifications(params: {
 
             await showSystemNotification(
               recipient.notification_events.title,
-              recipient.notification_events.body
+              recipient.notification_events.body,
+              {
+                tag: recipient.notification_events.event_key,
+                requireInteraction:
+                  recipient.notification_events.event_type === "overdue" ||
+                  recipient.notification_events.event_type === "cancellation",
+              }
             );
             await markNotificationDelivered(recipient.id);
           } catch {}

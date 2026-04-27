@@ -12,6 +12,8 @@ self.addEventListener("push", (event) => {
   const body = payload.body || "Появилось новое уведомление.";
   const url = payload.url || "/";
   const eventKey = payload.eventKey || title;
+  const tag = payload.tag || `push-${eventKey}`;
+  const requireInteraction = Boolean(payload.requireInteraction);
 
   event.waitUntil(
     self.registration.showNotification(title, {
@@ -22,7 +24,8 @@ self.addEventListener("push", (event) => {
         url,
         eventKey,
       },
-      tag: `push-${eventKey}`,
+      tag,
+      requireInteraction,
     })
   );
 });

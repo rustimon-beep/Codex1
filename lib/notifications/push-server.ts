@@ -40,6 +40,13 @@ function configureWebPush() {
   );
 }
 
+function getPushPresentation(eventType: string, eventKey: string) {
+  return {
+    tag: `avtodom-${eventKey}`,
+    requireInteraction: eventType === "overdue" || eventType === "cancellation",
+  };
+}
+
 export async function dispatchNotificationEventPush(eventId: string) {
   configureWebPush();
 
@@ -69,6 +76,7 @@ export async function dispatchNotificationEventPush(eventId: string) {
         : eventValue.order_id
           ? `/orders/${eventValue.order_id}`
           : "/";
+    const presentation = getPushPresentation(eventValue.event_type, eventValue.event_key);
 
     const { data: subscriptions, error: subscriptionsError } = await supabase
       .from("push_subscriptions")
@@ -100,6 +108,8 @@ export async function dispatchNotificationEventPush(eventId: string) {
             body: eventValue.body,
             url,
             eventKey: eventValue.event_key,
+            tag: presentation.tag,
+            requireInteraction: presentation.requireInteraction,
           })
         );
 

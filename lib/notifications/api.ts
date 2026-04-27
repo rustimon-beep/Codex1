@@ -131,7 +131,7 @@ export async function ensureOverdueNotificationEvents(orders: OrderWithItems[]) 
         eventKey: `overdue:${order.id}`,
         eventType: "overdue",
         orderId: order.id,
-        title: "Просроченный заказ",
+        title: "Просрочка по заказу",
         body: `${getOrderLabel(order)} требует внимания: есть просроченные позиции.`,
         payload: {
           clientOrder: order.client_order || "",
@@ -202,7 +202,7 @@ export async function notifyOrderChanged(params: {
         eventKey: `status-change:${params.afterOrder.id}:${params.updatedAtKey}:${nonCancellationChangedCount}`,
         eventType: "status_changed",
         orderId: params.afterOrder.id,
-        title: "Изменение статуса",
+        title: "Статус обновлён",
         body: `В заказе ${getOrderLabel(params.afterOrder)} изменён статус ${nonCancellationChangedCount} ${statusLabel}.`,
         payload: {
           clientOrder: params.afterOrder.client_order || "",
@@ -224,7 +224,7 @@ export async function notifyOrderChanged(params: {
         eventKey: `cancellation:${params.afterOrder.id}:${params.updatedAtKey}:${canceledCount}`,
         eventType: "cancellation",
         orderId: params.afterOrder.id,
-        title: "Есть отмены",
+        title: "Появилась отмена",
         body: `В заказе ${getOrderLabel(params.afterOrder)} появил${canceledCount === 1 ? "ась" : "ись"} отмен${canceledCount === 1 ? "а" : "ы"} у ${canceledCount} ${canceledLabel}.`,
         payload: {
           clientOrder: params.afterOrder.client_order || "",
