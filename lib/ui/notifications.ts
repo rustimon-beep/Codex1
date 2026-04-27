@@ -1,8 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { supabase } from "../supabase";
 import type { OrderWithItems } from "../orders/types";
-import { getOrderStatus, isOrderOverdue } from "../orders/utils";
+import {
+  ensureOverdueNotificationEvents,
+  fetchNotificationRecipientById,
+  fetchPendingNotifications,
+  markNotificationDelivered,
+} from "../notifications/api";
 
 type ToastFn = (
   title: string,
@@ -12,8 +18,7 @@ type ToastFn = (
   }
 ) => void;
 
-const STORAGE_KEY_PREFIX = "avtodom-notification-snapshot-v3";
-const SESSION_NOTIFICATIONS_KEY = "avtodom-session-notifications-v1";
+type UserRole = "admin" | "supplier" | "viewer" | "buyer";
 
 function isIos() {
   if (typeof navigator === "undefined") return false;
@@ -66,140 +71,17 @@ async function showSystemNotification(title: string, body: string) {
   }
 }
 
-function readSessionNotifications() {
-  if (typeof window === "undefined") return [] as string[];
-
-  try {
-    const raw = window.sessionStorage.getItem(SESSION_NOTIFICATIONS_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeSessionNotifications(ids: string[]) {
-  if (typeof window === "undefined") return;
-  window.sessionStorage.setItem(SESSION_NOTIFICATIONS_KEY, JSON.stringify(ids));
-}
-
-async function showSessionNotificationOnce(params: {
-  id: string;
-  title: string;
-  body: string;
-}) {
-  const shown = readSessionNotifications();
-  if (shown.includes(params.id)) return;
-
-  await showSystemNotification(params.title, params.body);
-  writeSessionNotifications([...shown, params.id]);
-}
-
-function getOrderLabel(order: OrderWithItems) {
-  return (order.client_order || "").trim() || `Заказ #${order.id}`;
-}
-
-function formatOrderList(labels: string[]) {
-  if (labels.length === 0) return "";
-  if (labels.length === 1) return labels[0];
-  if (labels.length === 2) return `${labels[0]} и ${labels[1]}`;
-  return `${labels[0]}, ${labels[1]} и ещё ${labels.length - 2}`;
-}
-
-type UserRole = "admin" | "supplier" | "viewer" | "buyer";
-
-type OrdersNotificationSnapshot = {
-  total: number;
-  overdue: string[];
-  statuses: Record<
-    string,
-    {
-      status: string;
-      canceledCount: number;
-      updatedAt: string;
-    }
-  >;
-};
-
-function readSnapshot(role: UserRole): OrdersNotificationSnapshot {
-  if (typeof window === "undefined") {
-    return {
-      total: 0,
-      overdue: [],
-      statuses: {},
-    };
-  }
-
-  try {
-    const raw = window.localStorage.getItem(`${STORAGE_KEY_PREFIX}-${role}`);
-    if (!raw) {
-      return {
-        total: 0,
-        overdue: [],
-        statuses: {},
-      };
-    }
-    const parsed = JSON.parse(raw) as Partial<OrdersNotificationSnapshot>;
-    return {
-      total: Number(parsed.total || 0),
-      overdue: Array.isArray(parsed.overdue) ? parsed.overdue : [],
-      statuses: parsed.statuses || {},
-    };
-  } catch {
-    return {
-      total: 0,
-      overdue: [],
-      statuses: {},
-    };
-  }
-}
-
-function writeSnapshot(role: UserRole, snapshot: OrdersNotificationSnapshot) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(`${STORAGE_KEY_PREFIX}-${role}`, JSON.stringify(snapshot));
-}
-
 export function useOrdersNotifications(params: {
-  orders: OrderWithItems[];
+  userId: string | null;
   userRole: UserRole;
+  orders: OrderWithItems[];
   showToast: ToastFn;
 }) {
-  const { orders, userRole, showToast } = params;
+  const { userId, userRole, orders, showToast } = params;
   const [permission, setPermission] = useState<NotificationPermission | "unsupported">(
     "unsupported"
   );
   const [requesting, setRequesting] = useState(false);
-
-  const overdueIds = useMemo(
-    () =>
-      orders
-        .filter((order) => isOrderOverdue(order.order_items || []))
-        .map((order) => String(order.id)),
-    [orders]
-  );
-  const statusesSnapshot = useMemo(
-    () =>
-      Object.fromEntries(
-        orders.map((order) => [
-          String(order.id),
-          {
-            status: getOrderStatus(order.order_items || []),
-            canceledCount: (order.order_items || []).filter((item) => item.status === "Отменен")
-              .length,
-            updatedAt: order.updated_at || "",
-          },
-        ])
-      ),
-    [orders]
-  );
-  const ordersById = useMemo(
-    () =>
-      Object.fromEntries(
-        orders.map((order) => [String(order.id), order])
-      ) as Record<string, OrderWithItems>,
-    [orders]
-  );
 
   useEffect(() => {
     if (!supportsNotifications()) {
@@ -212,141 +94,67 @@ export function useOrdersNotifications(params: {
   }, []);
 
   useEffect(() => {
-    if (permission !== "granted") return;
-    if (userRole === "viewer") return;
+    if (!userId || userRole === "viewer") return;
 
-    const previous = readSnapshot(userRole);
-    const current = {
-      total: orders.length,
-      overdue: overdueIds,
-      statuses: statusesSnapshot,
+    void ensureOverdueNotificationEvents(orders).catch(() => {});
+  }, [orders, userId, userRole]);
+
+  useEffect(() => {
+    if (!userId || permission !== "granted" || userRole === "viewer") return;
+
+    let cancelled = false;
+
+    const loadPending = async () => {
+      try {
+        const pending = await fetchPendingNotifications(userId);
+
+        for (const recipient of pending) {
+          if (cancelled || !recipient.notification_events) continue;
+
+          await showSystemNotification(
+            recipient.notification_events.title,
+            recipient.notification_events.body
+          );
+          await markNotificationDelivered(recipient.id);
+        }
+      } catch {}
     };
 
-    const tasks: Promise<void>[] = [];
+    void loadPending();
 
-    const newOrderCount = Object.keys(current.statuses).filter(
-      (orderId) => !previous.statuses[orderId]
-    ).length;
-    const newlyOverdueIds = current.overdue.filter((id) => !previous.overdue.includes(id));
-    const newlyOverdueCount = newlyOverdueIds.length;
+    const channel = supabase
+      .channel(`notification-recipients-${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notification_recipients",
+          filter: `user_id=eq.${userId}`,
+        },
+        async (payload) => {
+          const recipientId = Number(payload.new.id);
+          if (!recipientId) return;
 
-    const changedStatusOrderIds: string[] = [];
-    const cancellationOrderIds: string[] = [];
+          try {
+            const recipient = await fetchNotificationRecipientById(recipientId);
+            if (!recipient.notification_events || recipient.delivered_at) return;
 
-    for (const [orderId, snapshot] of Object.entries(current.statuses)) {
-      const previousOrder = previous.statuses[orderId];
-      if (!previousOrder) continue;
+            await showSystemNotification(
+              recipient.notification_events.title,
+              recipient.notification_events.body
+            );
+            await markNotificationDelivered(recipient.id);
+          } catch {}
+        }
+      )
+      .subscribe();
 
-      if (snapshot.status !== previousOrder.status) {
-        changedStatusOrderIds.push(orderId);
-      }
-
-      if (snapshot.canceledCount > previousOrder.canceledCount) {
-        cancellationOrderIds.push(orderId);
-      }
-    }
-
-    if (newOrderCount > 0 && ["admin", "supplier", "buyer"].includes(userRole)) {
-      const labels = Object.keys(current.statuses)
-        .filter((orderId) => !previous.statuses[orderId])
-        .map((orderId) => ordersById[orderId])
-        .filter(Boolean)
-        .map(getOrderLabel)
-        .slice(0, 3);
-
-      tasks.push(
-        showSessionNotificationOnce({
-          id: `new-orders:${Object.keys(current.statuses)
-            .filter((orderId) => !previous.statuses[orderId])
-            .join(",")}`,
-          title: "Новые заказы",
-          body:
-            labels.length > 0
-              ? `Новые: ${formatOrderList(labels)}.`
-              : newOrderCount === 1
-              ? "Появился 1 новый заказ."
-              : `Появилось новых заказов: ${newOrderCount}.`,
-        })
-      );
-    }
-
-    if (newlyOverdueCount > 0 && ["admin", "supplier", "buyer"].includes(userRole)) {
-      const labels = newlyOverdueIds
-        .map((orderId) => ordersById[orderId])
-        .filter(Boolean)
-        .map(getOrderLabel)
-        .slice(0, 3);
-
-      tasks.push(
-        showSessionNotificationOnce({
-          id: `overdue:${newlyOverdueIds.join(",")}`,
-          title: "Просроченные заказы",
-          body:
-            labels.length > 0
-              ? `Просрочены: ${formatOrderList(labels)}.`
-              : newlyOverdueCount === 1
-              ? "Появился 1 новый просроченный заказ."
-              : `Появилось новых просроченных заказов: ${newlyOverdueCount}.`,
-        })
-      );
-    }
-
-    if (changedStatusOrderIds.length > 0 && ["admin", "buyer"].includes(userRole)) {
-      const labels = changedStatusOrderIds
-        .map((orderId) => ordersById[orderId])
-        .filter(Boolean)
-        .map(getOrderLabel)
-        .slice(0, 3);
-
-      tasks.push(
-        showSessionNotificationOnce({
-          id: `status-change:${changedStatusOrderIds.join(",")}:${changedStatusOrderIds
-            .map((orderId) => current.statuses[orderId]?.status || "")
-            .join(",")}`,
-          title: "Изменение статусов",
-          body:
-            labels.length > 0
-              ? `Изменились статусы: ${formatOrderList(labels)}.`
-              : changedStatusOrderIds.length === 1
-              ? "У одного заказа изменился статус."
-              : `Изменились статусы заказов: ${changedStatusOrderIds.length}.`,
-        })
-      );
-    }
-
-    if (cancellationOrderIds.length > 0 && ["admin", "buyer"].includes(userRole)) {
-      const labels = cancellationOrderIds
-        .map((orderId) => ordersById[orderId])
-        .filter(Boolean)
-        .map(getOrderLabel)
-        .slice(0, 3);
-
-      tasks.push(
-        showSessionNotificationOnce({
-          id: `cancellations:${cancellationOrderIds.join(",")}:${cancellationOrderIds
-            .map((orderId) => current.statuses[orderId]?.canceledCount || 0)
-            .join(",")}`,
-          title: "Есть отмены",
-          body:
-            labels.length > 0
-              ? `Появились отмены: ${formatOrderList(labels)}.`
-              : cancellationOrderIds.length === 1
-              ? "Появилась 1 новая отменённая позиция."
-              : `Появились отменённые позиции в заказах: ${cancellationOrderIds.length}.`,
-        })
-      );
-    }
-
-    writeSnapshot(userRole, current);
-    void Promise.all(tasks);
-  }, [
-    orders.length,
-    overdueIds,
-    ordersById,
-    permission,
-    statusesSnapshot,
-    userRole,
-  ]);
+    return () => {
+      cancelled = true;
+      void supabase.removeChannel(channel);
+    };
+  }, [permission, userId, userRole]);
 
   const requestPermission = useCallback(async () => {
     if (userRole === "viewer") {
@@ -400,7 +208,7 @@ export function useOrdersNotifications(params: {
     } finally {
       setRequesting(false);
     }
-  }, [showToast]);
+  }, [showToast, userRole]);
 
   return {
     supported: supportsNotifications(),

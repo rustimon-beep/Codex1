@@ -46,10 +46,10 @@ export function NotificationPrompt({
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="min-w-0">
           <div className="text-[13px] font-semibold text-slate-900 md:text-sm">
-            Уведомления о срочных заказах
+            Уведомления о заказах
           </div>
           <div className="mt-0.5 text-[12px] leading-5 text-slate-500 md:text-[13px]">
-            Включи уведомления, чтобы не пропускать просрочки и срочные заказы.
+            Включи уведомления, чтобы не пропускать новые заказы, просрочки и важные изменения.
             {isIos && !isStandalone
               ? " На iPhone лучше сначала добавить приложение на экран домой."
               : ""}

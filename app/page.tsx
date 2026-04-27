@@ -21,6 +21,10 @@ import { NotificationPrompt } from "../components/ui/NotificationPrompt";
 import { useOrdersAuthActions } from "../lib/auth/useOrdersAuthActions";
 import { useProfileAuth } from "../lib/auth/useProfileAuth";
 import {
+  notifyNewOrderCreated,
+  notifyOrderChanged,
+} from "../lib/notifications/api";
+import {
   buildOrderItemPayload,
   createOrderHeader,
   createOrderItem,
@@ -248,6 +252,7 @@ export default function OrdersPage() {
   const attention = useMemo(() => getOrdersAttention(orders), [orders]);
   const notifications = useOrdersNotifications({
     orders,
+    userId: user?.id || null,
     userRole: user?.role || "viewer",
     showToast,
   });
@@ -1124,6 +1129,37 @@ export default function OrdersPage() {
       setOpen(false);
       resetForm();
       await loadOrders();
+
+      if (!editingOrderId) {
+        await notifyNewOrderCreated({
+          orderId,
+          clientOrder: form.clientOrder,
+        }).catch(() => {});
+      } else if (existingOrder) {
+        const nextOrderSnapshot = {
+          id: orderId,
+          client_order: form.clientOrder,
+          order_items: validItems.map((item) => ({
+            id: item.id!,
+            order_id: orderId,
+            article: item.article,
+            replacement_article: item.hasReplacement ? item.replacementArticle : null,
+            name: item.name,
+            quantity: item.quantity,
+            planned_date: item.plannedDate || null,
+            status: item.status,
+            delivered_date: item.deliveredDate || null,
+            canceled_date: item.canceledDate || null,
+          })),
+        };
+
+        await notifyOrderChanged({
+          beforeOrder: existingOrder,
+          afterOrder: nextOrderSnapshot,
+          updatedAtKey: nowTimestamp,
+        }).catch(() => {});
+      }
+
       showToast(editingOrderId ? "Заказ обновлён" : "Заказ создан", {
         variant: "success",
       });
@@ -1305,6 +1341,27 @@ export default function OrdersPage() {
       )
     );
 
+    const nextOrderSnapshot = {
+      id: quickDateDialog.orderId,
+      client_order: currentOrder?.client_order || "",
+      order_items: (currentOrder?.order_items || []).map((row) =>
+        row.id === quickDateDialog.itemId
+          ? {
+              ...row,
+              status: "Поставлен",
+              delivered_date: dateValue,
+              canceled_date: null,
+            }
+          : row
+      ),
+    };
+
+    await notifyOrderChanged({
+      beforeOrder: currentOrder as OrderWithItems,
+      afterOrder: nextOrderSnapshot,
+      updatedAtKey: nowTimestamp,
+    }).catch(() => {});
+
     closeQuickDateDialog();
     showToast("Статус обновлён", { variant: "success" });
   };
@@ -1436,6 +1493,27 @@ export default function OrdersPage() {
           : order
       )
     );
+
+    const nextOrderSnapshot = {
+      id: orderId,
+      client_order: currentOrder?.client_order || "",
+      order_items: (currentOrder?.order_items || []).map((row) =>
+        row.id === item.id
+          ? {
+              ...row,
+              status: newStatus,
+              delivered_date: null,
+              canceled_date: newStatus === "Отменен" ? today : null,
+            }
+          : row
+      ),
+    };
+
+    await notifyOrderChanged({
+      beforeOrder: currentOrder as OrderWithItems,
+      afterOrder: nextOrderSnapshot,
+      updatedAtKey: nowTimestamp,
+    }).catch(() => {});
 
     showToast("Статус обновлён", { variant: "success" });
   };

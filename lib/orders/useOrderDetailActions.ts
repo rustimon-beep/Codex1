@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
+import { notifyOrderChanged } from "../notifications/api";
 import {
   buildOrderItemPayload,
   deleteItemsByOrderId,
@@ -382,6 +383,29 @@ export function useOrderDetailActions(params: {
           return;
         }
       }
+
+      const nextOrderSnapshot = {
+        id: order.id,
+        client_order: form.clientOrder,
+        order_items: validItems.map((item) => ({
+          id: item.id!,
+          order_id: order.id,
+          article: item.article,
+          replacement_article: item.hasReplacement ? item.replacementArticle : null,
+          name: item.name,
+          quantity: item.quantity,
+          planned_date: item.plannedDate || null,
+          status: item.status,
+          delivered_date: item.deliveredDate || null,
+          canceled_date: item.canceledDate || null,
+        })),
+      };
+
+      await notifyOrderChanged({
+        beforeOrder: order,
+        afterOrder: nextOrderSnapshot,
+        updatedAtKey: formatDateTimeForDb(),
+      }).catch(() => {});
 
       await loadOrder();
       showToast("Заказ обновлён", { variant: "success" });
