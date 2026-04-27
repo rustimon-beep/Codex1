@@ -2,7 +2,7 @@
 
 import { supabase } from "../supabase";
 import type { OrderItem, OrderWithItems, UserProfile } from "../orders/types";
-import { getOrderStatus, isOrderOverdue } from "../orders/utils";
+import { isOrderOverdue } from "../orders/utils";
 
 type NotificationRecipientRole = "admin" | "supplier" | "buyer";
 type NotificationEventType =
@@ -61,101 +61,58 @@ function getOrderLabel(order: Pick<OrderWithItems, "id" | "client_order">) {
   return (order.client_order || "").trim() || `Заказ #${order.id}`;
 }
 
-async function fetchProfilesByRoles(roles: NotificationRecipientRole[]) {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("id, role")
-    .in("role", roles);
-
-  if (error || !data) {
-    throw error || new Error("Не удалось загрузить получателей уведомлений.");
-  }
-
-  return data as Array<{ id: string; role: NotificationRecipientRole }>;
-}
-
-async function createEventAndRecipients(params: {
-  eventKey: string;
-  eventType: NotificationEventType;
-  orderId: number | null;
-  title: string;
-  body: string;
-  payload?: Record<string, unknown>;
-  recipientRoles: NotificationRecipientRole[];
-}) {
-  const { data: insertedEvent, error: eventError } = await supabase
-    .from("notification_events")
-    .upsert(
-      {
-        event_key: params.eventKey,
-        event_type: params.eventType,
-        order_id: params.orderId,
-        title: params.title,
-        body: params.body,
-        payload: params.payload || {},
-      },
-      { onConflict: "event_key" }
-    )
-    .select("id")
-    .single();
-
-  if (eventError || !insertedEvent?.id) {
-    throw eventError || new Error("Не удалось создать событие уведомления.");
-  }
-
-  const recipients = await fetchProfilesByRoles(params.recipientRoles);
-
-  if (recipients.length === 0) return;
-
-  const { error: recipientsError } = await supabase
-    .from("notification_recipients")
-    .upsert(
-      recipients.map((recipient) => ({
-        event_id: insertedEvent.id,
-        user_id: recipient.id,
-        role: recipient.role,
-      })),
-      { onConflict: "event_id,user_id" }
-    );
-
-  if (recipientsError) {
-    throw recipientsError;
-  }
-
-  await fetch("/api/notifications/dispatch", {
+async function createEventAndRecipients(
+  events: Array<{
+    eventKey: string;
+    eventType: NotificationEventType;
+    orderId: number | null;
+    title: string;
+    body: string;
+    payload?: Record<string, unknown>;
+    recipientRoles: NotificationRecipientRole[];
+  }>
+) {
+  const response = await fetch("/api/notifications/events", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      eventId: insertedEvent.id,
+      events,
     }),
-  }).catch(() => {});
+  }).catch(() => null);
+
+  if (!response || !response.ok) {
+    throw new Error("Не удалось создать уведомления на сервере.");
+  }
 }
 
 export async function notifyNewOrderCreated(params: {
   orderId: number;
   clientOrder: string;
 }) {
-  await createEventAndRecipients({
-    eventKey: `new-order:${params.orderId}`,
-    eventType: "new_order",
-    orderId: params.orderId,
-    title: "Новый заказ",
-    body: `Появился новый заказ: ${params.clientOrder || `#${params.orderId}`}.`,
-    payload: {
-      clientOrder: params.clientOrder,
+  await createEventAndRecipients([
+    {
+      eventKey: `new-order:${params.orderId}`,
+      eventType: "new_order",
+      orderId: params.orderId,
+      title: "Новый заказ",
+      body: `Появился новый заказ: ${params.clientOrder || `#${params.orderId}`}.`,
+      payload: {
+        clientOrder: params.clientOrder,
+      },
+      recipientRoles: ["admin", "supplier", "buyer"],
     },
-    recipientRoles: ["admin", "supplier", "buyer"],
-  });
+  ]);
 }
 
 export async function ensureOverdueNotificationEvents(orders: OrderWithItems[]) {
   const overdueOrders = orders.filter((order) => isOrderOverdue(order.order_items || []));
 
-  await Promise.all(
-    overdueOrders.map((order) =>
-      createEventAndRecipients({
+  if (overdueOrders.length === 0) return;
+
+  await createEventAndRecipients(
+    overdueOrders.map((order) => ({
         eventKey: `overdue:${order.id}`,
         eventType: "overdue",
         orderId: order.id,
@@ -165,8 +122,7 @@ export async function ensureOverdueNotificationEvents(orders: OrderWithItems[]) 
           clientOrder: order.client_order || "",
         },
         recipientRoles: ["admin", "supplier", "buyer"],
-      })
-    )
+      }))
   );
 }
 
@@ -204,11 +160,18 @@ export async function notifyOrderChanged(params: {
   const afterItems = params.afterOrder.order_items || [];
   const { changedCount, canceledCount } = getStatusDiff(beforeItems, afterItems);
 
-  const tasks: Promise<void>[] = [];
+  const events: Array<{
+    eventKey: string;
+    eventType: NotificationEventType;
+    orderId: number | null;
+    title: string;
+    body: string;
+    payload?: Record<string, unknown>;
+    recipientRoles: NotificationRecipientRole[];
+  }> = [];
 
   if (changedCount > 0) {
-    tasks.push(
-      createEventAndRecipients({
+    events.push({
         eventKey: `status-change:${params.afterOrder.id}:${params.updatedAtKey}:${changedCount}`,
         eventType: "status_changed",
         orderId: params.afterOrder.id,
@@ -219,13 +182,11 @@ export async function notifyOrderChanged(params: {
           changedCount,
         },
         recipientRoles: ["admin", "buyer"],
-      })
-    );
+      });
   }
 
   if (canceledCount > 0) {
-    tasks.push(
-      createEventAndRecipients({
+    events.push({
         eventKey: `cancellation:${params.afterOrder.id}:${params.updatedAtKey}:${canceledCount}`,
         eventType: "cancellation",
         orderId: params.afterOrder.id,
@@ -236,11 +197,12 @@ export async function notifyOrderChanged(params: {
           canceledCount,
         },
         recipientRoles: ["admin", "buyer"],
-      })
-    );
+      });
   }
 
-  await Promise.all(tasks);
+  if (events.length > 0) {
+    await createEventAndRecipients(events);
+  }
 }
 
 export async function fetchPendingNotifications(userId: string) {
