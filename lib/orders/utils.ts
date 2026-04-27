@@ -338,19 +338,26 @@ export function parseClipboardItems(rawText: string): ItemForm[] {
           article = splitByWideGap[0] || "";
           name = splitByWideGap.slice(1).join(" ").trim();
         } else {
+          const firstCyrillicIndex = withoutQuantity.search(/[А-Яа-яЁё]/);
+
+          if (firstCyrillicIndex > 0) {
+            article = withoutQuantity.slice(0, firstCyrillicIndex).trim();
+            name = withoutQuantity.slice(firstCyrillicIndex).trim();
+          } else {
           const articleWithSpacesMatch = withoutQuantity.match(
             /^([A-Za-zА-Яа-я0-9._/-]+(?:\s+[A-Za-zА-Яа-я0-9._/-]+){0,4})\s+(.+)$/
           );
 
-          if (articleWithSpacesMatch) {
-            article = articleWithSpacesMatch[1].trim();
-            name = articleWithSpacesMatch[2].trim();
-          } else {
-            const articleMatch = withoutQuantity.match(/^[A-Za-zА-Яа-я0-9._/-]+/);
-            article = articleMatch?.[0] || "";
-            name = article
-              ? withoutQuantity.slice(article.length).trim()
-              : withoutQuantity.trim();
+            if (articleWithSpacesMatch) {
+              article = articleWithSpacesMatch[1].trim();
+              name = articleWithSpacesMatch[2].trim();
+            } else {
+              const articleMatch = withoutQuantity.match(/^[A-Za-zА-Яа-я0-9._/-]+/);
+              article = articleMatch?.[0] || "";
+              name = article
+                ? withoutQuantity.slice(article.length).trim()
+                : withoutQuantity.trim();
+            }
           }
         }
       }
