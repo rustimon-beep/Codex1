@@ -161,6 +161,22 @@ export default function SupplierAnalyticsPage() {
       }));
   }, [analytics.rows]);
 
+  const topStableSuppliers = useMemo(() => {
+    return [...rankedRows]
+      .sort((a, b) => {
+        if (a.overdueShare !== b.overdueShare) return a.overdueShare - b.overdueShare;
+        if (a.canceledShare !== b.canceledShare) return a.canceledShare - b.canceledShare;
+        if (b.totalLines !== a.totalLines) return b.totalLines - a.totalLines;
+        return a.supplierName.localeCompare(b.supplierName, "ru");
+      })
+      .slice(0, 3);
+  }, [rankedRows]);
+
+  const topRiskSuppliers = useMemo(() => rankedRows.slice(0, 3), [rankedRows]);
+  const rankBySupplierId = useMemo(() => {
+    return new Map(rankedRows.map((row) => [row.supplierId, row.rank]));
+  }, [rankedRows]);
+
   const handleLogoutWithHaptic = () => {
     void logout();
   };
@@ -534,6 +550,36 @@ export default function SupplierAnalyticsPage() {
                 </div>
               </div>
 
+              <div className="grid gap-4 xl:grid-cols-2">
+                <HighlightPanel
+                  eyebrow="Лучшие"
+                  title="Стабильные поставщики"
+                  description="Минимум просрочек и отмен при рабочем объёме линий."
+                  tone="emerald"
+                  rows={topStableSuppliers.map((row) => ({
+                    key: `stable-${row.supplierId}`,
+                    title: row.supplierName,
+                    meta: `Линий: ${row.totalLines} · Поставлено: ${row.deliveredLines}`,
+                    badge: `Просрочки ${formatPercent(row.overdueShare)}`,
+                    subbadge: `Отмены ${Math.round(row.canceledShare)}%`,
+                  }))}
+                />
+
+                <HighlightPanel
+                  eyebrow="Риски"
+                  title="Требуют внимания"
+                  description="Поставщики с самой высокой долей просрочек и заметным объёмом отмен."
+                  tone="rose"
+                  rows={topRiskSuppliers.map((row) => ({
+                    key: `risk-top-${row.supplierId}`,
+                    title: row.supplierName,
+                    meta: `Просрочено: ${row.overdueLinesEver} · Отменено: ${row.canceledLines}`,
+                    badge: `Просрочки ${formatPercent(row.overdueShare)}`,
+                    subbadge: `Отмены ${Math.round(row.canceledShare)}%`,
+                  }))}
+                />
+              </div>
+
               <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:rounded-[28px] md:px-5 md:py-5">
                 <SectionHeading
                   eyebrow="Сравнение поставщиков"
@@ -541,9 +587,9 @@ export default function SupplierAnalyticsPage() {
                   description="Историческая доля просрочек считается по линиям и по первой фиксации просрочки."
                 />
 
-                <div className="mt-4 hidden overflow-hidden rounded-[22px] border border-slate-200 md:block">
+                <div className="mt-4 hidden max-h-[680px] overflow-auto rounded-[22px] border border-slate-200 md:block">
                   <table className="min-w-full divide-y divide-slate-200 text-left">
-                    <thead className="bg-slate-50/90">
+                    <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur">
                       <tr>
                         {[
                           "Поставщик",
@@ -570,7 +616,14 @@ export default function SupplierAnalyticsPage() {
                       {analytics.rows.map((row) => (
                         <tr key={row.supplierId} className="bg-white transition hover:bg-slate-50/80">
                           <td className="px-4 py-3.5">
-                            <div className="font-semibold text-slate-900">{row.supplierName}</div>
+                            <div className="flex items-center gap-2">
+                              <div className="font-semibold text-slate-900">{row.supplierName}</div>
+                              {(rankBySupplierId.get(row.supplierId) || 99) <= 3 ? (
+                                <span className="inline-flex rounded-full bg-slate-900 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-white">
+                                  топ-{rankBySupplierId.get(row.supplierId)}
+                                </span>
+                              ) : null}
+                            </div>
                           </td>
                           <td className="px-4 py-3.5 text-sm text-slate-700">{row.totalOrders}</td>
                           <td className="px-4 py-3.5 text-sm text-slate-700">{row.canceledOrders}</td>
@@ -810,6 +863,71 @@ function SectionHeading({
         {title}
       </h2>
       <p className="mt-1 text-[14px] leading-6 text-slate-500">{description}</p>
+    </div>
+  );
+}
+
+function HighlightPanel({
+  eyebrow,
+  title,
+  description,
+  tone,
+  rows,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  tone: "emerald" | "rose";
+  rows: Array<{
+    key: string;
+    title: string;
+    meta: string;
+    badge: string;
+    subbadge: string;
+  }>;
+}) {
+  const toneClasses =
+    tone === "emerald"
+      ? "border-emerald-200 bg-emerald-50/50"
+      : "border-rose-200 bg-rose-50/50";
+  const badgeClasses =
+    tone === "emerald"
+      ? "bg-emerald-100 text-emerald-800"
+      : "bg-rose-100 text-rose-800";
+
+  return (
+    <div className={`rounded-[24px] border px-4 py-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)] md:rounded-[28px] md:px-5 md:py-5 ${toneClasses}`}>
+      <SectionHeading eyebrow={eyebrow} title={title} description={description} />
+
+      <div className="mt-4 space-y-3">
+        {rows.map((row, index) => (
+          <div
+            key={row.key}
+            className="rounded-[18px] border border-white/80 bg-white/90 px-4 py-3"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-900 text-[11px] font-semibold text-white">
+                    {index + 1}
+                  </span>
+                  <div className="truncate text-[15px] font-semibold tracking-tight text-slate-900">
+                    {row.title}
+                  </div>
+                </div>
+                <div className="mt-1 text-[12px] leading-5 text-slate-500">{row.meta}</div>
+              </div>
+
+              <div className="flex shrink-0 flex-col items-end gap-1">
+                <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] ${badgeClasses}`}>
+                  {row.badge}
+                </span>
+                <span className="text-[11px] text-slate-500">{row.subbadge}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
