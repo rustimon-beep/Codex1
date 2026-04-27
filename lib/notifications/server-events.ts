@@ -48,16 +48,25 @@ async function fetchProfilesByRoles(
 ) {
   const supabase = getAdminSupabase();
 
-  const { data, error } = await supabase
+  const primary = await supabase
     .from("profiles")
     .select("id, role, supplier_id")
     .in("role", roles);
 
-  if (error || !data) {
-    throw error || new Error("Не удалось загрузить получателей уведомлений.");
+  if (primary.error || !primary.data) {
+    const fallback = await supabase.from("profiles").select("id, role").in("role", roles);
+
+    if (fallback.error || !fallback.data) {
+      throw primary.error || fallback.error || new Error("Не удалось загрузить получателей уведомлений.");
+    }
+
+    return (fallback.data as Array<{
+      id: string;
+      role: NotificationRecipientRole;
+    }>).filter((profile) => profile.role !== "supplier");
   }
 
-  return (data as Array<{
+  return (primary.data as Array<{
     id: string;
     role: NotificationRecipientRole;
     supplier_id: number | null;

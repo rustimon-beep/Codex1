@@ -49,18 +49,31 @@ function writeCachedProfile(profile: UserProfile) {
 }
 
 async function loadProfileFromDb(userId: string) {
-  const { data, error } = await supabase
+  const primary = await supabase
     .from("profiles")
     .select("id, email, full_name, role, supplier_id")
     .eq("id", userId)
     .single();
 
-  if (error || !data) {
-    console.error("Ошибка профиля:", error);
+  if (!primary.error && primary.data) {
+    return mapProfile(primary.data);
+  }
+
+  const fallback = await supabase
+    .from("profiles")
+    .select("id, email, full_name, role")
+    .eq("id", userId)
+    .single();
+
+  if (fallback.error || !fallback.data) {
+    console.error("Ошибка профиля:", primary.error || fallback.error);
     return null;
   }
 
-  return mapProfile(data);
+  return mapProfile({
+    ...fallback.data,
+    supplier_id: null,
+  });
 }
 
 export async function fetchUserProfile(userId: string): Promise<UserProfile | null> {

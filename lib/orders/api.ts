@@ -33,21 +33,34 @@ function applyOrderScope<T extends { eq: (column: string, value: unknown) => T }
 }
 
 export async function fetchOrders(user?: UserProfile | null) {
-  const query = supabase
+  const primaryQuery = supabase
     .from("orders_v2")
     .select("*, supplier:suppliers(id, name), order_items(*)")
     .order("id", { ascending: false });
 
-  return applyOrderScope(query, user);
+  const primaryResult = await applyOrderScope(primaryQuery, user);
+  if (!primaryResult.error) return primaryResult;
+
+  return supabase
+    .from("orders_v2")
+    .select("*, order_items(*)")
+    .order("id", { ascending: false });
 }
 
 export async function fetchOrderById(orderId: number, user?: UserProfile | null) {
-  const query = supabase
+  const primaryQuery = supabase
     .from("orders_v2")
     .select("*, supplier:suppliers(id, name), order_items(*)")
     .eq("id", orderId);
 
-  return applyOrderScope(query, user).single();
+  const primaryResult = await applyOrderScope(primaryQuery, user).single();
+  if (!primaryResult.error) return primaryResult;
+
+  return supabase
+    .from("orders_v2")
+    .select("*, order_items(*)")
+    .eq("id", orderId)
+    .single();
 }
 
 export async function updateOrderHeader(orderId: number, payload: OrderHeaderPayload) {
