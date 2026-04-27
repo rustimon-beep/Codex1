@@ -16,6 +16,7 @@ import { EmptyStateCard } from "../../../components/ui/EmptyStateCard";
 import { useOrdersAuthActions } from "../../../lib/auth/useOrdersAuthActions";
 import { useProfileAuth } from "../../../lib/auth/useProfileAuth";
 import { fetchOrderById } from "../../../lib/orders/api";
+import { fetchSuppliers, mapSuppliers } from "../../../lib/suppliers/api";
 import { EMPTY_ITEM, ORDER_TYPE_OPTIONS, STATUS_OPTIONS } from "../../../lib/orders/constants";
 import { mapFormItemsToOrderItems, mapOrderToFormState } from "../../../lib/orders/detail";
 import {
@@ -34,6 +35,7 @@ import type {
   OrderItem,
   OrderFormState,
   OrderWithItems,
+  SupplierSummary,
 } from "../../../lib/orders/types";
 import { useDialog } from "../../../lib/ui/useDialog";
 import { triggerHapticFeedback } from "../../../lib/ui/haptics";
@@ -70,6 +72,7 @@ export default function OrderDetailsPage() {
   const highlightQuery = (searchParams.get("highlight") || "").trim().toLowerCase();
 
   const [order, setOrder] = useState<OrderWithItems | null>(null);
+  const [suppliers, setSuppliers] = useState<SupplierSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -86,6 +89,7 @@ export default function OrderDetailsPage() {
     clientOrder: "",
     orderDate: "",
     orderType: "Стандартный",
+    supplierId: "",
     comment: "",
     newComment: "",
     bulkPlannedDate: "",
@@ -153,6 +157,7 @@ export default function OrderDetailsPage() {
   );
 
   const canEditOrderTextFields = canEditOrderTextFieldsByRole(user);
+  const canEditSupplierAssignment = user?.role === "admin" || user?.role === "buyer";
   const canEditMainItemFields = canEditItemMainFields(user);
   const canEditItemStatusFields = canEditItemStatusFieldsByRole(user);
   const canEditPlannedDateFields = canEditItemPlannedDate(user);
@@ -312,7 +317,7 @@ export default function OrderDetailsPage() {
 
     setLoading(true);
 
-    const { data, error } = await fetchOrderById(orderId);
+    const { data, error } = await fetchOrderById(orderId, user);
 
     if (error) {
       console.error("Ошибка загрузки заказа:", error);
@@ -335,7 +340,7 @@ export default function OrderDetailsPage() {
     }
 
     setLoading(false);
-  }, [orderId, showToast]);
+  }, [orderId, showToast, user]);
 
   useEffect(() => {
     if (user) {
@@ -345,6 +350,22 @@ export default function OrderDetailsPage() {
       setLoading(false);
     }
   }, [user, loadOrder]);
+
+  useEffect(() => {
+    if (!user || user.role === "viewer" || user.role === "supplier") {
+      setSuppliers([]);
+      return;
+    }
+
+    void (async () => {
+      const { data, error } = await fetchSuppliers();
+      if (error) {
+        console.error("Ошибка загрузки поставщиков:", error);
+        return;
+      }
+      setSuppliers(mapSuppliers(data as SupplierSummary[]));
+    })();
+  }, [user]);
 
   useEffect(() => {
     if (!isFormDirty || saving) return;
@@ -665,7 +686,7 @@ export default function OrderDetailsPage() {
                       </div>
                     </div>
 
-                    <div className="mt-4 grid grid-cols-1 gap-3 md:mt-5 md:gap-4 md:grid-cols-3">
+                    <div className="mt-4 grid grid-cols-1 gap-3 md:mt-5 md:gap-4 md:grid-cols-4">
                       <FieldBlock label="Номер клиентского заказа">
                         <input
                           value={form.clientOrder}
@@ -701,6 +722,30 @@ export default function OrderDetailsPage() {
                             </option>
                           ))}
                         </select>
+                      </FieldBlock>
+
+                      <FieldBlock label="Поставщик">
+                        {canEditSupplierAssignment ? (
+                          <select
+                            value={form.supplierId}
+                            disabled={!canEditSupplierAssignment || saving}
+                            onChange={(e) =>
+                              setForm((prev) => ({ ...prev, supplierId: e.target.value }))
+                            }
+                            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm text-slate-900 outline-none focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500"
+                          >
+                            <option value="">Выбери поставщика</option>
+                            {suppliers.map((supplier) => (
+                              <option key={supplier.id} value={supplier.id}>
+                                {supplier.name}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <div className="w-full rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3.5 text-sm text-slate-500">
+                            {order.supplier?.name || "Не назначен"}
+                          </div>
+                        )}
                       </FieldBlock>
 
                     </div>

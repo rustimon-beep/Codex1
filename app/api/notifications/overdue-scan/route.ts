@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { createOverdueNotificationEventsForOrders } from "../../../../lib/notifications/server-events";
+import {
+  createOverdueNotificationEventsForOrders,
+  registerFirstOverdueItems,
+} from "../../../../lib/notifications/server-events";
 
 function getRequiredEnv(name: string) {
   const value = process.env[name];
@@ -44,7 +47,9 @@ export async function POST(request: Request) {
 
     const { data, error } = await supabase
       .from("orders_v2")
-      .select("id, client_order, order_items!left(id, planned_date, status, delivered_date, canceled_date)")
+      .select(
+        "id, client_order, supplier_id, order_items!left(id, planned_date, status, delivered_date, canceled_date)"
+      )
       .not("order_items", "is", null);
 
     if (error) {
@@ -53,6 +58,7 @@ export async function POST(request: Request) {
 
     const overdueOrders = (data || []).filter((order) =>
       (order.order_items || []).some((item: {
+        id: number;
         planned_date: string | null;
         status: string | null;
         delivered_date: string | null;
@@ -66,16 +72,43 @@ export async function POST(request: Request) {
       })
     );
 
+    const overdueItems = overdueOrders.flatMap((order) =>
+      (order.order_items || [])
+        .filter((item: {
+          id: number;
+          planned_date: string | null;
+          status: string | null;
+          delivered_date: string | null;
+          canceled_date: string | null;
+        }) => {
+          const plannedDate = (item.planned_date || "").slice(0, 10);
+          const delivered = item.status === "Поставлен" || !!item.delivered_date;
+          const canceled = item.status === "Отменен" || !!item.canceled_date;
+
+          return !!plannedDate && plannedDate < today && !delivered && !canceled;
+        })
+        .map((item: { id: number; planned_date: string | null }) => ({
+          order_item_id: item.id,
+          order_id: order.id,
+          supplier_id: order.supplier_id || null,
+          first_planned_date: item.planned_date ? item.planned_date.slice(0, 10) : null,
+        }))
+    );
+
+    await registerFirstOverdueItems(overdueItems);
+
     await createOverdueNotificationEventsForOrders(
       overdueOrders.map((order) => ({
         id: order.id,
         client_order: order.client_order || null,
+        supplier_id: order.supplier_id || null,
       }))
     );
 
     return NextResponse.json({
       ok: true,
       overdueCount: overdueOrders.length,
+      overdueItemsCount: overdueItems.length,
     });
   } catch (error) {
     return NextResponse.json(

@@ -39,6 +39,7 @@ import {
   updateOrderItem,
   updateOrderMetadata,
 } from "../lib/orders/api";
+import { fetchSuppliers, mapSuppliers } from "../lib/suppliers/api";
 import { EMPTY_ITEM } from "../lib/orders/constants";
 import {
   appendCancellationComment,
@@ -70,6 +71,7 @@ import type {
   OrderItem,
   OrderFormState,
   OrderWithItems,
+  SupplierSummary,
   SortDirection,
   SortField,
 } from "../lib/orders/types";
@@ -115,6 +117,7 @@ type QuickDateDialogState = {
 };
 
 export default function OrdersPage() {
+  const [suppliers, setSuppliers] = useState<SupplierSummary[]>([]);
   const [importReview, setImportReview] = useState<{
     source: "photo" | "excel" | "clipboard";
     importedCount: number;
@@ -211,7 +214,7 @@ export default function OrdersPage() {
   const loadOrders = useCallback(async () => {
     setLoading(true);
 
-    const { data, error } = await fetchOrders();
+    const { data, error } = await fetchOrders(user);
 
     if (error) {
       console.error("Ошибка загрузки:", error);
@@ -227,7 +230,18 @@ export default function OrdersPage() {
     }
 
     setLoading(false);
-  }, [showToast]);
+  }, [showToast, user]);
+
+  const loadSuppliers = useCallback(async () => {
+    const { data, error } = await fetchSuppliers();
+
+    if (error) {
+      console.error("Ошибка загрузки поставщиков:", error);
+      return;
+    }
+
+    setSuppliers(mapSuppliers(data as SupplierSummary[]));
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -236,6 +250,15 @@ export default function OrdersPage() {
       setOrders([]);
     }
   }, [user, loadOrders]);
+
+  useEffect(() => {
+    if (!user || user.role === "viewer" || user.role === "supplier") {
+      setSuppliers([]);
+      return;
+    }
+
+    void loadSuppliers();
+  }, [loadSuppliers, user]);
 
   const filteredOrders = useMemo(() => {
     return getFilteredAndSortedOrders({
@@ -938,6 +961,14 @@ export default function OrdersPage() {
       return;
     }
 
+    if (!form.supplierId) {
+      showToast("Не выбран поставщик", {
+        description: "Для заказа нужно выбрать поставщика.",
+        variant: "error",
+      });
+      return;
+    }
+
     setSaving(true);
 
     try {
@@ -1026,6 +1057,7 @@ export default function OrdersPage() {
         client_order: form.clientOrder,
         order_date: orderDateForSave,
         order_type: form.orderType,
+        supplier_id: Number(form.supplierId),
         comment: nextComment,
         updated_by: user.name,
         updated_at: nowTimestamp,
@@ -1148,11 +1180,13 @@ export default function OrdersPage() {
         await notifyNewOrderCreated({
           orderId: savedOrderId,
           clientOrder: form.clientOrder,
+          supplierId: Number(form.supplierId),
         }).catch(() => {});
       } else if (existingOrder) {
         const nextOrderSnapshot = {
           id: savedOrderId,
           client_order: form.clientOrder,
+          supplier_id: Number(form.supplierId),
           order_items: validItems.map((item) => ({
             id: item.id!,
             order_id: savedOrderId,
@@ -1358,6 +1392,7 @@ export default function OrdersPage() {
     const nextOrderSnapshot = {
       id: quickDateDialog.orderId,
       client_order: currentOrder?.client_order || "",
+      supplier_id: currentOrder?.supplier_id || null,
       order_items: (currentOrder?.order_items || []).map((row) =>
         row.id === quickDateDialog.itemId
           ? {
@@ -1513,6 +1548,7 @@ export default function OrdersPage() {
     const nextOrderSnapshot = {
       id: orderId,
       client_order: currentOrder?.client_order || "",
+      supplier_id: currentOrder?.supplier_id || null,
       order_items: (currentOrder?.order_items || []).map((row) =>
         row.id === item.id
           ? {
@@ -1934,6 +1970,7 @@ export default function OrdersPage() {
             importReview={currentImportReview}
             editingOrderId={editingOrderId}
             userRole={user.role}
+            suppliers={suppliers}
             form={form}
             parsedComments={parsedComments}
             canEditOrderTextFields={canEditOrderTextFields(user)}

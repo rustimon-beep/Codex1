@@ -12,6 +12,7 @@ type NotificationEventDraft = {
   eventKey: string;
   eventType: NotificationEventType;
   orderId: number | null;
+  supplierId?: number | null;
   title: string;
   body: string;
   payload?: Record<string, unknown>;
@@ -41,19 +42,31 @@ function getAdminSupabase() {
   );
 }
 
-async function fetchProfilesByRoles(roles: NotificationRecipientRole[]) {
+async function fetchProfilesByRoles(
+  roles: NotificationRecipientRole[],
+  supplierId?: number | null
+) {
   const supabase = getAdminSupabase();
 
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, role")
+    .select("id, role, supplier_id")
     .in("role", roles);
 
   if (error || !data) {
     throw error || new Error("Не удалось загрузить получателей уведомлений.");
   }
 
-  return data as Array<{ id: string; role: NotificationRecipientRole }>;
+  return (data as Array<{
+    id: string;
+    role: NotificationRecipientRole;
+    supplier_id: number | null;
+  }>).filter((profile) => {
+    if (profile.role !== "supplier") return true;
+    if (!roles.includes("supplier")) return false;
+    if (!supplierId) return false;
+    return profile.supplier_id === supplierId;
+  });
 }
 
 export async function createNotificationEvents(events: NotificationEventDraft[]) {
@@ -80,7 +93,7 @@ export async function createNotificationEvents(events: NotificationEventDraft[])
       throw eventError || new Error("Не удалось создать событие уведомления.");
     }
 
-    const recipients = await fetchProfilesByRoles(event.recipientRoles);
+    const recipients = await fetchProfilesByRoles(event.recipientRoles, event.supplierId);
 
     if (recipients.length > 0) {
       const { error: recipientsError } = await supabase
@@ -104,7 +117,7 @@ export async function createNotificationEvents(events: NotificationEventDraft[])
 }
 
 export async function createOverdueNotificationEventsForOrders(
-  orders: Array<{ id: number; client_order: string | null }>
+  orders: Array<{ id: number; client_order: string | null; supplier_id: number | null }>
 ) {
   if (orders.length === 0) return;
 
@@ -113,6 +126,7 @@ export async function createOverdueNotificationEventsForOrders(
       eventKey: `overdue:${order.id}`,
       eventType: "overdue" as const,
       orderId: order.id,
+      supplierId: order.supplier_id,
       title: "Просроченный заказ",
       body: `Заказ просрочен: ${(order.client_order || "").trim() || `#${order.id}`}.`,
       payload: {
@@ -122,6 +136,32 @@ export async function createOverdueNotificationEventsForOrders(
       recipientRoles: ["admin", "supplier", "buyer"],
     }))
   );
+}
+
+export async function registerFirstOverdueItems(
+  items: Array<{
+    order_item_id: number;
+    order_id: number;
+    supplier_id: number | null;
+    first_planned_date: string | null;
+  }>
+) {
+  if (items.length === 0) return;
+
+  const supabase = getAdminSupabase();
+  const { error } = await supabase.from("order_item_first_overdue").upsert(
+    items.map((item) => ({
+      order_item_id: item.order_item_id,
+      order_id: item.order_id,
+      supplier_id: item.supplier_id,
+      first_planned_date: item.first_planned_date,
+    })),
+    { onConflict: "order_item_id", ignoreDuplicates: true }
+  );
+
+  if (error) {
+    throw error;
+  }
 }
 
 export type { NotificationEventDraft, NotificationEventType, NotificationRecipientRole };

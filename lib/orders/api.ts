@@ -1,10 +1,11 @@
 import { supabase } from "../supabase";
-import type { ItemForm, OrderWithItems } from "./types";
+import type { ItemForm, OrderWithItems, UserProfile } from "./types";
 
 type OrderHeaderPayload = {
   client_order: string;
   order_date: string;
   order_type: string;
+  supplier_id: number | null;
   comment: string;
   updated_by: string;
   updated_at: string;
@@ -22,19 +23,31 @@ type OrderItemPayload = {
   canceled_date: string | null;
 };
 
-export async function fetchOrders() {
-  return supabase
-    .from("orders_v2")
-    .select("*, order_items(*)")
-    .order("id", { ascending: false });
+function applyOrderScope<T extends { eq: (column: string, value: unknown) => T }>(
+  query: T,
+  user?: UserProfile | null
+) {
+  if (user?.role !== "supplier") return query;
+  if (!user.supplier_id) return query.eq("supplier_id", -1);
+  return query.eq("supplier_id", user.supplier_id);
 }
 
-export async function fetchOrderById(orderId: number) {
-  return supabase
+export async function fetchOrders(user?: UserProfile | null) {
+  const query = supabase
     .from("orders_v2")
-    .select("*, order_items(*)")
-    .eq("id", orderId)
-    .single();
+    .select("*, supplier:suppliers(id, name), order_items(*)")
+    .order("id", { ascending: false });
+
+  return applyOrderScope(query, user);
+}
+
+export async function fetchOrderById(orderId: number, user?: UserProfile | null) {
+  const query = supabase
+    .from("orders_v2")
+    .select("*, supplier:suppliers(id, name), order_items(*)")
+    .eq("id", orderId);
+
+  return applyOrderScope(query, user).single();
 }
 
 export async function updateOrderHeader(orderId: number, payload: OrderHeaderPayload) {
@@ -43,6 +56,8 @@ export async function updateOrderHeader(orderId: number, payload: OrderHeaderPay
     .update({
       client_order: payload.client_order,
       order_date: payload.order_date,
+      order_type: payload.order_type,
+      supplier_id: payload.supplier_id,
       comment: payload.comment,
       updated_by: payload.updated_by,
       updated_at: payload.updated_at,

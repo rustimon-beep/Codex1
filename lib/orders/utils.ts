@@ -16,6 +16,7 @@ export function createEmptyOrderForm(emptyItem: ItemForm) {
     clientOrder: "",
     orderDate: getTodayDate(),
     orderType: "Стандартный",
+    supplierId: "",
     comment: "",
     newComment: "",
     bulkPlannedDate: "",

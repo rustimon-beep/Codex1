@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
-import type { ItemForm, OrderFormState } from "../../lib/orders/types";
+import type { ItemForm, OrderFormState, SupplierSummary } from "../../lib/orders/types";
 import { ORDER_TYPE_OPTIONS, STATUS_OPTIONS } from "../../lib/orders/constants";
 import { formatDate, getTodayDate } from "../../lib/orders/utils";
 
@@ -14,6 +14,7 @@ type OrderFormModalProps = {
   } | null;
   editingOrderId: number | null;
   userRole: "admin" | "supplier" | "viewer" | "buyer";
+  suppliers: SupplierSummary[];
   form: OrderFormState;
   parsedComments: {
     datetime: string;
@@ -102,6 +103,7 @@ export function OrderFormModal({
   importReview,
   editingOrderId,
   userRole,
+  suppliers,
   form,
   parsedComments,
   canEditOrderTextFields,
@@ -143,6 +145,7 @@ export function OrderFormModal({
     ].some((value) => value?.trim()) || item.hasReplacement
   );
   const missingClientOrder = !form.clientOrder.trim();
+  const missingSupplier = !form.supplierId.trim();
   const missingItems = filledItems.length === 0;
   const missingReplacement = filledItems.some(
     (item) => item.hasReplacement && !item.replacementArticle.trim()
@@ -155,6 +158,7 @@ export function OrderFormModal({
   );
   const blockingIssues = [
     missingClientOrder ? "Укажи номер клиентского заказа" : null,
+    missingSupplier ? "Выбери поставщика для заказа" : null,
     missingItems ? "Добавь хотя бы одну заполненную позицию" : null,
     missingReplacement ? "Заполни актуальный артикул для всех замен" : null,
     missingDeliveredDate ? "Для статуса «Поставлен» нужна дата поставки" : null,
@@ -290,6 +294,25 @@ export function OrderFormModal({
                       {ORDER_TYPE_OPTIONS.map((type) => (
                         <option key={type} value={type}>
                           {type}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="mb-1.5 block text-[12px] font-medium text-slate-700 md:text-sm">
+                      Поставщик
+                    </label>
+                    <select
+                      value={form.supplierId}
+                      disabled={!(userRole === "admin" || userRole === "buyer") || saving}
+                      onChange={(e) => setForm({ ...form, supplierId: e.target.value })}
+                      className="premium-input w-full rounded-[18px] px-3 py-2.5 text-[12px] text-slate-900 outline-none disabled:bg-slate-100 disabled:text-slate-500 md:rounded-2xl md:py-3 md:text-sm"
+                    >
+                      <option value="">Выбери поставщика</option>
+                      {suppliers.map((supplier) => (
+                        <option key={supplier.id} value={supplier.id}>
+                          {supplier.name}
                         </option>
                       ))}
                     </select>

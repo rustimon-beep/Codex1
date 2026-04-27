@@ -290,6 +290,14 @@ export function useOrderDetailActions(params: {
       return;
     }
 
+    if (!form.supplierId) {
+      showToast("Не выбран поставщик", {
+        description: "Укажи поставщика для этого заказа.",
+        variant: "error",
+      });
+      return;
+    }
+
     setSaving(true);
 
     try {
@@ -362,6 +370,7 @@ export function useOrderDetailActions(params: {
         client_order: form.clientOrder,
         order_date: form.orderDate || "",
         order_type: form.orderType,
+        supplier_id: Number(form.supplierId),
         comment: nextComment,
         updated_by: user.name,
         updated_at: formatDateTimeForDb(),
@@ -395,6 +404,7 @@ export function useOrderDetailActions(params: {
       const nextOrderSnapshot = {
         id: order.id,
         client_order: form.clientOrder,
+        supplier_id: Number(form.supplierId),
         order_items: validItems.map((item) => ({
           id: item.id!,
           order_id: order.id,

@@ -10,12 +10,14 @@ function mapProfile(data: {
   email: string;
   role: UserProfile["role"];
   full_name: string;
+  supplier_id: number | null;
 }): UserProfile {
   return {
     id: data.id,
     email: data.email,
     role: data.role,
     name: data.full_name,
+    supplier_id: data.supplier_id ?? null,
   };
 }
 
@@ -25,7 +27,19 @@ function readCachedProfile(userId: string) {
   const cached = window.localStorage.getItem(getProfileCacheKey(userId));
   if (!cached) return null;
 
-  return JSON.parse(cached) as UserProfile;
+  const parsed = JSON.parse(cached) as Partial<UserProfile>;
+
+  if (
+    typeof parsed.id !== "string" ||
+    typeof parsed.email !== "string" ||
+    typeof parsed.role !== "string" ||
+    typeof parsed.name !== "string" ||
+    !("supplier_id" in parsed)
+  ) {
+    return null;
+  }
+
+  return parsed as UserProfile;
 }
 
 function writeCachedProfile(profile: UserProfile) {
@@ -37,7 +51,7 @@ function writeCachedProfile(profile: UserProfile) {
 async function loadProfileFromDb(userId: string) {
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, email, full_name, role")
+    .select("id, email, full_name, role, supplier_id")
     .eq("id", userId)
     .single();
 

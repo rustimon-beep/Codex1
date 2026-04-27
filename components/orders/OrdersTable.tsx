@@ -149,6 +149,7 @@ export function OrdersTable({
                 const plannedDate = getOrderPlannedDate(items);
                 const fullDeliveredDate = getOrderDeliveredDate(items);
                 const orderType = order.order_type || "Стандартный";
+                const supplierName = order.supplier?.name?.trim() || null;
                 const hasOrderComment = hasComment(order.comment);
                 const hasOrderReplacement = hasReplacementInOrder(items);
                 const parsedCommentEntries = parseComments(order.comment || "");
@@ -321,6 +322,12 @@ export function OrdersTable({
                           >
                             {orderType}
                           </span>
+
+                          {supplierName ? (
+                            <span className="text-[11px] font-medium text-slate-500">
+                              {supplierName}
+                            </span>
+                          ) : null}
 
                           {overdue ? (
                             <span className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[10px] font-medium text-rose-700">

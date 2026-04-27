@@ -1,14 +1,21 @@
+export type SupplierSummary = {
+  id: number;
+  name: string;
+};
+
 export type OrderHeader = {
   id: number;
   client_order: string | null;
   order_date: string | null;
   order_type: string | null;
+  supplier_id: number | null;
   planned_date: string | null;
   status: string | null;
   delivered_date: string | null;
   comment: string | null;
   updated_by: string | null;
   updated_at: string | null;
+  supplier?: SupplierSummary | null;
 };
 
 export type OrderItem = {
@@ -47,6 +54,7 @@ export type OrderFormState = {
   clientOrder: string;
   orderDate: string;
   orderType: string;
+  supplierId: string;
   comment: string;
   newComment: string;
   bulkPlannedDate: string;
@@ -65,6 +73,7 @@ export type UserProfile = {
   email: string;
   role: "admin" | "supplier" | "viewer" | "buyer";
   name: string;
+  supplier_id: number | null;
 };
 
 export type SortField =

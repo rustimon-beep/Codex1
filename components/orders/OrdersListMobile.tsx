@@ -154,6 +154,7 @@ export function OrdersListMobile({
         const plannedDate = getOrderPlannedDate(items);
         const fullDeliveredDate = getOrderDeliveredDate(items);
         const orderType = order.order_type || "Стандартный";
+        const supplierName = order.supplier?.name?.trim() || null;
         const actionsWidthClass =
           user.role === "admin" ? "-translate-x-[136px]" : "-translate-x-[74px]";
         const isActionsVisible = swipedOrderId === order.id;
@@ -286,6 +287,12 @@ export function OrdersListMobile({
                         )}
 
                       </div>
+
+                      {supplierName ? (
+                        <div className="mt-1 text-[10px] font-medium text-slate-500 md:text-[11px]">
+                          {supplierName}
+                        </div>
+                      ) : null}
                     </div>
                   </div>
 

@@ -5,6 +5,7 @@ export function mapOrderToFormState(order: OrderWithItems, emptyItem: ItemForm):
     clientOrder: order.client_order || "",
     orderDate: order.order_date || "",
     orderType: order.order_type || "Стандартный",
+    supplierId: order.supplier_id ? String(order.supplier_id) : "",
     comment: order.comment || "",
     newComment: "",
     bulkPlannedDate: "",

@@ -2,7 +2,6 @@
 
 import { supabase } from "../supabase";
 import type { OrderItem, OrderWithItems, UserProfile } from "../orders/types";
-import { isOrderOverdue } from "../orders/utils";
 
 type NotificationRecipientRole = "admin" | "supplier" | "buyer";
 type NotificationEventType =
@@ -78,6 +77,7 @@ async function createEventAndRecipients(
     eventKey: string;
     eventType: NotificationEventType;
     orderId: number | null;
+    supplierId?: number | null;
     title: string;
     body: string;
     payload?: Record<string, unknown>;
@@ -102,6 +102,7 @@ async function createEventAndRecipients(
 export async function notifyNewOrderCreated(params: {
   orderId: number;
   clientOrder: string;
+  supplierId: number | null;
 }) {
   const orderLabel = params.clientOrder.trim() || `#${params.orderId}`;
 
@@ -110,6 +111,7 @@ export async function notifyNewOrderCreated(params: {
       eventKey: `new-order:${params.orderId}`,
       eventType: "new_order",
       orderId: params.orderId,
+      supplierId: params.supplierId,
       title: "Новый заказ",
       body: `Появился новый заказ ${orderLabel}.`,
       payload: {
@@ -121,25 +123,10 @@ export async function notifyNewOrderCreated(params: {
   ]);
 }
 
-export async function ensureOverdueNotificationEvents(orders: OrderWithItems[]) {
-  const overdueOrders = orders.filter((order) => isOrderOverdue(order.order_items || []));
-
-  if (overdueOrders.length === 0) return;
-
-  await createEventAndRecipients(
-    overdueOrders.map((order) => ({
-        eventKey: `overdue:${order.id}`,
-        eventType: "overdue",
-        orderId: order.id,
-        title: "Просрочка по заказу",
-        body: `${getOrderLabel(order)} требует внимания: есть просроченные позиции.`,
-        payload: {
-          clientOrder: order.client_order || "",
-          url: `/orders/${order.id}`,
-        },
-        recipientRoles: ["admin", "supplier", "buyer"],
-      }))
-  );
+export async function ensureOverdueNotificationEvents(_orders: OrderWithItems[]) {
+  await fetch("/api/notifications/overdue-scan", {
+    method: "POST",
+  }).catch(() => null);
 }
 
 function getStatusDiff(beforeItems: OrderItem[], afterItems: OrderItem[]) {
@@ -174,7 +161,9 @@ function getStatusDiff(beforeItems: OrderItem[], afterItems: OrderItem[]) {
 
 export async function notifyOrderChanged(params: {
   beforeOrder: OrderWithItems;
-  afterOrder: Pick<OrderWithItems, "id" | "client_order"> & { order_items?: OrderItem[] };
+  afterOrder: Pick<OrderWithItems, "id" | "client_order" | "supplier_id"> & {
+    order_items?: OrderItem[];
+  };
   updatedAtKey: string;
 }) {
   const beforeItems = params.beforeOrder.order_items || [];
@@ -185,6 +174,7 @@ export async function notifyOrderChanged(params: {
     eventKey: string;
     eventType: NotificationEventType;
     orderId: number | null;
+    supplierId?: number | null;
     title: string;
     body: string;
     payload?: Record<string, unknown>;
