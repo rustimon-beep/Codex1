@@ -9,6 +9,7 @@ import {
   fetchPendingNotifications,
   markNotificationDelivered,
 } from "../notifications/api";
+import { ensurePushSubscription } from "../notifications/push-subscriptions";
 
 type ToastFn = (
   title: string,
@@ -78,10 +79,12 @@ export function useOrdersNotifications(params: {
   showToast: ToastFn;
 }) {
   const { userId, userRole, orders, showToast } = params;
+  const publicVapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
   const [permission, setPermission] = useState<NotificationPermission | "unsupported">(
     "unsupported"
   );
   const [requesting, setRequesting] = useState(false);
+  const [pushReady, setPushReady] = useState(false);
 
   useEffect(() => {
     if (!supportsNotifications()) {
@@ -101,6 +104,40 @@ export function useOrdersNotifications(params: {
 
   useEffect(() => {
     if (!userId || permission !== "granted" || userRole === "viewer") return;
+
+    if (!publicVapidKey) {
+      setPushReady(false);
+      return;
+    }
+
+    let active = true;
+
+    const registerPush = async () => {
+      try {
+        const ready = await ensurePushSubscription({
+          userId,
+          publicKey: publicVapidKey,
+        });
+
+        if (active) {
+          setPushReady(ready);
+        }
+      } catch {
+        if (active) {
+          setPushReady(false);
+        }
+      }
+    };
+
+    void registerPush();
+
+    return () => {
+      active = false;
+    };
+  }, [permission, publicVapidKey, userId, userRole]);
+
+  useEffect(() => {
+    if (!userId || permission !== "granted" || userRole === "viewer" || pushReady) return;
 
     let cancelled = false;
 
@@ -154,7 +191,7 @@ export function useOrdersNotifications(params: {
       cancelled = true;
       void supabase.removeChannel(channel);
     };
-  }, [permission, userId, userRole]);
+  }, [permission, pushReady, userId, userRole]);
 
   const requestPermission = useCallback(async () => {
     if (userRole === "viewer") {
@@ -189,8 +226,18 @@ export function useOrdersNotifications(params: {
 
       if (nextPermission === "granted") {
         await ensureServiceWorker();
+        if (userId && publicVapidKey) {
+          await ensurePushSubscription({
+            userId,
+            publicKey: publicVapidKey,
+          });
+          setPushReady(true);
+        }
         showToast("Уведомления включены", {
-          description: "Теперь приложение сможет сообщать о новых заказах, просрочках и изменениях.",
+          description:
+            publicVapidKey
+              ? "Теперь устройство подписано на push-уведомления о заказах."
+              : "Разрешение получено. Для полноценного push ещё нужен публичный VAPID-ключ.",
           variant: "success",
         });
       } else if (nextPermission === "denied") {
@@ -208,12 +255,13 @@ export function useOrdersNotifications(params: {
     } finally {
       setRequesting(false);
     }
-  }, [showToast, userRole]);
+  }, [publicVapidKey, showToast, userId, userRole]);
 
   return {
     supported: supportsNotifications(),
     permission,
     requesting,
+    pushReady,
     requestPermission,
     isStandalone: isStandaloneMode(),
     isIos: isIos(),

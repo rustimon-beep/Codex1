@@ -4,6 +4,7 @@ type NotificationPromptProps = {
   supported: boolean;
   permission: NotificationPermission | "unsupported";
   requesting: boolean;
+  pushReady?: boolean;
   isIos: boolean;
   isStandalone: boolean;
   onEnable: () => void;
@@ -13,6 +14,7 @@ export function NotificationPrompt({
   supported,
   permission,
   requesting,
+  pushReady,
   isIos,
   isStandalone,
   onEnable,
@@ -33,7 +35,9 @@ export function NotificationPrompt({
               Уведомления включены
             </div>
             <div className="mt-0.5 text-[12px] leading-5 text-slate-500 md:text-[13px]">
-              Приложение сможет сообщать о срочных и просроченных заказах.
+              {pushReady
+                ? "Устройство подключено к push-уведомлениям о заказах."
+                : "Разрешение получено. Если push ещё не настроен, часть уведомлений будет приходить только в открытом приложении."}
             </div>
           </div>
         </div>

@@ -121,6 +121,16 @@ async function createEventAndRecipients(params: {
   if (recipientsError) {
     throw recipientsError;
   }
+
+  await fetch("/api/notifications/dispatch", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      eventId: insertedEvent.id,
+    }),
+  }).catch(() => {});
 }
 
 export async function notifyNewOrderCreated(params: {

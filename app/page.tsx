@@ -1774,6 +1774,7 @@ export default function OrdersPage() {
                     supported={notifications.supported}
                     permission={notifications.permission}
                     requesting={notifications.requesting}
+                    pushReady={notifications.pushReady}
                     isIos={notifications.isIos}
                     isStandalone={notifications.isStandalone}
                     onEnable={notifications.requestPermission}
@@ -1810,6 +1811,7 @@ export default function OrdersPage() {
                     supported={notifications.supported}
                     permission={notifications.permission}
                     requesting={notifications.requesting}
+                    pushReady={notifications.pushReady}
                     isIos={notifications.isIos}
                     isStandalone={notifications.isStandalone}
                     onEnable={notifications.requestPermission}
