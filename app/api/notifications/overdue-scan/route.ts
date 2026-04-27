@@ -95,10 +95,18 @@ export async function POST(request: Request) {
         }))
     );
 
-    await registerFirstOverdueItems(overdueItems);
+    const freshOverdueItems = await registerFirstOverdueItems(overdueItems);
+
+    const freshOverdueOrderIds = new Set(
+      freshOverdueItems.map((item) => item.order_id)
+    );
+
+    const freshOverdueOrders = overdueOrders.filter((order) =>
+      freshOverdueOrderIds.has(order.id)
+    );
 
     await createOverdueNotificationEventsForOrders(
-      overdueOrders.map((order) => ({
+      freshOverdueOrders.map((order) => ({
         id: order.id,
         client_order: order.client_order || null,
         supplier_id: order.supplier_id || null,
@@ -109,6 +117,8 @@ export async function POST(request: Request) {
       ok: true,
       overdueCount: overdueOrders.length,
       overdueItemsCount: overdueItems.length,
+      freshOverdueOrdersCount: freshOverdueOrders.length,
+      freshOverdueItemsCount: freshOverdueItems.length,
     });
   } catch (error) {
     return NextResponse.json(

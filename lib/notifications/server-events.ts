@@ -82,6 +82,18 @@ export async function createNotificationEvents(events: NotificationEventDraft[])
   const supabase = getAdminSupabase();
 
   for (const event of events) {
+    if (event.eventType === "overdue" || event.eventType === "new_order") {
+      const { data: existingEvent } = await supabase
+        .from("notification_events")
+        .select("id")
+        .eq("event_key", event.eventKey)
+        .maybeSingle();
+
+      if (existingEvent?.id) {
+        continue;
+      }
+    }
+
     const { data: insertedEvent, error: eventError } = await supabase
       .from("notification_events")
       .upsert(
@@ -166,22 +178,39 @@ export async function registerFirstOverdueItems(
     first_planned_date: string | null;
   }>
 ) {
-  if (items.length === 0) return;
+  if (items.length === 0) return [];
 
   const supabase = getAdminSupabase();
-  const { error } = await supabase.from("order_item_first_overdue").upsert(
-    items.map((item) => ({
+  const itemIds = items.map((item) => item.order_item_id);
+
+  const { data: existingRows, error: existingError } = await supabase
+    .from("order_item_first_overdue")
+    .select("order_item_id")
+    .in("order_item_id", itemIds);
+
+  if (existingError) {
+    throw existingError;
+  }
+
+  const existingIds = new Set((existingRows || []).map((row) => row.order_item_id as number));
+  const freshItems = items.filter((item) => !existingIds.has(item.order_item_id));
+
+  if (freshItems.length === 0) return [];
+
+  const { error } = await supabase.from("order_item_first_overdue").insert(
+    freshItems.map((item) => ({
       order_item_id: item.order_item_id,
       order_id: item.order_id,
       supplier_id: item.supplier_id,
       first_planned_date: item.first_planned_date,
-    })),
-    { onConflict: "order_item_id", ignoreDuplicates: true }
+    }))
   );
 
   if (error) {
     throw error;
   }
+
+  return freshItems;
 }
 
 export type { NotificationEventDraft, NotificationEventType, NotificationRecipientRole };
