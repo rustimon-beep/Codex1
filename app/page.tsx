@@ -118,6 +118,7 @@ type QuickDateDialogState = {
 
 export default function OrdersPage() {
   const [suppliers, setSuppliers] = useState<SupplierSummary[]>([]);
+  const [supplierTab, setSupplierTab] = useState("all");
   const [importReview, setImportReview] = useState<{
     source: "photo" | "excel" | "clipboard";
     importedCount: number;
@@ -252,7 +253,7 @@ export default function OrdersPage() {
   }, [user, loadOrders]);
 
   useEffect(() => {
-    if (!user || user.role === "viewer" || user.role === "supplier") {
+    if (!user || user.role === "supplier") {
       setSuppliers([]);
       return;
     }
@@ -260,19 +261,29 @@ export default function OrdersPage() {
     void loadSuppliers();
   }, [loadSuppliers, user]);
 
+  const supplierScopedOrders = useMemo(() => {
+    if (user?.role === "supplier") return orders;
+    if (supplierTab === "all") return orders;
+    if (supplierTab === "unassigned") {
+      return orders.filter((order) => !order.supplier_id);
+    }
+
+    return orders.filter((order) => String(order.supplier_id || "") === supplierTab);
+  }, [orders, supplierTab, user?.role]);
+
   const filteredOrders = useMemo(() => {
     return getFilteredAndSortedOrders({
-      orders,
+      orders: supplierScopedOrders,
       search,
       statusFilter,
       orderTypeFilter,
       sortField,
       sortDirection,
     });
-  }, [orders, search, statusFilter, orderTypeFilter, sortField, sortDirection]);
+  }, [supplierScopedOrders, search, statusFilter, orderTypeFilter, sortField, sortDirection]);
 
-  const stats = useMemo(() => getOrdersStats(orders), [orders]);
-  const attention = useMemo(() => getOrdersAttention(orders), [orders]);
+  const stats = useMemo(() => getOrdersStats(supplierScopedOrders), [supplierScopedOrders]);
+  const attention = useMemo(() => getOrdersAttention(supplierScopedOrders), [supplierScopedOrders]);
   const notifications = useOrdersNotifications({
     orders,
     userId: user?.id || null,
@@ -280,6 +291,36 @@ export default function OrdersPage() {
     showToast,
   });
   const hasAttentionItems = attention.cards.some((card) => card.count > 0);
+  const supplierTabs = useMemo(() => {
+    const baseTabs = [{ id: "all", label: "Все поставщики", count: orders.length }];
+    const assignedTabs = suppliers.map((supplier) => ({
+      id: String(supplier.id),
+      label: supplier.name,
+      count: orders.filter((order) => order.supplier_id === supplier.id).length,
+    }));
+    const unassignedCount = orders.filter((order) => !order.supplier_id).length;
+
+    if (unassignedCount > 0) {
+      assignedTabs.push({
+        id: "unassigned",
+        label: "Без поставщика",
+        count: unassignedCount,
+      });
+    }
+
+    return [...baseTabs, ...assignedTabs];
+  }, [orders, suppliers]);
+
+  useEffect(() => {
+    if (user?.role === "supplier") {
+      setSupplierTab("all");
+      return;
+    }
+
+    if (!supplierTabs.some((tab) => tab.id === supplierTab)) {
+      setSupplierTab("all");
+    }
+  }, [supplierTab, supplierTabs, user?.role]);
   const currentImportReview = useMemo(() => {
     if (!importReview) return null;
 
@@ -1838,6 +1879,9 @@ export default function OrdersPage() {
                   setOrderTypeFilter={setOrderTypeFilter}
                   statusFilter={statusFilter}
                   setStatusFilter={setStatusFilter}
+                  supplierTabs={user.role === "supplier" ? [] : supplierTabs}
+                  supplierTab={supplierTab}
+                  setSupplierTab={setSupplierTab}
                   sortField={sortField}
                   sortDirection={sortDirection}
                   setSortField={setSortField}
@@ -1876,6 +1920,9 @@ export default function OrdersPage() {
                   setOrderTypeFilter={setOrderTypeFilter}
                   statusFilter={statusFilter}
                   setStatusFilter={setStatusFilter}
+                  supplierTabs={user.role === "supplier" ? [] : supplierTabs}
+                  supplierTab={supplierTab}
+                  setSupplierTab={setSupplierTab}
                   sortField={sortField}
                   sortDirection={sortDirection}
                   setSortField={setSortField}

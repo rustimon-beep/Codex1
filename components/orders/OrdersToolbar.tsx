@@ -16,6 +16,13 @@ type OrdersToolbarProps = {
   setOrderTypeFilter: (value: string) => void;
   statusFilter: string;
   setStatusFilter: (value: string) => void;
+  supplierTabs?: Array<{
+    id: string;
+    label: string;
+    count: number;
+  }>;
+  supplierTab?: string;
+  setSupplierTab?: (value: string) => void;
   sortField: SortField;
   sortDirection: SortDirection;
   setSortField: (value: SortField) => void;
@@ -30,6 +37,9 @@ export function OrdersToolbar({
   setOrderTypeFilter,
   statusFilter,
   setStatusFilter,
+  supplierTabs = [],
+  supplierTab = "all",
+  setSupplierTab,
   sortField,
   sortDirection,
   setSortField,
@@ -123,6 +133,30 @@ export function OrdersToolbar({
               >
                 Сбросить всё
               </button>
+            </div>
+          ) : null}
+
+          {supplierTabs.length > 1 && setSupplierTab ? (
+            <div className="space-y-2">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400 md:text-[12px]">
+                Поставщики
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {supplierTabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setSupplierTab(tab.id)}
+                    className={`shrink-0 rounded-[14px] border px-3 py-2 text-[12px] font-medium transition md:px-3.5 md:text-[13px] ${
+                      supplierTab === tab.id
+                        ? "border-slate-900 bg-slate-900 text-white"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900"
+                    }`}
+                  >
+                    {tab.label} · {tab.count}
+                  </button>
+                ))}
+              </div>
             </div>
           ) : null}
 
