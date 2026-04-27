@@ -514,7 +514,7 @@ export function OrdersTable({
                                         Статус
                                       </div>
 
-                                      {user.role === "viewer" ? (
+                                      {user.role === "viewer" || user.role === "buyer" ? (
                                         <span
                                           className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${statusClasses(
                                             item.status || "Новый"

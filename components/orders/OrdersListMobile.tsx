@@ -452,7 +452,7 @@ export function OrdersListMobile({
                                   Статус
                                 </div>
 
-                                {user.role === "viewer" ? (
+                                {user.role === "viewer" || user.role === "buyer" ? (
                                   <span
                                     className={`mt-1 inline-flex rounded-full px-2 py-1 text-[9px] font-medium md:px-2.5 md:text-[10px] ${statusClasses(
                                       item.status || "Новый"
