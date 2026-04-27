@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { OrderWithItems } from "../orders/types";
 import { getOrdersAttention } from "../orders/selectors";
+import { getOrderStatus, isOrderOverdue } from "../orders/utils";
 
 type ToastFn = (
   title: string,
@@ -12,7 +13,7 @@ type ToastFn = (
   }
 ) => void;
 
-const STORAGE_KEY = "avtodom-notification-snapshot-v1";
+const STORAGE_KEY_PREFIX = "avtodom-notification-snapshot-v2";
 
 function isIos() {
   if (typeof navigator === "undefined") return false;
@@ -65,39 +66,70 @@ async function showSystemNotification(title: string, body: string) {
   }
 }
 
+type UserRole = "admin" | "supplier" | "viewer" | "buyer";
+
 type OrdersNotificationSnapshot = {
-  overdue: number;
-  urgent: number;
+  total: number;
+  overdue: string[];
+  urgent: string[];
+  statuses: Record<
+    string,
+    {
+      status: string;
+      canceledCount: number;
+      updatedAt: string;
+    }
+  >;
 };
 
-function readSnapshot(): OrdersNotificationSnapshot {
+function readSnapshot(role: UserRole): OrdersNotificationSnapshot {
   if (typeof window === "undefined") {
-    return { overdue: 0, urgent: 0 };
+    return {
+      total: 0,
+      overdue: [],
+      urgent: [],
+      statuses: {},
+    };
   }
 
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { overdue: 0, urgent: 0 };
+    const raw = window.localStorage.getItem(`${STORAGE_KEY_PREFIX}-${role}`);
+    if (!raw) {
+      return {
+        total: 0,
+        overdue: [],
+        urgent: [],
+        statuses: {},
+      };
+    }
     const parsed = JSON.parse(raw) as Partial<OrdersNotificationSnapshot>;
     return {
-      overdue: Number(parsed.overdue || 0),
-      urgent: Number(parsed.urgent || 0),
+      total: Number(parsed.total || 0),
+      overdue: Array.isArray(parsed.overdue) ? parsed.overdue : [],
+      urgent: Array.isArray(parsed.urgent) ? parsed.urgent : [],
+      statuses: parsed.statuses || {},
     };
   } catch {
-    return { overdue: 0, urgent: 0 };
+    return {
+      total: 0,
+      overdue: [],
+      urgent: [],
+      statuses: {},
+    };
   }
 }
 
-function writeSnapshot(snapshot: OrdersNotificationSnapshot) {
+function writeSnapshot(role: UserRole, snapshot: OrdersNotificationSnapshot) {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+  window.localStorage.setItem(`${STORAGE_KEY_PREFIX}-${role}`, JSON.stringify(snapshot));
 }
 
 export function useOrdersNotifications(params: {
   orders: OrderWithItems[];
+  userRole: UserRole;
   showToast: ToastFn;
 }) {
-  const { orders, showToast } = params;
+  const { orders, userRole, showToast } = params;
   const [permission, setPermission] = useState<NotificationPermission | "unsupported">(
     "unsupported"
   );
@@ -106,6 +138,39 @@ export function useOrdersNotifications(params: {
   const attention = useMemo(() => getOrdersAttention(orders), [orders]);
   const overdueCount = attention.cards.find((card) => card.key === "overdue")?.count || 0;
   const urgentCount = attention.cards.find((card) => card.key === "urgent")?.count || 0;
+  const overdueIds = useMemo(
+    () =>
+      orders
+        .filter((order) => isOrderOverdue(order.order_items || []))
+        .map((order) => String(order.id)),
+    [orders]
+  );
+  const urgentIds = useMemo(
+    () =>
+      orders
+        .filter(
+          (order) =>
+            (order.order_type || "Стандартный") === "Срочный" &&
+            !["Поставлен", "Отменен"].includes(getOrderStatus(order.order_items || []))
+        )
+        .map((order) => String(order.id)),
+    [orders]
+  );
+  const statusesSnapshot = useMemo(
+    () =>
+      Object.fromEntries(
+        orders.map((order) => [
+          String(order.id),
+          {
+            status: getOrderStatus(order.order_items || []),
+            canceledCount: (order.order_items || []).filter((item) => item.status === "Отменен")
+              .length,
+            updatedAt: order.updated_at || "",
+          },
+        ])
+      ),
+    [orders]
+  );
 
   useEffect(() => {
     if (!supportsNotifications()) {
@@ -119,44 +184,115 @@ export function useOrdersNotifications(params: {
 
   useEffect(() => {
     if (permission !== "granted") return;
+    if (userRole === "viewer") return;
 
-    const previous = readSnapshot();
+    const previous = readSnapshot(userRole);
     const current = {
-      overdue: overdueCount,
-      urgent: urgentCount,
+      total: orders.length,
+      overdue: overdueIds,
+      urgent: urgentIds,
+      statuses: statusesSnapshot,
     };
 
     const tasks: Promise<void>[] = [];
 
-    if (current.overdue > previous.overdue) {
-      const delta = current.overdue - previous.overdue;
+    const newOrderCount = Object.keys(current.statuses).filter(
+      (orderId) => !previous.statuses[orderId]
+    ).length;
+    const newlyOverdueCount = current.overdue.filter((id) => !previous.overdue.includes(id)).length;
+    const newlyUrgentCount = current.urgent.filter((id) => !previous.urgent.includes(id)).length;
+
+    let changedStatusesCount = 0;
+    let newCancellationsCount = 0;
+
+    for (const [orderId, snapshot] of Object.entries(current.statuses)) {
+      const previousOrder = previous.statuses[orderId];
+      if (!previousOrder) continue;
+
+      if (snapshot.status !== previousOrder.status) {
+        changedStatusesCount += 1;
+      }
+
+      if (snapshot.canceledCount > previousOrder.canceledCount) {
+        newCancellationsCount += snapshot.canceledCount - previousOrder.canceledCount;
+      }
+    }
+
+    if (newOrderCount > 0 && ["admin", "supplier", "buyer"].includes(userRole)) {
+      tasks.push(
+        showSystemNotification(
+          "Новые заказы",
+          newOrderCount === 1
+            ? "Появился 1 новый заказ."
+            : `Появилось новых заказов: ${newOrderCount}.`
+        )
+      );
+    }
+
+    if (newlyOverdueCount > 0 && ["admin", "supplier", "buyer"].includes(userRole)) {
       tasks.push(
         showSystemNotification(
           "Просроченные заказы",
-          delta === 1
+          newlyOverdueCount === 1
             ? "Появился 1 новый просроченный заказ."
-            : `Появилось новых просроченных заказов: ${delta}.`
+            : `Появилось новых просроченных заказов: ${newlyOverdueCount}.`
         )
       );
     }
 
-    if (current.urgent > previous.urgent) {
-      const delta = current.urgent - previous.urgent;
+    if (newlyUrgentCount > 0 && userRole === "admin") {
       tasks.push(
         showSystemNotification(
           "Срочные заказы",
-          delta === 1
+          newlyUrgentCount === 1
             ? "Появился 1 новый срочный заказ."
-            : `Появилось новых срочных заказов: ${delta}.`
+            : `Появилось новых срочных заказов: ${newlyUrgentCount}.`
         )
       );
     }
 
-    writeSnapshot(current);
+    if (changedStatusesCount > 0 && ["admin", "buyer"].includes(userRole)) {
+      tasks.push(
+        showSystemNotification(
+          "Изменение статусов",
+          changedStatusesCount === 1
+            ? "У одного заказа изменился статус."
+            : `Изменились статусы заказов: ${changedStatusesCount}.`
+        )
+      );
+    }
+
+    if (newCancellationsCount > 0 && ["admin", "buyer"].includes(userRole)) {
+      tasks.push(
+        showSystemNotification(
+          "Есть отмены",
+          newCancellationsCount === 1
+            ? "Появилась 1 новая отменённая позиция."
+            : `Появилось новых отменённых позиций: ${newCancellationsCount}.`
+        )
+      );
+    }
+
+    writeSnapshot(userRole, current);
     void Promise.all(tasks);
-  }, [overdueCount, permission, urgentCount]);
+  }, [
+    orders.length,
+    overdueIds,
+    permission,
+    statusesSnapshot,
+    urgentIds,
+    userRole,
+  ]);
 
   const requestPermission = useCallback(async () => {
+    if (userRole === "viewer") {
+      showToast("Уведомления недоступны", {
+        description: "Для роли наблюдателя уведомления отключены.",
+        variant: "info",
+      });
+      return;
+    }
+
     if (!supportsNotifications()) {
       showToast("Уведомления недоступны", {
         description: "Этот браузер не поддерживает системные уведомления.",

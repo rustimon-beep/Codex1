@@ -248,6 +248,7 @@ export default function OrdersPage() {
   const attention = useMemo(() => getOrdersAttention(orders), [orders]);
   const notifications = useOrdersNotifications({
     orders,
+    userRole: user?.role || "viewer",
     showToast,
   });
   const hasAttentionItems = attention.cards.some((card) => card.count > 0);
@@ -1685,16 +1686,18 @@ export default function OrdersPage() {
             </div>
           ) : filteredOrders.length === 0 ? (
             <>
-              <div className="premium-enter premium-enter-delay-1 md:hidden">
-                <NotificationPrompt
-                  supported={notifications.supported}
-                  permission={notifications.permission}
-                  requesting={notifications.requesting}
-                  isIos={notifications.isIos}
-                  isStandalone={notifications.isStandalone}
-                  onEnable={notifications.requestPermission}
-                />
-              </div>
+              {user.role !== "viewer" ? (
+                <div className="premium-enter premium-enter-delay-1 md:hidden">
+                  <NotificationPrompt
+                    supported={notifications.supported}
+                    permission={notifications.permission}
+                    requesting={notifications.requesting}
+                    isIos={notifications.isIos}
+                    isStandalone={notifications.isStandalone}
+                    onEnable={notifications.requestPermission}
+                  />
+                </div>
+              ) : null}
               <div className="premium-enter premium-enter-delay-1">
                 <OrdersToolbar
                   stats={stats}
@@ -1719,16 +1722,18 @@ export default function OrdersPage() {
             </>
           ) : (
             <>
-              <div className="premium-enter premium-enter-delay-1 md:hidden">
-                <NotificationPrompt
-                  supported={notifications.supported}
-                  permission={notifications.permission}
-                  requesting={notifications.requesting}
-                  isIos={notifications.isIos}
-                  isStandalone={notifications.isStandalone}
-                  onEnable={notifications.requestPermission}
-                />
-              </div>
+              {user.role !== "viewer" ? (
+                <div className="premium-enter premium-enter-delay-1 md:hidden">
+                  <NotificationPrompt
+                    supported={notifications.supported}
+                    permission={notifications.permission}
+                    requesting={notifications.requesting}
+                    isIos={notifications.isIos}
+                    isStandalone={notifications.isStandalone}
+                    onEnable={notifications.requestPermission}
+                  />
+                </div>
+              ) : null}
 
               <div className="premium-enter premium-enter-delay-1">
                 <OrdersToolbar
