@@ -61,6 +61,18 @@ function getOrderLabel(order: Pick<OrderWithItems, "id" | "client_order">) {
   return (order.client_order || "").trim() || `Заказ #${order.id}`;
 }
 
+function pluralizeRu(
+  count: number,
+  forms: [one: string, few: string, many: string]
+) {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+
+  if (mod10 === 1 && mod100 !== 11) return forms[0];
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return forms[1];
+  return forms[2];
+}
+
 async function createEventAndRecipients(
   events: Array<{
     eventKey: string;
@@ -180,15 +192,18 @@ export async function notifyOrderChanged(params: {
   }> = [];
 
   if (nonCancellationChangedCount > 0) {
+    const statusLabel = pluralizeRu(nonCancellationChangedCount, [
+      "позиции",
+      "позиций",
+      "позиций",
+    ]);
+
     events.push({
         eventKey: `status-change:${params.afterOrder.id}:${params.updatedAtKey}:${nonCancellationChangedCount}`,
         eventType: "status_changed",
         orderId: params.afterOrder.id,
         title: "Изменение статуса",
-        body:
-          nonCancellationChangedCount === 1
-            ? `В заказе ${getOrderLabel(params.afterOrder)} изменён статус одной позиции.`
-            : `В заказе ${getOrderLabel(params.afterOrder)} изменены статусы позиций: ${nonCancellationChangedCount}.`,
+        body: `В заказе ${getOrderLabel(params.afterOrder)} изменён статус ${nonCancellationChangedCount} ${statusLabel}.`,
         payload: {
           clientOrder: params.afterOrder.client_order || "",
           changedCount: nonCancellationChangedCount,
@@ -199,15 +214,18 @@ export async function notifyOrderChanged(params: {
   }
 
   if (canceledCount > 0) {
+    const canceledLabel = pluralizeRu(canceledCount, [
+      "позиции",
+      "позиций",
+      "позиций",
+    ]);
+
     events.push({
         eventKey: `cancellation:${params.afterOrder.id}:${params.updatedAtKey}:${canceledCount}`,
         eventType: "cancellation",
         orderId: params.afterOrder.id,
         title: "Есть отмены",
-        body:
-          canceledCount === 1
-            ? `В заказе ${getOrderLabel(params.afterOrder)} появилась одна отменённая позиция.`
-            : `В заказе ${getOrderLabel(params.afterOrder)} появились отменённые позиции: ${canceledCount}.`,
+        body: `В заказе ${getOrderLabel(params.afterOrder)} появил${canceledCount === 1 ? "ась" : "ись"} отмен${canceledCount === 1 ? "а" : "ы"} у ${canceledCount} ${canceledLabel}.`,
         payload: {
           clientOrder: params.afterOrder.client_order || "",
           canceledCount,
