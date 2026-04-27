@@ -6,7 +6,8 @@ type NotificationEventType =
   | "new_order"
   | "overdue"
   | "status_changed"
-  | "cancellation";
+  | "cancellation"
+  | "planned_date_changed";
 
 type NotificationEventDraft = {
   eventKey: string;
