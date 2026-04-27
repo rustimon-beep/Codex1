@@ -91,6 +91,24 @@ export function useOrdersNotifications(params: {
   const [requesting, setRequesting] = useState(false);
   const [pushReady, setPushReady] = useState(false);
 
+  const showPendingNotifications = useCallback(
+    async (targetUserId: string) => {
+      const pending = await fetchPendingNotifications(targetUserId);
+
+      for (const recipient of pending) {
+        if (!recipient.notification_events) continue;
+        if (!canShowInForeground()) continue;
+
+        await showSystemNotification(
+          recipient.notification_events.title,
+          recipient.notification_events.body
+        );
+        await markNotificationDelivered(recipient.id);
+      }
+    },
+    []
+  );
+
   useEffect(() => {
     if (!supportsNotifications()) {
       setPermission("unsupported");
@@ -148,22 +166,16 @@ export function useOrdersNotifications(params: {
 
     const loadPending = async () => {
       try {
-        const pending = await fetchPendingNotifications(userId);
-
-        for (const recipient of pending) {
-          if (cancelled || !recipient.notification_events) continue;
-          if (!canShowInForeground()) continue;
-
-          await showSystemNotification(
-            recipient.notification_events.title,
-            recipient.notification_events.body
-          );
-          await markNotificationDelivered(recipient.id);
-        }
+        if (cancelled) return;
+        await showPendingNotifications(userId);
       } catch {}
     };
 
     void loadPending();
+
+    const intervalId = window.setInterval(() => {
+      void loadPending();
+    }, 15000);
 
     const channel = supabase
       .channel(`notification-recipients-${userId}`)
@@ -196,9 +208,10 @@ export function useOrdersNotifications(params: {
 
     return () => {
       cancelled = true;
+      window.clearInterval(intervalId);
       void supabase.removeChannel(channel);
     };
-  }, [permission, userId, userRole]);
+  }, [permission, showPendingNotifications, userId, userRole]);
 
   const requestPermission = useCallback(async () => {
     if (userRole === "viewer") {
