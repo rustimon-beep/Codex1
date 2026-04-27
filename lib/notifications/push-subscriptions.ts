@@ -63,3 +63,26 @@ export async function ensurePushSubscription(params: {
 
   return true;
 }
+
+export async function removePushSubscription() {
+  if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
+    return false;
+  }
+
+  const registration = await navigator.serviceWorker.getRegistration("/sw.js");
+  const subscription = await registration?.pushManager.getSubscription();
+
+  if (!subscription) {
+    return false;
+  }
+
+  const endpoint = subscription.endpoint;
+
+  await subscription.unsubscribe().catch(() => false);
+
+  if (endpoint) {
+    await supabase.from("push_subscriptions").delete().eq("endpoint", endpoint);
+  }
+
+  return true;
+}

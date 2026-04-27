@@ -120,6 +120,12 @@ export function useOrdersNotifications(params: {
   }, []);
 
   useEffect(() => {
+    if (!userId || userRole === "viewer") {
+      setPushReady(false);
+    }
+  }, [userId, userRole]);
+
+  useEffect(() => {
     if (!userId || userRole === "viewer") return;
 
     void ensureOverdueNotificationEvents(orders).catch(() => {});

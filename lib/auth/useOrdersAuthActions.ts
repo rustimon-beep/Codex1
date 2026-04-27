@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import { supabase } from "../supabase";
 import { clearCachedProfile, fetchUserProfile } from "./profile";
 import type { UserProfile } from "../orders/types";
+import { removePushSubscription } from "../notifications/push-subscriptions";
 
 type LoginFormState = {
   login: string;
@@ -108,6 +109,7 @@ export function useOrdersAuthActions(params: {
       clearCachedProfile(currentUser.id);
     }
 
+    await removePushSubscription().catch(() => {});
     await supabase.auth.signOut();
     setUser(null);
     setLoginForm({ login: "", password: "" });
