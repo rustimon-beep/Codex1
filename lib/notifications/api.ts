@@ -31,6 +31,32 @@ type NotificationRecipientRow = {
   notification_events: NotificationEventRow | null;
 };
 
+function normalizeNotificationRecipientRow(row: {
+  id: number;
+  user_id: string;
+  delivered_at: string | null;
+  seen_at: string | null;
+  event_id: string;
+  notification_events:
+    | NotificationEventRow
+    | NotificationEventRow[]
+    | null
+    | undefined;
+}): NotificationRecipientRow {
+  const eventValue = Array.isArray(row.notification_events)
+    ? row.notification_events[0] || null
+    : row.notification_events || null;
+
+  return {
+    id: row.id,
+    user_id: row.user_id,
+    delivered_at: row.delivered_at,
+    seen_at: row.seen_at,
+    event_id: row.event_id,
+    notification_events: eventValue,
+  };
+}
+
 function getOrderLabel(order: Pick<OrderWithItems, "id" | "client_order">) {
   return (order.client_order || "").trim() || `Заказ #${order.id}`;
 }
@@ -221,7 +247,14 @@ export async function fetchPendingNotifications(userId: string) {
     throw error;
   }
 
-  return (data || []) as NotificationRecipientRow[];
+  return ((data || []) as Array<{
+    id: number;
+    user_id: string;
+    delivered_at: string | null;
+    seen_at: string | null;
+    event_id: string;
+    notification_events: NotificationEventRow[] | NotificationEventRow | null;
+  }>).map(normalizeNotificationRecipientRow);
 }
 
 export async function fetchNotificationRecipientById(recipientId: number) {
@@ -237,7 +270,16 @@ export async function fetchNotificationRecipientById(recipientId: number) {
     throw error;
   }
 
-  return data as NotificationRecipientRow;
+  return normalizeNotificationRecipientRow(
+    data as {
+      id: number;
+      user_id: string;
+      delivered_at: string | null;
+      seen_at: string | null;
+      event_id: string;
+      notification_events: NotificationEventRow[] | NotificationEventRow | null;
+    }
+  );
 }
 
 export async function markNotificationDelivered(recipientId: number) {
