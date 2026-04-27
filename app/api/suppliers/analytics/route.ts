@@ -29,22 +29,19 @@ export async function GET() {
     const supabase = getAdminSupabase();
     const { data, error } = await supabase
       .from("order_item_first_overdue")
-      .select("order_id, supplier_id");
+      .select("order_id, supplier_id, first_overdue_at");
 
     if (error) {
       throw error;
     }
 
-    const historicalOverdueBySupplier: Record<string, number> = {};
-
-    for (const row of data || []) {
-      const supplierKey = row.supplier_id ? String(row.supplier_id) : "unassigned";
-      historicalOverdueBySupplier[supplierKey] = (historicalOverdueBySupplier[supplierKey] || 0) + 1;
-    }
-
     return NextResponse.json({
       ok: true,
-      historicalOverdueBySupplier,
+      overdueEntries: (data || []).map((row) => ({
+        orderId: row.order_id,
+        supplierId: row.supplier_id,
+        firstOverdueAt: row.first_overdue_at,
+      })),
     });
   } catch (error) {
     return NextResponse.json(

@@ -21,12 +21,18 @@ import {
   getSupplierAnalyticsTone,
 } from "../../lib/suppliers/analytics";
 
+type AnalyticsPeriod = "30d" | "90d" | "180d" | "all";
+type OverdueEntry = {
+  orderId: number;
+  supplierId: number | null;
+  firstOverdueAt: string | null;
+};
+
 export default function SupplierAnalyticsPage() {
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [suppliers, setSuppliers] = useState<SupplierSummary[]>([]);
-  const [historicalOverdueBySupplier, setHistoricalOverdueBySupplier] = useState<
-    Record<string, number>
-  >({});
+  const [overdueEntries, setOverdueEntries] = useState<OverdueEntry[]>([]);
+  const [period, setPeriod] = useState<AnalyticsPeriod>("90d");
   const [loading, setLoading] = useState(true);
 
   const { user, setUser, authLoading, profileLoading, setProfileLoading } = useProfileAuth();
@@ -83,7 +89,7 @@ export default function SupplierAnalyticsPage() {
 
     setOrders((ordersResult.data as OrderWithItems[]) || []);
     setSuppliers(mapSuppliers((suppliersResult.data as SupplierSummary[]) || []));
-    setHistoricalOverdueBySupplier(historicalResult?.historicalOverdueBySupplier || {});
+    setOverdueEntries((historicalResult?.overdueEntries as OverdueEntry[]) || []);
     setLoading(false);
   }, [showToast, user]);
 
@@ -93,20 +99,67 @@ export default function SupplierAnalyticsPage() {
     } else {
       setOrders([]);
       setSuppliers([]);
-      setHistoricalOverdueBySupplier({});
+      setOverdueEntries([]);
       setLoading(false);
     }
   }, [loadAnalytics, user]);
 
+  const cutoffDate = useMemo(() => {
+    if (period === "all") return null;
+
+    const date = new Date();
+    const days = period === "30d" ? 30 : period === "90d" ? 90 : 180;
+    date.setDate(date.getDate() - days);
+    return date.toISOString().slice(0, 10);
+  }, [period]);
+
+  const filteredOrders = useMemo(() => {
+    if (!cutoffDate) return orders;
+
+    return orders.filter((order) => {
+      const orderDate = (order.order_date || "").slice(0, 10);
+      return !!orderDate && orderDate >= cutoffDate;
+    });
+  }, [cutoffDate, orders]);
+
+  const filteredHistoricalOverdueBySupplier = useMemo(() => {
+    const result: Record<string, number> = {};
+
+    for (const entry of overdueEntries) {
+      const overdueDate = (entry.firstOverdueAt || "").slice(0, 10);
+      if (cutoffDate && (!overdueDate || overdueDate < cutoffDate)) continue;
+
+      const supplierKey = entry.supplierId ? String(entry.supplierId) : "unassigned";
+      result[supplierKey] = (result[supplierKey] || 0) + 1;
+    }
+
+    return result;
+  }, [cutoffDate, overdueEntries]);
+
   const analytics = useMemo(
     () =>
       buildSupplierAnalytics({
-        orders,
+        orders: filteredOrders,
         suppliers,
-        historicalOverdueBySupplier,
+        historicalOverdueBySupplier: filteredHistoricalOverdueBySupplier,
       }),
-    [historicalOverdueBySupplier, orders, suppliers]
+    [filteredHistoricalOverdueBySupplier, filteredOrders, suppliers]
   );
+
+  const rankedRows = useMemo(() => {
+    return [...analytics.rows]
+      .sort((a, b) => {
+        if (b.overdueShare !== a.overdueShare) return b.overdueShare - a.overdueShare;
+        if (b.canceledLines !== a.canceledLines) return b.canceledLines - a.canceledLines;
+        if (b.totalLines !== a.totalLines) return b.totalLines - a.totalLines;
+        return a.supplierName.localeCompare(b.supplierName, "ru");
+      })
+      .map((row, index) => ({
+        ...row,
+        rank: index + 1,
+        canceledShare: row.totalLines > 0 ? (row.canceledLines / row.totalLines) * 100 : 0,
+      }));
+  }, [analytics.rows]);
 
   const handleLogoutWithHaptic = () => {
     void logout();
@@ -258,6 +311,47 @@ export default function SupplierAnalyticsPage() {
             />
           ) : (
             <>
+              <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:rounded-[28px] md:p-5">
+                <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                  <div>
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                      Период анализа
+                    </div>
+                    <h2 className="mt-1 text-[19px] font-semibold tracking-tight text-slate-900 md:text-[24px]">
+                      Выбери срез данных
+                    </h2>
+                    <p className="mt-1 text-[14px] leading-6 text-slate-500">
+                      Фильтр влияет и на заказы, и на первую фиксацию просрочек в аналитике.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { id: "30d", label: "30 дней" },
+                      { id: "90d", label: "90 дней" },
+                      { id: "180d", label: "180 дней" },
+                      { id: "all", label: "За всё время" },
+                    ].map((option) => {
+                      const active = period === option.id;
+                      return (
+                        <button
+                          key={option.id}
+                          type="button"
+                          onClick={() => setPeriod(option.id as AnalyticsPeriod)}
+                          className={`rounded-[14px] border px-3.5 py-2 text-[13px] font-medium transition ${
+                            active
+                              ? "border-slate-900 bg-slate-900 text-white"
+                              : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6 md:gap-4">
                 <KpiCard
                   title="Поставщиков"
@@ -399,6 +493,62 @@ export default function SupplierAnalyticsPage() {
                       );
                     })}
                   </div>
+                </div>
+              </div>
+
+              <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:rounded-[28px] md:p-5">
+                <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+                  <div>
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                      Рейтинг поставщиков
+                    </div>
+                    <h2 className="mt-1 text-[20px] font-semibold tracking-tight text-slate-900 md:text-[24px]">
+                      Кто работает стабильнее, а кто чаще срывает сроки
+                    </h2>
+                    <p className="mt-1 text-[14px] leading-6 text-slate-500">
+                      Сначала идут поставщики с большей долей просроченных линий, затем с большим числом отмен.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-5 grid gap-3 lg:grid-cols-2">
+                  {rankedRows.map((row) => (
+                    <div
+                      key={`rank-${row.supplierId}`}
+                      className="rounded-[20px] border border-slate-200 bg-slate-50/70 p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-900 text-[12px] font-semibold text-white">
+                              {row.rank}
+                            </div>
+                            <div className="truncate text-[16px] font-semibold tracking-tight text-slate-900">
+                              {row.supplierName}
+                            </div>
+                          </div>
+                          <div className="mt-2 text-[13px] leading-6 text-slate-500">
+                            Заказов: {row.totalOrders} · Линий: {row.totalLines}
+                          </div>
+                        </div>
+
+                        <span
+                          className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-medium ${getSupplierAnalyticsTone(
+                            row
+                          )}`}
+                        >
+                          {formatPercent(row.overdueShare)}
+                        </span>
+                      </div>
+
+                      <div className="mt-4 grid grid-cols-2 gap-2">
+                        <InfoMini label="Просроч. линии" value={row.overdueLinesEver} />
+                        <InfoMini label="Отмен. линии" value={row.canceledLines} />
+                        <InfoMini label="Доля отмен" value={`${Math.round(row.canceledShare)}%`} />
+                        <InfoMini label="Поставлено" value={row.deliveredLines} />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -591,7 +741,7 @@ function InfoMini({
   value,
 }: {
   label: string;
-  value: number;
+  value: number | string;
 }) {
   return (
     <div className="rounded-[16px] border border-white/70 bg-white px-3 py-2">
