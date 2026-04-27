@@ -28,6 +28,10 @@ type OverdueEntry = {
   firstOverdueAt: string | null;
 };
 
+function getSupplierAnalyticsHref(supplierId: string, period: AnalyticsPeriod) {
+  return `/analytics/${supplierId}?period=${period}`;
+}
+
 export default function SupplierAnalyticsPage() {
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [suppliers, setSuppliers] = useState<SupplierSummary[]>([]);
@@ -413,9 +417,12 @@ export default function SupplierAnalyticsPage() {
                         >
                           <div className="flex items-center justify-between gap-3">
                             <div className="min-w-0">
-                              <div className="truncate text-[14px] font-semibold tracking-tight text-slate-900 md:text-[15px]">
+                              <Link
+                                href={getSupplierAnalyticsHref(row.supplierId, period)}
+                                className="truncate text-[14px] font-semibold tracking-tight text-slate-900 transition hover:text-slate-700 md:text-[15px]"
+                              >
                                 {row.supplierName}
-                              </div>
+                              </Link>
                               <div className="mt-0.5 text-[12px] text-slate-500">
                                 Заказов: {row.totalOrders} · Линий: {row.totalLines}
                               </div>
@@ -475,9 +482,12 @@ export default function SupplierAnalyticsPage() {
                           className="rounded-[18px] border border-slate-100 bg-slate-50/65 px-3 py-3 md:px-4"
                         >
                           <div className="flex items-center justify-between gap-3">
-                            <div className="truncate text-[14px] font-semibold tracking-tight text-slate-900 md:text-[15px]">
+                            <Link
+                              href={getSupplierAnalyticsHref(row.supplierId, period)}
+                              className="truncate text-[14px] font-semibold tracking-tight text-slate-900 transition hover:text-slate-700 md:text-[15px]"
+                            >
                               {row.supplierName}
-                            </div>
+                            </Link>
                             <div className="text-[11px] text-slate-500">
                               {row.overdueLinesEver} проср. · {row.canceledLines} отмен.
                             </div>
@@ -558,6 +568,7 @@ export default function SupplierAnalyticsPage() {
                   tone="emerald"
                   rows={topStableSuppliers.map((row) => ({
                     key: `stable-${row.supplierId}`,
+                    href: getSupplierAnalyticsHref(row.supplierId, period),
                     title: row.supplierName,
                     meta: `Линий: ${row.totalLines} · Поставлено: ${row.deliveredLines}`,
                     badge: `Просрочки ${formatPercent(row.overdueShare)}`,
@@ -572,6 +583,7 @@ export default function SupplierAnalyticsPage() {
                   tone="rose"
                   rows={topRiskSuppliers.map((row) => ({
                     key: `risk-top-${row.supplierId}`,
+                    href: getSupplierAnalyticsHref(row.supplierId, period),
                     title: row.supplierName,
                     meta: `Просрочено: ${row.overdueLinesEver} · Отменено: ${row.canceledLines}`,
                     badge: `Просрочки ${formatPercent(row.overdueShare)}`,
@@ -617,7 +629,12 @@ export default function SupplierAnalyticsPage() {
                         <tr key={row.supplierId} className="bg-white transition hover:bg-slate-50/80">
                           <td className="px-4 py-3.5">
                             <div className="flex items-center gap-2">
-                              <div className="font-semibold text-slate-900">{row.supplierName}</div>
+                              <Link
+                                href={getSupplierAnalyticsHref(row.supplierId, period)}
+                                className="font-semibold text-slate-900 transition hover:text-slate-700"
+                              >
+                                {row.supplierName}
+                              </Link>
                               {(rankBySupplierId.get(row.supplierId) || 99) <= 3 ? (
                                 <span className="inline-flex rounded-full bg-slate-900 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-white">
                                   топ-{rankBySupplierId.get(row.supplierId)}
@@ -660,9 +677,12 @@ export default function SupplierAnalyticsPage() {
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <div className="text-[16px] font-semibold text-slate-900">
+                          <Link
+                            href={getSupplierAnalyticsHref(row.supplierId, period)}
+                            className="text-[16px] font-semibold text-slate-900 transition hover:text-slate-700"
+                          >
                             {row.supplierName}
-                          </div>
+                          </Link>
                           <div className="mt-1 text-[12px] text-slate-500">
                             Заказов: {row.totalOrders} · Линий: {row.totalLines}
                           </div>
@@ -752,11 +772,13 @@ function KpiCard({
 }) {
   return (
     <div className="rounded-[20px] border border-slate-200 bg-white px-4 py-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:rounded-[24px] md:px-5 md:py-5">
-      <div className="flex items-start justify-between gap-3">
-        <div className="text-[12px] font-medium uppercase tracking-[0.06em] text-slate-500 md:text-[13px]">{title}</div>
+      <div className="flex min-h-[56px] items-start justify-between gap-3">
+        <div className="max-w-[85%] text-[12px] font-medium uppercase tracking-[0.06em] leading-5 text-slate-500 md:text-[13px]">
+          {title}
+        </div>
         <div className={`mt-1 h-2 w-2 rounded-full opacity-70 ${accent}`} />
       </div>
-      <div className="mt-3 text-[30px] font-semibold tracking-tight text-slate-900 md:text-[36px]">
+      <div className="mt-auto pt-3 text-[30px] font-semibold tracking-tight text-slate-900 md:text-[36px]">
         {value}
       </div>
     </div>
@@ -880,6 +902,7 @@ function HighlightPanel({
   tone: "emerald" | "rose";
   rows: Array<{
     key: string;
+    href?: string;
     title: string;
     meta: string;
     badge: string;
@@ -901,9 +924,10 @@ function HighlightPanel({
 
       <div className="mt-4 space-y-3">
         {rows.map((row, index) => (
-          <div
+          <Link
             key={row.key}
-            className="rounded-[18px] border border-white/80 bg-white/90 px-4 py-3"
+            href={row.href || "#"}
+            className="block rounded-[18px] border border-white/80 bg-white/90 px-4 py-3 transition hover:bg-white"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -925,7 +949,7 @@ function HighlightPanel({
                 <span className="text-[11px] text-slate-500">{row.subbadge}</span>
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
