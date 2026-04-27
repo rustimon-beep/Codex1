@@ -260,7 +260,7 @@ export default function SupplierAnalyticsPage() {
                       </h1>
 
                       <p className="premium-subtitle mt-1 max-w-3xl text-[13px] leading-5 text-slate-300 md:text-[15px] md:leading-6">
-                        Общая картина по заказам, линиям, просрочкам и качеству исполнения по каждому поставщику.
+                        Заказы, линии, просрочки и отмены по каждому поставщику в одном рабочем dashboard.
                       </p>
                     </div>
                   </div>
@@ -311,19 +311,13 @@ export default function SupplierAnalyticsPage() {
             />
           ) : (
             <>
-              <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:rounded-[28px] md:p-5">
+              <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:rounded-[28px] md:px-5 md:py-5">
                 <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-                  <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-                      Период анализа
-                    </div>
-                    <h2 className="mt-1 text-[19px] font-semibold tracking-tight text-slate-900 md:text-[24px]">
-                      Выбери срез данных
-                    </h2>
-                    <p className="mt-1 text-[14px] leading-6 text-slate-500">
-                      Фильтр влияет и на заказы, и на первую фиксацию просрочек в аналитике.
-                    </p>
-                  </div>
+                  <SectionHeading
+                    eyebrow="Период анализа"
+                    title="Срез данных"
+                    description="Фильтр влияет и на заказы, и на первую фиксацию просрочек."
+                  />
 
                   <div className="flex flex-wrap gap-2">
                     {[
@@ -340,8 +334,8 @@ export default function SupplierAnalyticsPage() {
                           onClick={() => setPeriod(option.id as AnalyticsPeriod)}
                           className={`rounded-[14px] border px-3.5 py-2 text-[13px] font-medium transition ${
                             active
-                              ? "border-slate-900 bg-slate-900 text-white"
-                              : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                              ? "border-slate-900 bg-slate-900 text-white shadow-[0_10px_24px_rgba(15,23,42,0.16)]"
+                              : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
                           }`}
                         >
                           {option.label}
@@ -385,42 +379,38 @@ export default function SupplierAnalyticsPage() {
                 />
               </div>
 
-              <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-                <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:rounded-[28px] md:p-5">
-                  <div className="flex items-end justify-between gap-3">
-                    <div>
-                      <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-                        Структура линий
-                      </div>
-                      <h2 className="mt-1 text-[20px] font-semibold tracking-tight text-slate-900 md:text-[24px]">
-                        По каждому поставщику
-                      </h2>
-                      <p className="mt-1 text-sm text-slate-500">
-                        Видно, сколько линий в работе, поставлено, отменено и уже просрочено.
-                      </p>
-                    </div>
-                  </div>
+              <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+                <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:rounded-[28px] md:px-5 md:py-5">
+                  <SectionHeading
+                    eyebrow="Структура линий"
+                    title="По каждому поставщику"
+                    description="Сколько линий в работе, поставлено, отменено и уже просрочено."
+                  />
 
                   <div className="mt-5 space-y-4">
                     {analytics.rows.map((row) => {
                       const healthyActive = Math.max(row.activeLines - row.overdueLinesCurrent, 0);
                       return (
-                        <div key={`composition-${row.supplierId}`} className="space-y-2">
+                        <div
+                          key={`composition-${row.supplierId}`}
+                          className="rounded-[18px] border border-slate-100 bg-slate-50/65 px-3 py-3 md:px-4"
+                        >
                           <div className="flex items-center justify-between gap-3">
                             <div className="min-w-0">
-                              <div className="truncate text-sm font-semibold text-slate-900">
+                              <div className="truncate text-[14px] font-semibold tracking-tight text-slate-900 md:text-[15px]">
                                 {row.supplierName}
                               </div>
-                              <div className="text-xs text-slate-500">
+                              <div className="mt-0.5 text-[12px] text-slate-500">
                                 Заказов: {row.totalOrders} · Линий: {row.totalLines}
                               </div>
                             </div>
-                            <div className="text-xs font-medium text-slate-500">
+                            <div className="text-[12px] font-medium text-slate-500">
                               Просрочки: {formatPercent(row.overdueShare)}
                             </div>
                           </div>
 
-                          <StackedBar
+                          <div className="mt-3">
+                            <StackedBar
                             segments={[
                               {
                                 label: "В работе",
@@ -443,25 +433,20 @@ export default function SupplierAnalyticsPage() {
                                 color: "bg-slate-400/90",
                               },
                             ]}
-                          />
+                            />
+                          </div>
                         </div>
                       );
                     })}
                   </div>
                 </div>
 
-                <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:rounded-[28px] md:p-5">
-                  <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-                      Риски и потери
-                    </div>
-                    <h2 className="mt-1 text-[20px] font-semibold tracking-tight text-slate-900 md:text-[24px]">
-                      Просрочки и отмены
-                    </h2>
-                    <p className="mt-1 text-sm text-slate-500">
-                      Сравнение доли просроченных и отменённых линий по каждому поставщику.
-                    </p>
-                  </div>
+                <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:rounded-[28px] md:px-5 md:py-5">
+                  <SectionHeading
+                    eyebrow="Риски и потери"
+                    title="Просрочки и отмены"
+                    description="Сравнение доли просроченных и отменённых линий по каждому поставщику."
+                  />
 
                   <div className="mt-5 space-y-4">
                     {analytics.rows.map((row) => {
@@ -469,9 +454,12 @@ export default function SupplierAnalyticsPage() {
                         row.totalLines > 0 ? (row.canceledLines / row.totalLines) * 100 : 0;
 
                       return (
-                        <div key={`risk-${row.supplierId}`} className="space-y-2">
+                        <div
+                          key={`risk-${row.supplierId}`}
+                          className="rounded-[18px] border border-slate-100 bg-slate-50/65 px-3 py-3 md:px-4"
+                        >
                           <div className="flex items-center justify-between gap-3">
-                            <div className="truncate text-sm font-semibold text-slate-900">
+                            <div className="truncate text-[14px] font-semibold tracking-tight text-slate-900 md:text-[15px]">
                               {row.supplierName}
                             </div>
                             <div className="text-[11px] text-slate-500">
@@ -479,16 +467,18 @@ export default function SupplierAnalyticsPage() {
                             </div>
                           </div>
 
-                          <MetricBar
-                            label="Просрочки"
-                            value={row.overdueShare}
-                            color="bg-rose-500"
-                          />
-                          <MetricBar
-                            label="Отмены"
-                            value={canceledShare}
-                            color="bg-slate-500"
-                          />
+                          <div className="mt-3 space-y-3">
+                            <MetricBar
+                              label="Просрочки"
+                              value={row.overdueShare}
+                              color="bg-rose-500"
+                            />
+                            <MetricBar
+                              label="Отмены"
+                              value={canceledShare}
+                              color="bg-slate-500"
+                            />
+                          </div>
                         </div>
                       );
                     })}
@@ -496,26 +486,18 @@ export default function SupplierAnalyticsPage() {
                 </div>
               </div>
 
-              <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:rounded-[28px] md:p-5">
-                <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-                  <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-                      Рейтинг поставщиков
-                    </div>
-                    <h2 className="mt-1 text-[20px] font-semibold tracking-tight text-slate-900 md:text-[24px]">
-                      Кто работает стабильнее, а кто чаще срывает сроки
-                    </h2>
-                    <p className="mt-1 text-[14px] leading-6 text-slate-500">
-                      Сначала идут поставщики с большей долей просроченных линий, затем с большим числом отмен.
-                    </p>
-                  </div>
-                </div>
+              <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:rounded-[28px] md:px-5 md:py-5">
+                <SectionHeading
+                  eyebrow="Рейтинг поставщиков"
+                  title="Кто стабильнее, а кто чаще срывает сроки"
+                  description="Сначала идут поставщики с большей долей просроченных линий, затем с большим числом отмен."
+                />
 
                 <div className="mt-5 grid gap-3 lg:grid-cols-2">
                   {rankedRows.map((row) => (
                     <div
                       key={`rank-${row.supplierId}`}
-                      className="rounded-[20px] border border-slate-200 bg-slate-50/70 p-4"
+                      className="rounded-[20px] border border-slate-200 bg-white p-4 shadow-[0_4px_12px_rgba(15,23,42,0.04)]"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
@@ -523,7 +505,7 @@ export default function SupplierAnalyticsPage() {
                             <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-900 text-[12px] font-semibold text-white">
                               {row.rank}
                             </div>
-                            <div className="truncate text-[16px] font-semibold tracking-tight text-slate-900">
+                            <div className="truncate text-[16px] font-semibold tracking-tight text-slate-900 md:text-[17px]">
                               {row.supplierName}
                             </div>
                           </div>
@@ -541,7 +523,7 @@ export default function SupplierAnalyticsPage() {
                         </span>
                       </div>
 
-                      <div className="mt-4 grid grid-cols-2 gap-2">
+                      <div className="mt-4 grid grid-cols-2 gap-2 md:gap-3">
                         <InfoMini label="Просроч. линии" value={row.overdueLinesEver} />
                         <InfoMini label="Отмен. линии" value={row.canceledLines} />
                         <InfoMini label="Доля отмен" value={`${Math.round(row.canceledShare)}%`} />
@@ -552,20 +534,12 @@ export default function SupplierAnalyticsPage() {
                 </div>
               </div>
 
-              <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:rounded-[28px] md:p-5">
-                <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-                  <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-                      Сравнение поставщиков
-                    </div>
-                    <h2 className="mt-1 text-[20px] font-semibold tracking-tight text-slate-900 md:text-[26px]">
-                      Дашборд поставщиков
-                    </h2>
-                    <p className="mt-1 text-sm text-slate-500">
-                      Историческая доля просрочек считается по линиям и по первой фиксации просрочки, а не по текущей дате в заказе.
-                    </p>
-                  </div>
-                </div>
+              <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:rounded-[28px] md:px-5 md:py-5">
+                <SectionHeading
+                  eyebrow="Сравнение поставщиков"
+                  title="Полная таблица"
+                  description="Историческая доля просрочек считается по линиям и по первой фиксации просрочки."
+                />
 
                 <div className="mt-4 hidden overflow-hidden rounded-[22px] border border-slate-200 md:block">
                   <table className="min-w-full divide-y divide-slate-200 text-left">
@@ -594,7 +568,7 @@ export default function SupplierAnalyticsPage() {
                     </thead>
                     <tbody className="divide-y divide-slate-200">
                       {analytics.rows.map((row) => (
-                        <tr key={row.supplierId} className="bg-white">
+                        <tr key={row.supplierId} className="bg-white transition hover:bg-slate-50/80">
                           <td className="px-4 py-3.5">
                             <div className="font-semibold text-slate-900">{row.supplierName}</div>
                           </td>
@@ -629,7 +603,7 @@ export default function SupplierAnalyticsPage() {
                   {analytics.rows.map((row) => (
                     <div
                       key={row.supplierId}
-                      className="rounded-[22px] border border-slate-200 bg-slate-50/70 p-4"
+                      className="rounded-[22px] border border-slate-200 bg-white p-4 shadow-[0_4px_12px_rgba(15,23,42,0.04)]"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
@@ -724,9 +698,9 @@ function KpiCard({
   accent: string;
 }) {
   return (
-    <div className="rounded-[20px] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:rounded-[24px] md:p-5">
+    <div className="rounded-[20px] border border-slate-200 bg-white px-4 py-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:rounded-[24px] md:px-5 md:py-5">
       <div className="flex items-start justify-between gap-3">
-        <div className="text-[13px] font-medium text-slate-500 md:text-[14px]">{title}</div>
+        <div className="text-[12px] font-medium uppercase tracking-[0.06em] text-slate-500 md:text-[13px]">{title}</div>
         <div className={`mt-1 h-2 w-2 rounded-full opacity-70 ${accent}`} />
       </div>
       <div className="mt-3 text-[30px] font-semibold tracking-tight text-slate-900 md:text-[36px]">
@@ -744,11 +718,11 @@ function InfoMini({
   value: number | string;
 }) {
   return (
-    <div className="rounded-[16px] border border-white/70 bg-white px-3 py-2">
+    <div className="rounded-[16px] border border-slate-200 bg-white px-3 py-2.5">
       <div className="text-[10px] font-medium uppercase tracking-[0.08em] text-slate-400">
         {label}
       </div>
-      <div className="mt-1 text-[15px] font-semibold text-slate-900">{value}</div>
+      <div className="mt-1 min-h-[20px] text-[15px] font-semibold leading-5 text-slate-900">{value}</div>
     </div>
   );
 }
@@ -777,7 +751,7 @@ function StackedBar({
         })}
       </div>
 
-      <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-500">
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] leading-5 text-slate-500">
         {segments.map((segment) => (
           <div key={segment.label} className="inline-flex items-center gap-1.5">
             <span className={`h-2 w-2 rounded-full ${segment.color}`} />
@@ -804,7 +778,7 @@ function MetricBar({
 
   return (
     <div className="space-y-1.5">
-      <div className="flex items-center justify-between gap-3 text-[12px]">
+      <div className="flex items-center justify-between gap-3 text-[12px] leading-5">
         <span className="font-medium text-slate-600">{label}</span>
         <span className="font-semibold text-slate-900">{formatPercent(normalized)}</span>
       </div>
@@ -814,6 +788,28 @@ function MetricBar({
           style={{ width: `${normalized}%` }}
         />
       </div>
+    </div>
+  );
+}
+
+function SectionHeading({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div>
+      <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+        {eyebrow}
+      </div>
+      <h2 className="mt-1 text-[20px] font-semibold tracking-tight text-slate-900 md:text-[24px]">
+        {title}
+      </h2>
+      <p className="mt-1 text-[14px] leading-6 text-slate-500">{description}</p>
     </div>
   );
 }

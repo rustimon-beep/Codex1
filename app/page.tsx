@@ -1809,7 +1809,7 @@ export default function OrdersPage() {
                       </h1>
 
                       <p className="premium-subtitle mt-1 max-w-3xl text-[13px] leading-5 text-slate-300 md:text-[15px] md:leading-6">
-                        Система обработки и мониторинга заказов Автодом – Союз.
+                        Система обработки и мониторинга заказов Автодом.
                       </p>
                     </div>
                   </div>
