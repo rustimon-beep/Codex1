@@ -1375,6 +1375,8 @@ export default function OrdersPage() {
   ) => {
     if (!user) return;
 
+    const currentOrder = orders.find((x) => x.id === orderId);
+
     if (user.role === "viewer") {
       showToast("Действие недоступно", {
         description: "Наблюдатель не может менять статус.",
