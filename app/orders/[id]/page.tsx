@@ -73,6 +73,11 @@ export default function OrderDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [removing, setRemoving] = useState(false);
+  const [itemViewFilter, setItemViewFilter] = useState<
+    "all" | "changed" | "overdue" | "replacement"
+  >("all");
+  const [itemSearch, setItemSearch] = useState("");
+  const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const { user, setUser, authLoading, profileLoading, setProfileLoading } =
     useProfileAuth();
@@ -186,6 +191,12 @@ export default function OrderDetailsPage() {
     }).length;
   }, [form.items, initialFormState]);
 
+  useEffect(() => {
+    if (!copiedField) return;
+    const timer = window.setTimeout(() => setCopiedField(null), 1400);
+    return () => window.clearTimeout(timer);
+  }, [copiedField]);
+
   const getChangedFields = useCallback(
     (item: ItemForm, index: number) => {
       const original = initialFormState?.items[index];
@@ -223,6 +234,74 @@ export default function OrderDetailsPage() {
       };
     },
     [initialFormState]
+  );
+
+  const itemRows = useMemo(() => {
+    const normalizedSearch = itemSearch.trim().toLowerCase();
+
+    return form.items
+      .map((item, index) => {
+        const changedFields = getChangedFields(item, index);
+        const itemOverdue = isItemOverdue({
+          id: item.id || -(index + 1),
+          order_id: order?.id || orderId || 0,
+          article: item.article || null,
+          replacement_article: item.hasReplacement ? item.replacementArticle || null : null,
+          name: item.name || null,
+          quantity: item.quantity || null,
+          planned_date: item.plannedDate || null,
+          status: item.status || "Новый",
+          delivered_date: item.deliveredDate || null,
+          canceled_date: item.canceledDate || null,
+        });
+
+        const searchable = [item.article, item.name, item.replacementArticle]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        const matchesSearch = !normalizedSearch || searchable.includes(normalizedSearch);
+        const matchesFilter =
+          itemViewFilter === "all"
+            ? true
+            : itemViewFilter === "changed"
+            ? changedFields.any
+            : itemViewFilter === "overdue"
+            ? itemOverdue
+            : item.hasReplacement;
+
+        return {
+          item,
+          index,
+          changedFields,
+          itemOverdue,
+          visible: matchesSearch && matchesFilter,
+        };
+      })
+      .filter((row) => row.visible);
+  }, [form.items, getChangedFields, itemSearch, itemViewFilter, order?.id, orderId]);
+
+  const itemViewStats = useMemo(
+    () => ({
+      all: form.items.length,
+      changed: changedItemsCount,
+      overdue: form.items.filter((item, index) =>
+        isItemOverdue({
+          id: item.id || -(index + 1),
+          order_id: order?.id || orderId || 0,
+          article: item.article || null,
+          replacement_article: item.hasReplacement ? item.replacementArticle || null : null,
+          name: item.name || null,
+          quantity: item.quantity || null,
+          planned_date: item.plannedDate || null,
+          status: item.status || "Новый",
+          delivered_date: item.deliveredDate || null,
+          canceled_date: item.canceledDate || null,
+        })
+      ).length,
+      replacement: form.items.filter((item) => item.hasReplacement).length,
+    }),
+    [changedItemsCount, form.items, order?.id, orderId]
   );
 
   const loadOrder = useCallback(async () => {
@@ -348,6 +427,28 @@ export default function OrderDetailsPage() {
   const handleReloadOrder = () => {
     void loadOrder();
   };
+
+  const handleCopyValue = useCallback(
+    async (value: string, label: string) => {
+      const normalizedValue = value.trim();
+      if (!normalizedValue) return;
+
+      try {
+        await navigator.clipboard.writeText(normalizedValue);
+        setCopiedField(label);
+        showToast("Скопировано", {
+          description: `${label} скопирован в буфер обмена.`,
+          variant: "success",
+        });
+      } catch {
+        showToast("Не удалось скопировать", {
+          description: "Браузер не дал доступ к буферу обмена.",
+          variant: "error",
+        });
+      }
+    },
+    [showToast]
+  );
 
   const handleBackNavigation = useCallback(
     async (event?: React.MouseEvent<HTMLAnchorElement>) => {
@@ -773,23 +874,52 @@ export default function OrderDetailsPage() {
                       </div>
                     ) : null}
 
+                    <div className="mb-5 rounded-[24px] border border-slate-200 bg-slate-50/70 p-3.5 md:p-4">
+                      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            ["all", "Все", itemViewStats.all],
+                            ["changed", "Изменены", itemViewStats.changed],
+                            ["overdue", "Просрочены", itemViewStats.overdue],
+                            ["replacement", "С заменой", itemViewStats.replacement],
+                          ].map(([key, label, count]) => (
+                            <button
+                              key={key}
+                              type="button"
+                              onClick={() =>
+                                setItemViewFilter(
+                                  key as "all" | "changed" | "overdue" | "replacement"
+                                )
+                              }
+                              className={`rounded-full border px-3 py-1.5 text-[11px] font-medium transition ${
+                                itemViewFilter === key
+                                  ? "border-slate-900 bg-slate-900 text-white"
+                                  : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                              }`}
+                            >
+                              {label} · {count}
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="w-full md:max-w-[280px]">
+                          <input
+                            value={itemSearch}
+                            onChange={(e) => setItemSearch(e.target.value)}
+                            placeholder="Поиск по позиции внутри заказа"
+                            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-400"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="space-y-4">
-                      {form.items.map((item, index) => {
-                        const changedFields = getChangedFields(item, index);
-                        const itemOverdue = isItemOverdue({
-                          id: item.id || -(index + 1),
-                          order_id: order.id,
-                          article: item.article || null,
-                          replacement_article: item.hasReplacement
-                            ? item.replacementArticle || null
-                            : null,
-                          name: item.name || null,
-                          quantity: item.quantity || null,
-                          planned_date: item.plannedDate || null,
-                          status: item.status || "Новый",
-                          delivered_date: item.deliveredDate || null,
-                          canceled_date: item.canceledDate || null,
-                        });
+                      {itemRows.length === 0 ? (
+                        <div className="rounded-[22px] border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-center text-sm text-slate-500">
+                          По текущему фильтру и поиску позиции не найдены.
+                        </div>
+                      ) : (
+                      itemRows.map(({ item, index, changedFields, itemOverdue }) => {
 
                         const eventLabel =
                           item.status === "Поставлен"
@@ -852,6 +982,12 @@ export default function OrderDetailsPage() {
                                       Не сохранено
                                     </div>
                                   ) : null}
+
+                                  {copiedField === `article-${index}` ? (
+                                    <div className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-medium text-emerald-700">
+                                      Артикул скопирован
+                                    </div>
+                                  ) : null}
                                 </div>
 
                                 {eventLabel ? (
@@ -865,20 +1001,34 @@ export default function OrderDetailsPage() {
                             <div className="p-4 md:p-5">
                               <div className="grid grid-cols-1 gap-4 md:grid-cols-[1.3fr_1.45fr_0.5fr_0.95fr_1.12fr]">
                                 <FieldBlock label="Артикул" compact>
-                                  <input
-                                    value={item.article}
-                                    disabled={!canEditMainItemFields || saving}
-                                    onChange={(e) =>
-                                      updateItemField(index, "article", e.target.value)
-                                    }
-                                    className={`w-full rounded-2xl border px-4 py-3.5 font-mono text-[13px] text-slate-900 outline-none focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500 ${
-                                      isHighlightedArticle(item.article)
-                                        ? "border-amber-300 bg-amber-50/80 ring-2 ring-amber-100"
-                                        : changedFields.article
-                                        ? "border-blue-200 bg-blue-50/70"
-                                        : "border-slate-200 bg-slate-50"
-                                    }`}
-                                  />
+                                  <div className="flex gap-2">
+                                    <input
+                                      value={item.article}
+                                      disabled={!canEditMainItemFields || saving}
+                                      onChange={(e) =>
+                                        updateItemField(index, "article", e.target.value)
+                                      }
+                                      className={`w-full rounded-2xl border px-4 py-3.5 font-mono text-[13px] text-slate-900 outline-none focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500 ${
+                                        isHighlightedArticle(item.article)
+                                          ? "border-amber-300 bg-amber-50/80 ring-2 ring-amber-100"
+                                          : changedFields.article
+                                          ? "border-blue-200 bg-blue-50/70"
+                                          : "border-slate-200 bg-slate-50"
+                                      }`}
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void handleCopyValue(
+                                          item.article,
+                                          `article-${index}`
+                                        )
+                                      }
+                                      className="shrink-0 rounded-2xl border border-slate-200 bg-white px-3 text-[11px] font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
+                                    >
+                                      Копия
+                                    </button>
+                                  </div>
                                 </FieldBlock>
 
                                 <FieldBlock label="Наименование" compact>
@@ -963,29 +1113,44 @@ export default function OrderDetailsPage() {
                                 </label>
 
                                 <FieldBlock label="Актуальный артикул" compact>
-                                  <input
-                                    value={item.replacementArticle}
-                                    disabled={
-                                      !canEditMainItemFields ||
-                                      !item.hasReplacement ||
-                                      saving
-                                    }
-                                    onChange={(e) =>
-                                      updateItemField(
-                                        index,
-                                        "replacementArticle",
-                                        e.target.value
-                                      )
-                                    }
-                                    placeholder="Укажи актуальный артикул"
-                                    className={`w-full rounded-2xl border px-4 py-3.5 font-mono text-[13px] text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500 ${
-                                      isHighlightedArticle(item.replacementArticle)
-                                        ? "border-amber-300 bg-amber-50/80 ring-2 ring-amber-100"
-                                        : changedFields.replacementArticle || changedFields.hasReplacement
-                                        ? "border-blue-200 bg-blue-50/70"
-                                        : "border-slate-200 bg-slate-50"
-                                    }`}
-                                  />
+                                  <div className="flex gap-2">
+                                    <input
+                                      value={item.replacementArticle}
+                                      disabled={
+                                        !canEditMainItemFields ||
+                                        !item.hasReplacement ||
+                                        saving
+                                      }
+                                      onChange={(e) =>
+                                        updateItemField(
+                                          index,
+                                          "replacementArticle",
+                                          e.target.value
+                                        )
+                                      }
+                                      placeholder="Укажи актуальный артикул"
+                                      className={`w-full rounded-2xl border px-4 py-3.5 font-mono text-[13px] text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500 ${
+                                        isHighlightedArticle(item.replacementArticle)
+                                          ? "border-amber-300 bg-amber-50/80 ring-2 ring-amber-100"
+                                          : changedFields.replacementArticle || changedFields.hasReplacement
+                                          ? "border-blue-200 bg-blue-50/70"
+                                          : "border-slate-200 bg-slate-50"
+                                      }`}
+                                    />
+                                    <button
+                                      type="button"
+                                      disabled={!item.replacementArticle}
+                                      onClick={() =>
+                                        void handleCopyValue(
+                                          item.replacementArticle,
+                                          `replacement-${index}`
+                                        )
+                                      }
+                                      className="shrink-0 rounded-2xl border border-slate-200 bg-white px-3 text-[11px] font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                      Копия
+                                    </button>
+                                  </div>
                                 </FieldBlock>
 
                                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -1038,12 +1203,12 @@ export default function OrderDetailsPage() {
                             </div>
                           </div>
                         );
-                      })}
+                      }))}
                     </div>
                   </section>
                 </div>
 
-                <div className="space-y-5">
+                <div className="space-y-5 xl:sticky xl:top-6 xl:self-start">
                   <section className="premium-shell rounded-[26px] p-4 md:rounded-[28px] md:p-5">
                     <div className="flex items-start gap-3">
                       <PremiumIconTile
