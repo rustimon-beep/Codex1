@@ -307,9 +307,9 @@ export default function OrdersPage() {
   }, [prepareCreateDraft, user]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || modalInitialSnapshot !== "") return;
     setModalInitialSnapshot(serializeOrderForm(form));
-  }, [open, serializeOrderForm]);
+  }, [form, modalInitialSnapshot, open, serializeOrderForm]);
 
   useEffect(() => {
     if (!open || !isFormDirty) return;
@@ -1061,7 +1061,9 @@ export default function OrdersPage() {
         return;
       }
 
-      const existingItemIds = getExistingItemIds(orders, orderId);
+      const savedOrderId = orderId;
+
+      const existingItemIds = getExistingItemIds(orders, savedOrderId);
       const currentItemIds = validItems
         .map((item) => item.id)
         .filter(Boolean) as number[];
@@ -1093,7 +1095,7 @@ export default function OrdersPage() {
       }
 
       for (const item of validItems) {
-        const itemPayload = buildOrderItemPayload(orderId, item);
+        const itemPayload = buildOrderItemPayload(savedOrderId, item);
 
         if (item.id) {
           const { error } = await updateOrderItem(item.id, itemPayload);
@@ -1132,16 +1134,16 @@ export default function OrdersPage() {
 
       if (!editingOrderId) {
         await notifyNewOrderCreated({
-          orderId,
+          orderId: savedOrderId,
           clientOrder: form.clientOrder,
         }).catch(() => {});
       } else if (existingOrder) {
         const nextOrderSnapshot = {
-          id: orderId,
+          id: savedOrderId,
           client_order: form.clientOrder,
           order_items: validItems.map((item) => ({
             id: item.id!,
-            order_id: orderId,
+            order_id: savedOrderId,
             article: item.article,
             replacement_article: item.hasReplacement ? item.replacementArticle : null,
             name: item.name,
