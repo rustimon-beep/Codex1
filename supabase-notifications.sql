@@ -3,7 +3,7 @@ create extension if not exists pgcrypto;
 create table if not exists public.notification_events (
   id uuid primary key default gen_random_uuid(),
   event_type text not null check (
-    event_type in ('new_order', 'overdue', 'status_changed', 'cancellation')
+    event_type in ('new_order', 'overdue', 'status_changed', 'cancellation', 'planned_date_changed')
   ),
   event_key text not null unique,
   order_id bigint references public.orders_v2 (id) on delete cascade,
@@ -115,3 +115,12 @@ to authenticated
 using (auth.uid() = user_id);
 
 alter publication supabase_realtime add table public.notification_recipients;
+
+alter table public.notification_events
+  drop constraint if exists notification_events_event_type_check;
+
+alter table public.notification_events
+  add constraint notification_events_event_type_check
+  check (
+    event_type in ('new_order', 'overdue', 'status_changed', 'cancellation', 'planned_date_changed')
+  );
