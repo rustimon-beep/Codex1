@@ -643,7 +643,7 @@ export function OrderFormModal({
                           </label>
                           <select
                             value={item.status}
-                            disabled={!canEditItemMainFields || saving || photoParsing}
+                            disabled={!canEditItemStatusFields || saving || photoParsing}
                             onChange={(e) => updateItemField(index, "status", e.target.value)}
                             className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-100 disabled:text-slate-500"
                           >
@@ -663,7 +663,7 @@ export function OrderFormModal({
                           </label>
                           <input
                             value={item.replacementArticle}
-                            disabled={!canEditItemStatusFields || saving || photoParsing}
+                            disabled={!canEditItemMainFields || saving || photoParsing}
                             onChange={(e) => {
                               const nextValue = e.target.value;
                               updateItemField(index, "replacementArticle", nextValue);
