@@ -103,6 +103,17 @@ export async function createNotificationEvents(events: NotificationEventDraft[])
     }
 
     const recipients = await fetchProfilesByRoles(event.recipientRoles, event.supplierId);
+    if (event.recipientRoles.includes("supplier")) {
+      const { error: staleSupplierRecipientsError } = await supabase
+        .from("notification_recipients")
+        .delete()
+        .eq("event_id", insertedEvent.id)
+        .eq("role", "supplier");
+
+      if (staleSupplierRecipientsError) {
+        throw staleSupplierRecipientsError;
+      }
+    }
 
     if (recipients.length > 0) {
       const { error: recipientsError } = await supabase
