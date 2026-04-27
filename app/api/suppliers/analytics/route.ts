@@ -36,17 +36,10 @@ export async function GET() {
     }
 
     const historicalOverdueBySupplier: Record<string, number> = {};
-    const seenBySupplier = new Map<string, Set<number>>();
 
     for (const row of data || []) {
       const supplierKey = row.supplier_id ? String(row.supplier_id) : "unassigned";
-      const existing = seenBySupplier.get(supplierKey) || new Set<number>();
-      existing.add(row.order_id as number);
-      seenBySupplier.set(supplierKey, existing);
-    }
-
-    for (const [supplierKey, orderIds] of Array.from(seenBySupplier.entries())) {
-      historicalOverdueBySupplier[supplierKey] = orderIds.size;
+      historicalOverdueBySupplier[supplierKey] = (historicalOverdueBySupplier[supplierKey] || 0) + 1;
     }
 
     return NextResponse.json({

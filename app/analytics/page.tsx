@@ -207,7 +207,7 @@ export default function SupplierAnalyticsPage() {
                       </h1>
 
                       <p className="premium-subtitle mt-1 max-w-3xl text-[13px] leading-5 text-slate-300 md:text-[15px] md:leading-6">
-                        Общая картина по заказам, просрочкам и качеству исполнения по каждому поставщику.
+                        Общая картина по заказам, линиям, просрочкам и качеству исполнения по каждому поставщику.
                       </p>
                     </div>
                   </div>
@@ -258,7 +258,7 @@ export default function SupplierAnalyticsPage() {
             />
           ) : (
             <>
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6 md:gap-4">
                 <KpiCard
                   title="Поставщиков"
                   value={analytics.overview.suppliersCount}
@@ -270,15 +270,136 @@ export default function SupplierAnalyticsPage() {
                   accent="bg-sky-500"
                 />
                 <KpiCard
-                  title="Активных"
-                  value={analytics.overview.activeOrders}
+                  title="Всего линий"
+                  value={analytics.overview.totalLines}
                   accent="bg-amber-500"
                 />
                 <KpiCard
-                  title="Доля просрочек"
+                  title="Отменённых заказов"
+                  value={analytics.overview.canceledOrders}
+                  accent="bg-slate-400"
+                />
+                <KpiCard
+                  title="Отменённых линий"
+                  value={analytics.overview.canceledLines}
+                  accent="bg-slate-500"
+                />
+                <KpiCard
+                  title="Доля просрочек по линиям"
                   value={formatPercent(analytics.overview.overdueShareTotal)}
                   accent="bg-rose-500"
                 />
+              </div>
+
+              <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+                <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:rounded-[28px] md:p-5">
+                  <div className="flex items-end justify-between gap-3">
+                    <div>
+                      <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                        Структура линий
+                      </div>
+                      <h2 className="mt-1 text-[20px] font-semibold tracking-tight text-slate-900 md:text-[24px]">
+                        По каждому поставщику
+                      </h2>
+                      <p className="mt-1 text-sm text-slate-500">
+                        Видно, сколько линий в работе, поставлено, отменено и уже просрочено.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 space-y-4">
+                    {analytics.rows.map((row) => {
+                      const healthyActive = Math.max(row.activeLines - row.overdueLinesCurrent, 0);
+                      return (
+                        <div key={`composition-${row.supplierId}`} className="space-y-2">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="truncate text-sm font-semibold text-slate-900">
+                                {row.supplierName}
+                              </div>
+                              <div className="text-xs text-slate-500">
+                                Заказов: {row.totalOrders} · Линий: {row.totalLines}
+                              </div>
+                            </div>
+                            <div className="text-xs font-medium text-slate-500">
+                              Просрочки: {formatPercent(row.overdueShare)}
+                            </div>
+                          </div>
+
+                          <StackedBar
+                            segments={[
+                              {
+                                label: "В работе",
+                                value: healthyActive,
+                                color: "bg-sky-500/85",
+                              },
+                              {
+                                label: "Просрочено",
+                                value: row.overdueLinesCurrent,
+                                color: "bg-rose-500/85",
+                              },
+                              {
+                                label: "Поставлено",
+                                value: row.deliveredLines,
+                                color: "bg-emerald-500/85",
+                              },
+                              {
+                                label: "Отменено",
+                                value: row.canceledLines,
+                                color: "bg-slate-400/90",
+                              },
+                            ]}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:rounded-[28px] md:p-5">
+                  <div>
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                      Риски и потери
+                    </div>
+                    <h2 className="mt-1 text-[20px] font-semibold tracking-tight text-slate-900 md:text-[24px]">
+                      Просрочки и отмены
+                    </h2>
+                    <p className="mt-1 text-sm text-slate-500">
+                      Сравнение доли просроченных и отменённых линий по каждому поставщику.
+                    </p>
+                  </div>
+
+                  <div className="mt-5 space-y-4">
+                    {analytics.rows.map((row) => {
+                      const canceledShare =
+                        row.totalLines > 0 ? (row.canceledLines / row.totalLines) * 100 : 0;
+
+                      return (
+                        <div key={`risk-${row.supplierId}`} className="space-y-2">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="truncate text-sm font-semibold text-slate-900">
+                              {row.supplierName}
+                            </div>
+                            <div className="text-[11px] text-slate-500">
+                              {row.overdueLinesEver} проср. · {row.canceledLines} отмен.
+                            </div>
+                          </div>
+
+                          <MetricBar
+                            label="Просрочки"
+                            value={row.overdueShare}
+                            color="bg-rose-500"
+                          />
+                          <MetricBar
+                            label="Отмены"
+                            value={canceledShare}
+                            color="bg-slate-500"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
 
               <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:rounded-[28px] md:p-5">
@@ -291,7 +412,7 @@ export default function SupplierAnalyticsPage() {
                       Дашборд поставщиков
                     </h2>
                     <p className="mt-1 text-sm text-slate-500">
-                      Историческая доля просрочек считается по первой фиксации просрочки, а не по текущей дате в заказе.
+                      Историческая доля просрочек считается по линиям и по первой фиксации просрочки, а не по текущей дате в заказе.
                     </p>
                   </div>
                 </div>
@@ -303,8 +424,11 @@ export default function SupplierAnalyticsPage() {
                         {[
                           "Поставщик",
                           "Заказы",
-                          "В работе",
-                          "Поставлено",
+                          "Отмен. заказы",
+                          "Линии",
+                          "Активные линии",
+                          "Поставлено линий",
+                          "Отмен. линии",
                           "Просрочено сейчас",
                           "Были просрочки",
                           "Доля просрочек",
@@ -325,12 +449,17 @@ export default function SupplierAnalyticsPage() {
                             <div className="font-semibold text-slate-900">{row.supplierName}</div>
                           </td>
                           <td className="px-4 py-3.5 text-sm text-slate-700">{row.totalOrders}</td>
-                          <td className="px-4 py-3.5 text-sm text-slate-700">{row.activeOrders}</td>
+                          <td className="px-4 py-3.5 text-sm text-slate-700">{row.canceledOrders}</td>
+                          <td className="px-4 py-3.5 text-sm text-slate-700">{row.totalLines}</td>
                           <td className="px-4 py-3.5 text-sm text-slate-700">
-                            {row.deliveredOrders} · {formatPercent(row.deliveredShare)}
+                            {row.activeLines}
                           </td>
-                          <td className="px-4 py-3.5 text-sm text-slate-700">{row.overdueOrdersCurrent}</td>
-                          <td className="px-4 py-3.5 text-sm text-slate-700">{row.overdueOrdersEver}</td>
+                          <td className="px-4 py-3.5 text-sm text-slate-700">
+                            {row.deliveredLines} · {formatPercent(row.deliveredShare)}
+                          </td>
+                          <td className="px-4 py-3.5 text-sm text-slate-700">{row.canceledLines}</td>
+                          <td className="px-4 py-3.5 text-sm text-slate-700">{row.overdueLinesCurrent}</td>
+                          <td className="px-4 py-3.5 text-sm text-slate-700">{row.overdueLinesEver}</td>
                           <td className="px-4 py-3.5">
                             <span
                               className={`inline-flex rounded-full border px-3 py-1 text-xs font-medium ${getSupplierAnalyticsTone(
@@ -358,7 +487,7 @@ export default function SupplierAnalyticsPage() {
                             {row.supplierName}
                           </div>
                           <div className="mt-1 text-[12px] text-slate-500">
-                            Заказов: {row.totalOrders}
+                            Заказов: {row.totalOrders} · Линий: {row.totalLines}
                           </div>
                         </div>
 
@@ -372,10 +501,12 @@ export default function SupplierAnalyticsPage() {
                       </div>
 
                       <div className="mt-3 grid grid-cols-2 gap-2 text-[12px] text-slate-600">
-                        <InfoMini label="В работе" value={row.activeOrders} />
-                        <InfoMini label="Поставлено" value={row.deliveredOrders} />
-                        <InfoMini label="Просрочено сейчас" value={row.overdueOrdersCurrent} />
-                        <InfoMini label="Были просрочки" value={row.overdueOrdersEver} />
+                        <InfoMini label="Отмен. заказы" value={row.canceledOrders} />
+                        <InfoMini label="Активные линии" value={row.activeLines} />
+                        <InfoMini label="Поставлено линий" value={row.deliveredLines} />
+                        <InfoMini label="Отмен. линии" value={row.canceledLines} />
+                        <InfoMini label="Просрочено сейчас" value={row.overdueLinesCurrent} />
+                        <InfoMini label="Были просрочки" value={row.overdueLinesEver} />
                       </div>
                     </div>
                   ))}
@@ -468,6 +599,71 @@ function InfoMini({
         {label}
       </div>
       <div className="mt-1 text-[15px] font-semibold text-slate-900">{value}</div>
+    </div>
+  );
+}
+
+function StackedBar({
+  segments,
+}: {
+  segments: Array<{ label: string; value: number; color: string }>;
+}) {
+  const total = segments.reduce((sum, segment) => sum + segment.value, 0);
+
+  return (
+    <div className="space-y-2">
+      <div className="flex h-3 overflow-hidden rounded-full bg-slate-100">
+        {segments.map((segment) => {
+          const width = total > 0 ? (segment.value / total) * 100 : 0;
+
+          return (
+            <div
+              key={segment.label}
+              className={`${segment.color} transition-all`}
+              style={{ width: `${width}%` }}
+              title={`${segment.label}: ${segment.value}`}
+            />
+          );
+        })}
+      </div>
+
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-500">
+        {segments.map((segment) => (
+          <div key={segment.label} className="inline-flex items-center gap-1.5">
+            <span className={`h-2 w-2 rounded-full ${segment.color}`} />
+            <span>
+              {segment.label}: {segment.value}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MetricBar({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: number;
+  color: string;
+}) {
+  const normalized = Math.max(0, Math.min(value, 100));
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between gap-3 text-[12px]">
+        <span className="font-medium text-slate-600">{label}</span>
+        <span className="font-semibold text-slate-900">{formatPercent(normalized)}</span>
+      </div>
+      <div className="h-2.5 overflow-hidden rounded-full bg-slate-100">
+        <div
+          className={`h-full rounded-full ${color}`}
+          style={{ width: `${normalized}%` }}
+        />
+      </div>
     </div>
   );
 }
