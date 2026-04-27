@@ -329,11 +329,30 @@ export function parseClipboardItems(rawText: string): ItemForm[] {
           ? normalized.slice(0, normalized.length - quantityMatch![0].length).trim()
           : normalized;
 
-        const articleMatch = withoutQuantity.match(/^[A-Za-zА-Яа-я0-9._/-]+/);
-        article = articleMatch?.[0] || "";
-        name = article
-          ? withoutQuantity.slice(article.length).trim()
-          : withoutQuantity.trim();
+        const splitByWideGap = withoutQuantity
+          .split(/\s{2,}/g)
+          .map((part) => part.trim())
+          .filter(Boolean);
+
+        if (splitByWideGap.length >= 2) {
+          article = splitByWideGap[0] || "";
+          name = splitByWideGap.slice(1).join(" ").trim();
+        } else {
+          const articleWithSpacesMatch = withoutQuantity.match(
+            /^([A-Za-zА-Яа-я0-9._/-]+(?:\s+[A-Za-zА-Яа-я0-9._/-]+){0,4})\s+(.+)$/
+          );
+
+          if (articleWithSpacesMatch) {
+            article = articleWithSpacesMatch[1].trim();
+            name = articleWithSpacesMatch[2].trim();
+          } else {
+            const articleMatch = withoutQuantity.match(/^[A-Za-zА-Яа-я0-9._/-]+/);
+            article = articleMatch?.[0] || "";
+            name = article
+              ? withoutQuantity.slice(article.length).trim()
+              : withoutQuantity.trim();
+          }
+        }
       }
 
       const item: ItemForm = {

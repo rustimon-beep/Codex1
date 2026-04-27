@@ -66,6 +66,17 @@ async function showSystemNotification(title: string, body: string) {
   }
 }
 
+function getOrderLabel(order: OrderWithItems) {
+  return (order.client_order || "").trim() || `Заказ #${order.id}`;
+}
+
+function formatOrderList(labels: string[]) {
+  if (labels.length === 0) return "";
+  if (labels.length === 1) return labels[0];
+  if (labels.length === 2) return `${labels[0]} и ${labels[1]}`;
+  return `${labels[0]}, ${labels[1]} и ещё ${labels.length - 2}`;
+}
+
 type UserRole = "admin" | "supplier" | "viewer" | "buyer";
 
 type OrdersNotificationSnapshot = {
@@ -171,6 +182,13 @@ export function useOrdersNotifications(params: {
       ),
     [orders]
   );
+  const ordersById = useMemo(
+    () =>
+      Object.fromEntries(
+        orders.map((order) => [String(order.id), order])
+      ) as Record<string, OrderWithItems>,
+    [orders]
+  );
 
   useEffect(() => {
     if (!supportsNotifications()) {
@@ -202,27 +220,36 @@ export function useOrdersNotifications(params: {
     const newlyOverdueCount = current.overdue.filter((id) => !previous.overdue.includes(id)).length;
     const newlyUrgentCount = current.urgent.filter((id) => !previous.urgent.includes(id)).length;
 
-    let changedStatusesCount = 0;
-    let newCancellationsCount = 0;
+    const changedStatusOrderIds: string[] = [];
+    const cancellationOrderIds: string[] = [];
 
     for (const [orderId, snapshot] of Object.entries(current.statuses)) {
       const previousOrder = previous.statuses[orderId];
       if (!previousOrder) continue;
 
       if (snapshot.status !== previousOrder.status) {
-        changedStatusesCount += 1;
+        changedStatusOrderIds.push(orderId);
       }
 
       if (snapshot.canceledCount > previousOrder.canceledCount) {
-        newCancellationsCount += snapshot.canceledCount - previousOrder.canceledCount;
+        cancellationOrderIds.push(orderId);
       }
     }
 
     if (newOrderCount > 0 && ["admin", "supplier", "buyer"].includes(userRole)) {
+      const labels = Object.keys(current.statuses)
+        .filter((orderId) => !previous.statuses[orderId])
+        .map((orderId) => ordersById[orderId])
+        .filter(Boolean)
+        .map(getOrderLabel)
+        .slice(0, 3);
+
       tasks.push(
         showSystemNotification(
           "Новые заказы",
-          newOrderCount === 1
+          labels.length > 0
+            ? `Новые: ${formatOrderList(labels)}.`
+            : newOrderCount === 1
             ? "Появился 1 новый заказ."
             : `Появилось новых заказов: ${newOrderCount}.`
         )
@@ -230,10 +257,19 @@ export function useOrdersNotifications(params: {
     }
 
     if (newlyOverdueCount > 0 && ["admin", "supplier", "buyer"].includes(userRole)) {
+      const labels = current.overdue
+        .filter((id) => !previous.overdue.includes(id))
+        .map((orderId) => ordersById[orderId])
+        .filter(Boolean)
+        .map(getOrderLabel)
+        .slice(0, 3);
+
       tasks.push(
         showSystemNotification(
           "Просроченные заказы",
-          newlyOverdueCount === 1
+          labels.length > 0
+            ? `Просрочены: ${formatOrderList(labels)}.`
+            : newlyOverdueCount === 1
             ? "Появился 1 новый просроченный заказ."
             : `Появилось новых просроченных заказов: ${newlyOverdueCount}.`
         )
@@ -241,34 +277,59 @@ export function useOrdersNotifications(params: {
     }
 
     if (newlyUrgentCount > 0 && userRole === "admin") {
+      const labels = current.urgent
+        .filter((id) => !previous.urgent.includes(id))
+        .map((orderId) => ordersById[orderId])
+        .filter(Boolean)
+        .map(getOrderLabel)
+        .slice(0, 3);
+
       tasks.push(
         showSystemNotification(
           "Срочные заказы",
-          newlyUrgentCount === 1
+          labels.length > 0
+            ? `Срочные: ${formatOrderList(labels)}.`
+            : newlyUrgentCount === 1
             ? "Появился 1 новый срочный заказ."
             : `Появилось новых срочных заказов: ${newlyUrgentCount}.`
         )
       );
     }
 
-    if (changedStatusesCount > 0 && ["admin", "buyer"].includes(userRole)) {
+    if (changedStatusOrderIds.length > 0 && ["admin", "buyer"].includes(userRole)) {
+      const labels = changedStatusOrderIds
+        .map((orderId) => ordersById[orderId])
+        .filter(Boolean)
+        .map(getOrderLabel)
+        .slice(0, 3);
+
       tasks.push(
         showSystemNotification(
           "Изменение статусов",
-          changedStatusesCount === 1
+          labels.length > 0
+            ? `Изменились статусы: ${formatOrderList(labels)}.`
+            : changedStatusOrderIds.length === 1
             ? "У одного заказа изменился статус."
-            : `Изменились статусы заказов: ${changedStatusesCount}.`
+            : `Изменились статусы заказов: ${changedStatusOrderIds.length}.`
         )
       );
     }
 
-    if (newCancellationsCount > 0 && ["admin", "buyer"].includes(userRole)) {
+    if (cancellationOrderIds.length > 0 && ["admin", "buyer"].includes(userRole)) {
+      const labels = cancellationOrderIds
+        .map((orderId) => ordersById[orderId])
+        .filter(Boolean)
+        .map(getOrderLabel)
+        .slice(0, 3);
+
       tasks.push(
         showSystemNotification(
           "Есть отмены",
-          newCancellationsCount === 1
+          labels.length > 0
+            ? `Появились отмены: ${formatOrderList(labels)}.`
+            : cancellationOrderIds.length === 1
             ? "Появилась 1 новая отменённая позиция."
-            : `Появилось новых отменённых позиций: ${newCancellationsCount}.`
+            : `Появились отменённые позиции в заказах: ${cancellationOrderIds.length}.`
         )
       );
     }
@@ -278,6 +339,7 @@ export function useOrdersNotifications(params: {
   }, [
     orders.length,
     overdueIds,
+    ordersById,
     permission,
     statusesSnapshot,
     urgentIds,

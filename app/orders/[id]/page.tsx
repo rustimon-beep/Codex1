@@ -351,7 +351,10 @@ export default function OrderDetailsPage() {
 
   const handleBackNavigation = useCallback(
     async (event?: React.MouseEvent<HTMLAnchorElement>) => {
-      if (!isFormDirty || saving) return;
+      if (!isFormDirty || saving) {
+        router.push("/");
+        return;
+      }
 
       event?.preventDefault();
 
