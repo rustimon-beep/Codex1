@@ -72,6 +72,11 @@ async function showSystemNotification(title: string, body: string) {
   }
 }
 
+function canShowInForeground() {
+  if (typeof document === "undefined") return true;
+  return document.visibilityState === "visible";
+}
+
 export function useOrdersNotifications(params: {
   userId: string | null;
   userRole: UserRole;
@@ -137,7 +142,7 @@ export function useOrdersNotifications(params: {
   }, [permission, publicVapidKey, userId, userRole]);
 
   useEffect(() => {
-    if (!userId || permission !== "granted" || userRole === "viewer" || pushReady) return;
+    if (!userId || permission !== "granted" || userRole === "viewer") return;
 
     let cancelled = false;
 
@@ -147,6 +152,7 @@ export function useOrdersNotifications(params: {
 
         for (const recipient of pending) {
           if (cancelled || !recipient.notification_events) continue;
+          if (!canShowInForeground()) continue;
 
           await showSystemNotification(
             recipient.notification_events.title,
@@ -176,6 +182,7 @@ export function useOrdersNotifications(params: {
           try {
             const recipient = await fetchNotificationRecipientById(recipientId);
             if (!recipient.notification_events || recipient.delivered_at) return;
+            if (!canShowInForeground()) return;
 
             await showSystemNotification(
               recipient.notification_events.title,
@@ -191,7 +198,7 @@ export function useOrdersNotifications(params: {
       cancelled = true;
       void supabase.removeChannel(channel);
     };
-  }, [permission, pushReady, userId, userRole]);
+  }, [permission, userId, userRole]);
 
   const requestPermission = useCallback(async () => {
     if (userRole === "viewer") {
