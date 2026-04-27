@@ -48,7 +48,7 @@ export async function dispatchNotificationEventPush(eventId: string) {
   const { data: recipients, error: recipientsError } = await supabase
     .from("notification_recipients")
     .select(
-      "id, user_id, delivered_at, notification_events(id, title, body, order_id, event_type)"
+      "id, user_id, delivered_at, notification_events(id, title, body, order_id, event_type, event_key, payload)"
     )
     .eq("event_id", eventId)
     .is("delivered_at", null);
@@ -63,6 +63,12 @@ export async function dispatchNotificationEventPush(eventId: string) {
       : recipient.notification_events;
 
     if (!eventValue?.title || !eventValue?.body) continue;
+    const url =
+      typeof eventValue.payload?.url === "string"
+        ? eventValue.payload.url
+        : eventValue.order_id
+          ? `/orders/${eventValue.order_id}`
+          : "/";
 
     const { data: subscriptions, error: subscriptionsError } = await supabase
       .from("push_subscriptions")
@@ -92,7 +98,8 @@ export async function dispatchNotificationEventPush(eventId: string) {
           JSON.stringify({
             title: eventValue.title,
             body: eventValue.body,
-            url: eventValue.order_id ? `/orders/${eventValue.order_id}` : "/",
+            url,
+            eventKey: eventValue.event_key,
           })
         );
 

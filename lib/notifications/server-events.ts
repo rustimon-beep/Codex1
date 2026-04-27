@@ -103,4 +103,25 @@ export async function createNotificationEvents(events: NotificationEventDraft[])
   }
 }
 
+export async function createOverdueNotificationEventsForOrders(
+  orders: Array<{ id: number; client_order: string | null }>
+) {
+  if (orders.length === 0) return;
+
+  await createNotificationEvents(
+    orders.map((order) => ({
+      eventKey: `overdue:${order.id}`,
+      eventType: "overdue" as const,
+      orderId: order.id,
+      title: "Просроченный заказ",
+      body: `Заказ просрочен: ${(order.client_order || "").trim() || `#${order.id}`}.`,
+      payload: {
+        clientOrder: order.client_order || "",
+        url: `/orders/${order.id}`,
+      },
+      recipientRoles: ["admin", "supplier", "buyer"],
+    }))
+  );
+}
+
 export type { NotificationEventDraft, NotificationEventType, NotificationRecipientRole };

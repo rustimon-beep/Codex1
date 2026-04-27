@@ -100,6 +100,7 @@ export async function notifyNewOrderCreated(params: {
       body: `Появился новый заказ: ${params.clientOrder || `#${params.orderId}`}.`,
       payload: {
         clientOrder: params.clientOrder,
+        url: `/orders/${params.orderId}`,
       },
       recipientRoles: ["admin", "supplier", "buyer"],
     },
@@ -120,6 +121,7 @@ export async function ensureOverdueNotificationEvents(orders: OrderWithItems[]) 
         body: `Заказ просрочен: ${getOrderLabel(order)}.`,
         payload: {
           clientOrder: order.client_order || "",
+          url: `/orders/${order.id}`,
         },
         recipientRoles: ["admin", "supplier", "buyer"],
       }))
@@ -180,6 +182,7 @@ export async function notifyOrderChanged(params: {
         payload: {
           clientOrder: params.afterOrder.client_order || "",
           changedCount,
+          url: `/orders/${params.afterOrder.id}`,
         },
         recipientRoles: ["admin", "buyer"],
       });
@@ -195,6 +198,7 @@ export async function notifyOrderChanged(params: {
         payload: {
           clientOrder: params.afterOrder.client_order || "",
           canceledCount,
+          url: `/orders/${params.afterOrder.id}`,
         },
         recipientRoles: ["admin", "buyer"],
       });

@@ -11,6 +11,7 @@ self.addEventListener("push", (event) => {
   const title = payload.title || "Обновление по заказам";
   const body = payload.body || "Появилось новое уведомление.";
   const url = payload.url || "/";
+  const eventKey = payload.eventKey || title;
 
   event.waitUntil(
     self.registration.showNotification(title, {
@@ -19,8 +20,9 @@ self.addEventListener("push", (event) => {
       badge: "/icon-192.png",
       data: {
         url,
+        eventKey,
       },
-      tag: `push-${title}`,
+      tag: `push-${eventKey}`,
     })
   );
 });
