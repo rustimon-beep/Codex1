@@ -17,7 +17,7 @@ export function canImportItems(user: UserProfile | null) {
 }
 
 export function canEditItemStatusFields(user: UserProfile | null) {
-  return user?.role === "admin" || user?.role === "supplier" || user?.role === "buyer";
+  return user?.role === "admin" || user?.role === "supplier";
 }
 
 export function canEditItemPlannedDate(user: UserProfile | null) {
@@ -33,7 +33,7 @@ export function canUseBulkActions(user: UserProfile | null) {
 }
 
 export function canUseBulkStatusActions(user: UserProfile | null) {
-  return user?.role === "admin" || user?.role === "supplier" || user?.role === "buyer";
+  return user?.role === "admin" || user?.role === "supplier";
 }
 
 export function canUseBulkPlannedDateActions(user: UserProfile | null) {

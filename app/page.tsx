@@ -485,6 +485,10 @@ export default function OrdersPage() {
     value: string | boolean
   ) => {
     void (async () => {
+      if (user?.role === "buyer" && field === "status") {
+        return;
+      }
+
       if (field === "status" && value === "Отменен") {
         const currentItem = form.items[index];
         const currentStatus = currentItem?.status || "Новый";
@@ -579,6 +583,10 @@ export default function OrdersPage() {
   };
 
   const applyBulkPlannedDate = () => {
+    if (!canUseBulkPlannedDateActions(user)) {
+      return;
+    }
+
     if (!form.bulkPlannedDate) {
       showToast("Плановая дата не выбрана", {
         description: "Сначала выбери плановую дату.",
@@ -602,6 +610,10 @@ export default function OrdersPage() {
   };
 
   const applyBulkStatus = () => {
+    if (!canUseBulkStatusActions(user)) {
+      return;
+    }
+
     if (!form.bulkStatus) {
       showToast("Статус не выбран", {
         description: "Сначала выбери статус.",

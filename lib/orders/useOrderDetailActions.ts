@@ -70,7 +70,7 @@ export function useOrderDetailActions(params: {
   const updateItemField = useCallback(
     (index: number, field: keyof ItemForm, value: string | boolean) => {
       void (async () => {
-        if (user?.role === "buyer" && field === "plannedDate") {
+        if (user?.role === "buyer" && (field === "plannedDate" || field === "status")) {
           return;
         }
 
@@ -165,6 +165,10 @@ export function useOrderDetailActions(params: {
   );
 
   const applyBulkPlannedDate = useCallback(() => {
+    if (user?.role === "buyer") {
+      return;
+    }
+
     if (!form.bulkPlannedDate) {
       showToast("Плановая дата не выбрана", {
         description: "Сначала выбери плановую дату.",
@@ -185,9 +189,13 @@ export function useOrderDetailActions(params: {
       description: "Плановая дата установлена для всех позиций.",
       variant: "success",
     });
-  }, [form.bulkPlannedDate, setForm, showToast]);
+  }, [form.bulkPlannedDate, setForm, showToast, user?.role]);
 
   const applyBulkStatus = useCallback(() => {
+    if (user?.role === "buyer") {
+      return;
+    }
+
     if (!form.bulkStatus) {
       showToast("Статус не выбран", {
         description: "Сначала выбери статус.",
@@ -260,7 +268,7 @@ export function useOrderDetailActions(params: {
       description: "Статус обновлён для всех позиций.",
       variant: "success",
     });
-  }, [form.bulkStatus, requestPrompt, setForm, showToast, user?.name]);
+  }, [form.bulkStatus, requestPrompt, setForm, showToast, user?.name, user?.role]);
 
   const saveOrder = useCallback(async () => {
     if (!user || !order) return;
