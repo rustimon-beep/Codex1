@@ -22,6 +22,7 @@ type OrderItemPayload = {
   planned_date_change_count?: number;
   planned_date_last_changed_at?: string | null;
   planned_date_last_changed_by?: string | null;
+  deadline_breached_at?: string | null;
   status: string;
   delivered_date: string | null;
   canceled_date: string | null;
@@ -33,6 +34,7 @@ function toLegacyOrderItemPayload(payload: OrderItemPayload) {
     planned_date_change_count,
     planned_date_last_changed_at,
     planned_date_last_changed_by,
+    deadline_breached_at,
     ...legacyPayload
   } = payload;
 
@@ -114,6 +116,7 @@ export function buildOrderItemPayload(orderId: number, item: ItemForm): OrderIte
     planned_date_change_count: item.plannedDateChangeCount || 0,
     planned_date_last_changed_at: item.plannedDateLastChangedAt || null,
     planned_date_last_changed_by: item.plannedDateLastChangedBy || null,
+    deadline_breached_at: item.deadlineBreachedAt || null,
     status: item.status,
     delivered_date: item.deliveredDate || null,
     canceled_date: item.canceledDate || null,

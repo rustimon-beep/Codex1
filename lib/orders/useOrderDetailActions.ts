@@ -20,7 +20,15 @@ import {
   getValidItems,
 } from "./operations";
 import type { ItemForm, OrderFormState, OrderWithItems, UserProfile } from "./types";
-import { appendCommentEntries, formatDateTimeForDb, getTodayDate, hasComment, isItemOverdue, mergeComments, normalizeDateForCompare } from "./utils";
+import {
+  appendCommentEntries,
+  formatDateTimeForDb,
+  getTodayDate,
+  hasComment,
+  isItemOverdue,
+  mergeComments,
+  normalizeDateForCompare,
+} from "./utils";
 
 type ToastFn = (
   title: string,
@@ -192,7 +200,7 @@ export function useOrderDetailActions(params: {
   );
 
   const applyBulkPlannedDate = useCallback(() => {
-    if (user?.role !== "admin") {
+    if (user?.role !== "admin" && user?.role !== "supplier") {
       return;
     }
 
@@ -206,17 +214,32 @@ export function useOrderDetailActions(params: {
 
     setForm((prev) => ({
       ...prev,
-      items: prev.items.map((item) => ({
-        ...item,
-        plannedDate: prev.bulkPlannedDate,
-      })),
+      items: prev.items.map((item) => {
+        const originalItem = item.id
+          ? (order?.order_items || []).find((existing) => existing.id === item.id) || null
+          : null;
+        const canApplyToItem =
+          user?.role === "admin" || canEditItemPlannedDate(user, originalItem || item);
+
+        if (!canApplyToItem) {
+          return item;
+        }
+
+        return {
+          ...item,
+          plannedDate: prev.bulkPlannedDate,
+        };
+      }),
     }));
 
     showToast("Дата применена", {
-      description: "Плановая дата установлена для всех позиций.",
+      description:
+        user?.role === "supplier"
+          ? "Новый срок применён ко всем позициям с нарушенным первым сроком."
+          : "Плановая дата установлена для всех позиций.",
       variant: "success",
     });
-  }, [form.bulkPlannedDate, setForm, showToast, user?.role]);
+  }, [form.bulkPlannedDate, order?.order_items, setForm, showToast, user]);
 
   const applyBulkStatus = useCallback(() => {
     if (user?.role === "buyer") {
@@ -438,6 +461,8 @@ export function useOrderDetailActions(params: {
         const nextPlannedDate = normalizeDateForCompare(item.plannedDate);
         const plannedDateChanged = previousPlannedDate !== nextPlannedDate;
         const previousItemWasOverdue = previousItem ? isItemOverdue(previousItem) : false;
+        const previousDeadlineBreachedAt =
+          previousItem?.deadline_breached_at || item.deadlineBreachedAt || "";
         const nextItemWillBeOverdue =
           !!nextPlannedDate &&
           nextPlannedDate < getTodayDate() &&
@@ -445,6 +470,9 @@ export function useOrderDetailActions(params: {
           item.status !== "Отменен" &&
           !item.deliveredDate &&
           !item.canceledDate;
+        const nextDeadlineBreachedAt =
+          previousDeadlineBreachedAt ||
+          ((previousItemWasOverdue || nextItemWillBeOverdue) ? formatDateTimeForDb() : "");
 
         if (plannedDateChanged && previousItem) {
           const auditResult = await persistPlannedDateAudit({
@@ -518,6 +546,11 @@ export function useOrderDetailActions(params: {
             (plannedDateChanged ? 1 : 0),
           plannedDateLastChangedAt: plannedDateChanged ? formatDateTimeForDb() : item.plannedDateLastChangedAt || previousItem?.planned_date_last_changed_at || "",
           plannedDateLastChangedBy: plannedDateChanged ? user.name : item.plannedDateLastChangedBy || previousItem?.planned_date_last_changed_by || "",
+          deadlineBreachedAt:
+            nextDeadlineBreachedAt ||
+            item.deadlineBreachedAt ||
+            previousItem?.deadline_breached_at ||
+            "",
         };
 
         const { error } = await updateOrderItem(

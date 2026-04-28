@@ -165,13 +165,21 @@ export function getOrderDeliveredDate(items: OrderItem[]) {
   return dates[dates.length - 1] || null;
 }
 
-export function isItemOverdue(item: OrderItem) {
+export function hasDeadlineBreach(item: Pick<OrderItem, "deadline_breached_at" | "planned_date" | "status" | "delivered_date" | "canceled_date">) {
+  return Boolean(item.deadline_breached_at);
+}
+
+export function isItemCurrentlyOverdue(item: OrderItem) {
   return !!(
     item.planned_date &&
     item.status !== "Поставлен" &&
     item.status !== "Отменен" &&
     new Date(item.planned_date) < new Date(new Date().toDateString())
   );
+}
+
+export function isItemOverdue(item: OrderItem) {
+  return hasDeadlineBreach(item) || isItemCurrentlyOverdue(item);
 }
 
 export function isOrderOverdue(items: OrderItem[]) {

@@ -36,7 +36,7 @@ export async function GET() {
     const { data: ordersWithItems, error: ordersError } = await supabase
       .from("orders_v2")
       .select(
-        "id, supplier_id, order_items!left(id, planned_date, initial_planned_date, planned_date_change_count, status, delivered_date, canceled_date)"
+        "id, supplier_id, order_items!left(id, planned_date, initial_planned_date, planned_date_change_count, deadline_breached_at, status, delivered_date, canceled_date)"
       )
       .not("order_items", "is", null);
 
@@ -70,6 +70,23 @@ export async function GET() {
     );
 
     await registerFirstOverdueItems(currentOverdueItems);
+
+    const overdueFromBreachFlag = (ordersWithItems || []).flatMap((order) =>
+      (order.order_items || [])
+        .filter((item: {
+          id: number;
+          deadline_breached_at?: string | null;
+          initial_planned_date?: string | null;
+        }) => !!item.deadline_breached_at)
+        .map((item: { id: number; initial_planned_date?: string | null }) => ({
+          order_item_id: item.id,
+          order_id: order.id,
+          supplier_id: order.supplier_id || null,
+          first_planned_date: item.initial_planned_date ? item.initial_planned_date.slice(0, 10) : null,
+        }))
+    );
+
+    await registerFirstOverdueItems(overdueFromBreachFlag);
 
     const overdueFromInitialDate = (ordersWithItems || []).flatMap((order) =>
       (order.order_items || [])

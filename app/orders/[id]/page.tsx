@@ -56,6 +56,7 @@ import {
   getTodayDate,
   hasComment,
   hasReplacementInOrder,
+  isItemCurrentlyOverdue,
   isItemOverdue,
   normalizeDateForCompare,
   orderTypeClasses,
@@ -996,7 +997,13 @@ export default function OrderDetailsPage() {
                                     {item.status || "Новый"}
                                   </span>
 
-                                  {itemOverdue ? (
+                                  {item.deadlineBreachedAt ? (
+                                    <div className="rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-[10px] font-medium text-rose-700">
+                                      Срок нарушен
+                                    </div>
+                                  ) : null}
+
+                                  {!item.deadlineBreachedAt && itemOverdue ? (
                                     <div className="rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-[10px] font-medium text-rose-700">
                                       Просрочено
                                     </div>
@@ -1072,7 +1079,7 @@ export default function OrderDetailsPage() {
                                   />
                                 </FieldBlock>
 
-                                <FieldBlock label="Плановая" compact>
+                                <FieldBlock label={item.deadlineBreachedAt ? "Новый срок" : "Плановая"} compact>
                                   <div className="space-y-2">
                                     <div className="group relative">
                                       <input
@@ -1099,7 +1106,7 @@ export default function OrderDetailsPage() {
                                     </div>
 
                                     {item.initialPlannedDate &&
-                                    item.initialPlannedDate !== item.plannedDate ? (
+                                    (item.initialPlannedDate !== item.plannedDate || item.deadlineBreachedAt) ? (
                                       <div className="rounded-2xl border border-amber-200 bg-amber-50/70 px-3 py-2 text-[12px] leading-5 text-amber-900">
                                         <div>
                                           Первая дата:{" "}
@@ -1108,13 +1115,40 @@ export default function OrderDetailsPage() {
                                           </span>
                                         </div>
                                         <div className="mt-0.5 text-amber-800">
-                                          Новая дата: {formatDate(item.plannedDate || null)}
+                                          Новый срок: {formatDate(item.plannedDate || null)}
                                         </div>
+                                        {item.deadlineBreachedAt ? (
+                                          <div className="mt-0.5 text-amber-800">
+                                            Первый срок уже нарушен и не снимается из аналитики.
+                                          </div>
+                                        ) : null}
                                         {(item.plannedDateChangeCount || 0) > 0 ? (
                                           <div className="mt-0.5 text-amber-800">
                                             Переносов: {item.plannedDateChangeCount}
                                           </div>
                                         ) : null}
+                                      </div>
+                                    ) : null}
+
+                                    {item.deadlineBreachedAt && isItemCurrentlyOverdue({
+                                      id: item.id || 0,
+                                      order_id: 0,
+                                      article: item.article || null,
+                                      replacement_article: item.replacementArticle || null,
+                                      name: item.name || null,
+                                      quantity: item.quantity || null,
+                                      planned_date: item.plannedDate || null,
+                                      initial_planned_date: item.initialPlannedDate || null,
+                                      planned_date_change_count: item.plannedDateChangeCount || 0,
+                                      planned_date_last_changed_at: item.plannedDateLastChangedAt || null,
+                                      planned_date_last_changed_by: item.plannedDateLastChangedBy || null,
+                                      deadline_breached_at: item.deadlineBreachedAt || null,
+                                      status: item.status || "Новый",
+                                      delivered_date: item.deliveredDate || null,
+                                      canceled_date: item.canceledDate || null,
+                                    }) ? (
+                                      <div className="rounded-2xl border border-rose-200 bg-rose-50/70 px-3 py-2 text-[12px] leading-5 text-rose-700">
+                                        Новый срок тоже уже просрочен.
                                       </div>
                                     ) : null}
 

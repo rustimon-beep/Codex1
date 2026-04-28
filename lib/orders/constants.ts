@@ -17,6 +17,7 @@ export const EMPTY_ITEM: ItemForm = {
   name: "",
   quantity: "",
   plannedDate: "",
+  deadlineBreachedAt: "",
   status: "Новый",
   deliveredDate: "",
   canceledDate: "",

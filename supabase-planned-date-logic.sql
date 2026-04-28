@@ -2,12 +2,20 @@ alter table public.order_items
   add column if not exists initial_planned_date date null,
   add column if not exists planned_date_change_count integer not null default 0,
   add column if not exists planned_date_last_changed_at timestamptz null,
-  add column if not exists planned_date_last_changed_by text null;
+  add column if not exists planned_date_last_changed_by text null,
+  add column if not exists deadline_breached_at timestamptz null;
 
 update public.order_items
 set initial_planned_date = planned_date
 where initial_planned_date is null
   and planned_date is not null;
+
+update public.order_items
+set deadline_breached_at = now()
+where deadline_breached_at is null
+  and initial_planned_date is not null
+  and initial_planned_date < current_date
+  and status not in ('Поставлен', 'Отменен');
 
 create table if not exists public.order_item_schedule_history (
   id bigint generated always as identity primary key,

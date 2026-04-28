@@ -212,6 +212,7 @@ export function collectSupplierPeriodMetrics(
     }
 
     if (
+      item.deadline_breached_at ||
       (typeof item.id === "number" && historicalOverdueItemIds?.has(item.id)) ||
       (plannedDate && plannedDate < today && !delivered && !canceled)
     ) {

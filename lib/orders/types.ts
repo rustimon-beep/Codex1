@@ -30,6 +30,7 @@ export type OrderItem = {
   planned_date_change_count?: number | null;
   planned_date_last_changed_at?: string | null;
   planned_date_last_changed_by?: string | null;
+  deadline_breached_at?: string | null;
   status: string | null;
   delivered_date: string | null;
   canceled_date: string | null;
@@ -51,6 +52,7 @@ export type ItemForm = {
   plannedDateChangeCount?: number;
   plannedDateLastChangedAt?: string;
   plannedDateLastChangedBy?: string;
+  deadlineBreachedAt?: string;
   status: string;
   deliveredDate: string;
   canceledDate: string;
