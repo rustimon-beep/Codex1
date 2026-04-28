@@ -472,6 +472,7 @@ export default function SupplierAnalyticsDashboardPage() {
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [suppliers, setSuppliers] = useState<SupplierSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   const { user, setUser, authLoading, profileLoading, setProfileLoading } = useProfileAuth();
   const [loginForm, setLoginForm] = useState({ login: "", password: "" });
@@ -1228,6 +1229,119 @@ export default function SupplierAnalyticsDashboardPage() {
         </div>
       </div>
 
+      <button
+        type="button"
+        onClick={() => setHelpOpen(true)}
+        className="fixed bottom-[88px] right-4 z-[85] inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/96 px-3 py-2 text-[12px] font-semibold text-slate-700 shadow-[0_12px_30px_rgba(15,23,42,0.14)] backdrop-blur transition hover:bg-white md:bottom-6 md:right-6 md:px-3.5 md:py-2.5 md:text-[13px]"
+      >
+        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-900 text-[11px] font-bold text-white">
+          i
+        </span>
+        Как считается аналитика
+      </button>
+
+      {helpOpen ? (
+        <div className="fixed inset-0 z-[95] bg-slate-950/45 backdrop-blur-[2px]">
+          <div className="flex min-h-screen items-end justify-center p-0 md:items-center md:p-4">
+            <div className="w-full rounded-t-[24px] border border-slate-200 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.18)] md:max-h-[88vh] md:max-w-3xl md:rounded-[28px]">
+              <div className="max-h-[88vh] overflow-y-auto px-4 py-4 md:px-6 md:py-6">
+                <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-slate-200 md:hidden" />
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                      Справка
+                    </div>
+                    <h3 className="mt-1 text-[20px] font-semibold tracking-tight text-slate-900 md:text-[26px]">
+                      Как считаются рейтинг и показатели
+                    </h3>
+                    <p className="mt-2 max-w-2xl text-[13px] leading-6 text-slate-500 md:text-sm">
+                      Здесь собрана простая логика расчёта, чтобы любой пользователь понимал,
+                      откуда берутся проценты, рейтинг поставщика и его класс.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setHelpOpen(false)}
+                    className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-500 transition hover:bg-slate-50"
+                  >
+                    Закрыть
+                  </button>
+                </div>
+
+                <div className="mt-5 grid gap-4 md:grid-cols-2">
+                  <div className="rounded-[20px] border border-slate-200 bg-slate-50/70 p-4">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                      Общий рейтинг
+                    </div>
+                    <div className="mt-2 text-[16px] font-semibold text-slate-900">
+                      Рейтинг поставщика
+                    </div>
+                    <p className="mt-2 text-[13px] leading-6 text-slate-600">
+                      Рейтинг считается по шкале от 0 до 100. Чем выше процент поставок в срок,
+                      чем меньше отказов и чем стабильнее работа, тем выше итоговый балл.
+                    </p>
+                    <div className="mt-3 rounded-[16px] border border-white/80 bg-white px-3 py-3 text-[12px] leading-6 text-slate-600">
+                      Основа рейтинга:
+                      <br />
+                      <span className="font-medium text-slate-800">35%</span> поставка в срок
+                      <br />
+                      <span className="font-medium text-slate-800">25%</span> исполнение строк
+                      <br />
+                      <span className="font-medium text-slate-800">20%</span> низкая доля отказов
+                      <br />
+                      <span className="font-medium text-slate-800">10%</span> средний срок поставки
+                      <br />
+                      <span className="font-medium text-slate-800">10%</span> дисциплина работы
+                    </div>
+                  </div>
+
+                  <div className="rounded-[20px] border border-slate-200 bg-slate-50/70 p-4">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                      Класс поставщика
+                    </div>
+                    <div className="mt-2 text-[16px] font-semibold text-slate-900">
+                      Как читается класс A / B / C / D
+                    </div>
+                    <div className="mt-3 space-y-2 text-[13px] leading-6 text-slate-600">
+                      <div><span className="font-semibold text-slate-900">A:</span> 90–100 — отличный поставщик</div>
+                      <div><span className="font-semibold text-slate-900">B:</span> 75–89 — надёжный поставщик</div>
+                      <div><span className="font-semibold text-slate-900">C:</span> 60–74 — нестабильный поставщик</div>
+                      <div><span className="font-semibold text-slate-900">D:</span> ниже 60 — проблемный поставщик</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 rounded-[22px] border border-slate-200 bg-white p-4 md:p-5">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                    Пояснение показателей
+                  </div>
+                  <div className="mt-4 grid gap-3 md:grid-cols-2">
+                    <HelpMetricCard title="Всего поставщиков" description="Количество поставщиков, которые попали в текущую выборку по фильтрам." />
+                    <HelpMetricCard title="Всего заказов" description="Количество заказов в выбранном периоде после применения фильтров." />
+                    <HelpMetricCard title="Всего строк заказов" description="Количество строк внутри заказов, которые участвуют в расчёте." />
+                    <HelpMetricCard title="Процент исполненных строк" description="Доля строк со статусом «Поставлен» от общего числа строк." />
+                    <HelpMetricCard title="Процент отказов" description="Доля строк со статусом отмены или отказа от общего числа строк." />
+                    <HelpMetricCard title="Процент просрочек" description="Доля активных строк, у которых плановая дата уже меньше сегодняшней даты." />
+                    <HelpMetricCard title="Средний срок поставки" description="Среднее число дней между датой заказа и фактической датой поставки." />
+                    <HelpMetricCard title="Поставка в срок" description="Доля строк, которые были поставлены не позже своей плановой даты." />
+                    <HelpMetricCard title="Исполнение" description="Сколько строк удалось закрыть поставкой от общего объёма строк." />
+                    <HelpMetricCard title="Средняя задержка" description="Среднее число дней просрочки по тем строкам, где поставка пришла позже плановой даты." />
+                    <HelpMetricCard title="Изменение к прошлому периоду" description="Показывает, вырос или снизился рейтинг по сравнению с предыдущим таким же периодом." />
+                    <HelpMetricCard title="Зоны внимания" description="Поставщики, у которых выше просрочки, больше отказов или заметно хуже общий рейтинг." />
+                  </div>
+                </div>
+
+                <div className="mt-4 rounded-[20px] border border-amber-200 bg-amber-50/70 px-4 py-3 text-[12px] leading-6 text-amber-900 md:text-[13px]">
+                  Важно: просроченной считается только активная строка, у которой плановая дата уже
+                  прошла, а сама строка ещё не поставлена и не отменена.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <MobileBottomNav
         items={[
           {
@@ -1316,6 +1430,23 @@ function ToggleChip({
     >
       {label}
     </button>
+  );
+}
+
+function HelpMetricCard({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="rounded-[16px] border border-slate-200 bg-slate-50/70 px-3.5 py-3">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
+        {title}
+      </div>
+      <div className="mt-2 text-[13px] leading-6 text-slate-600">{description}</div>
+    </div>
   );
 }
 
