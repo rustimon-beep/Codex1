@@ -33,15 +33,6 @@ import { useToast } from "../../../lib/ui/useToast";
 import { fetchSuppliers, mapSuppliers } from "../../../lib/suppliers/api";
 
 type SupplierHealth = "excellent" | "normal" | "attention" | "critical";
-type FocusMode =
-  | "all"
-  | "suppliers"
-  | "orders"
-  | "lines"
-  | "delivered"
-  | "canceled"
-  | "overdue"
-  | "lead";
 type SortField =
   | "rank"
   | "supplier"
@@ -472,7 +463,6 @@ export default function SupplierAnalyticsDashboardPage() {
   const classFilter = searchParams.get("class") || "all";
   const healthFilter = searchParams.get("health") || "all";
   const typeFilter = searchParams.get("type") || "all";
-  const focus = (searchParams.get("focus") as FocusMode) || "all";
   const onlyOverdue = searchParams.get("onlyOverdue") === "1";
   const onlyCanceled = searchParams.get("onlyCanceled") === "1";
   const onlyActive = searchParams.get("onlyActive") === "1";
@@ -650,42 +640,6 @@ export default function SupplierAnalyticsDashboardPage() {
 
   const overallMetrics = useMemo(() => collectSupplierPeriodMetrics(visibleOrders, today), [today, visibleOrders]);
 
-  const bestSupplier = useMemo(() => {
-    return [...sortedRows].sort((a, b) => b.score - a.score)[0] || null;
-  }, [sortedRows]);
-
-  const riskSupplier = useMemo(() => {
-    return [...sortedRows]
-      .sort((a, b) => {
-        if (a.score !== b.score) return a.score - b.score;
-        if (b.overdueLinesCurrent !== a.overdueLinesCurrent) return b.overdueLinesCurrent - a.overdueLinesCurrent;
-        return b.canceledLines - a.canceledLines;
-      })[0] || null;
-  }, [sortedRows]);
-
-  const focusOrders = useMemo(() => {
-    if (focus !== "orders") return [];
-    return visibleOrders;
-  }, [focus, visibleOrders]);
-
-  const focusLines = useMemo(() => {
-    switch (focus) {
-      case "delivered":
-        return visibleLines.filter((line) => line.isDelivered);
-      case "canceled":
-        return visibleLines.filter((line) => line.isCanceled);
-      case "overdue":
-        return visibleLines.filter((line) => line.isOverdue);
-      case "lead":
-        return visibleLines.filter((line) => line.leadTimeDays !== null);
-      case "lines":
-      case "all":
-        return visibleLines;
-      default:
-        return [];
-    }
-  }, [focus, visibleLines]);
-
   const ratingSummary = useMemo(() => {
     const excellentCount = sortedRows.filter((row) => row.health === "excellent").length;
     const criticalCount = sortedRows.filter((row) => row.health === "critical").length;
@@ -715,13 +669,6 @@ export default function SupplierAnalyticsDashboardPage() {
 
   const handleExport = () => {
     exportSupplierRating(sortedRows);
-  };
-
-  const handleKpiFocus = (nextFocus: FocusMode, nextSupplierId?: string) => {
-    updateQuery({
-      focus: nextFocus === "all" ? null : nextFocus,
-      supplier: nextSupplierId || (nextFocus === "all" ? null : supplierFilter),
-    });
   };
 
   if (authLoading) {
@@ -858,7 +805,7 @@ export default function SupplierAnalyticsDashboardPage() {
                         <button
                           key={option.id}
                           type="button"
-                          onClick={() => updateQuery({ period: option.id, focus: null })}
+                          onClick={() => updateQuery({ period: option.id })}
                           className={`rounded-[14px] border px-3.5 py-2 text-[13px] font-medium transition ${
                             active
                               ? "border-slate-900 bg-slate-900 text-white shadow-[0_10px_24px_rgba(15,23,42,0.16)]"
@@ -876,7 +823,7 @@ export default function SupplierAnalyticsDashboardPage() {
                   <FilterField label="Поставщик">
                     <select
                       value={supplierFilter}
-                      onChange={(event) => updateQuery({ supplier: event.target.value, focus: null })}
+                      onChange={(event) => updateQuery({ supplier: event.target.value })}
                       className={filterInputClassName}
                     >
                       <option value="all">Все поставщики</option>
@@ -943,17 +890,17 @@ export default function SupplierAnalyticsDashboardPage() {
                   <ToggleChip
                     active={onlyOverdue}
                     label="Только просроченные"
-                    onClick={() => updateQuery({ onlyOverdue: onlyOverdue ? null : "1", focus: "overdue" })}
+                      onClick={() => updateQuery({ onlyOverdue: onlyOverdue ? null : "1" })}
                   />
                   <ToggleChip
                     active={onlyCanceled}
                     label="Только отказы"
-                    onClick={() => updateQuery({ onlyCanceled: onlyCanceled ? null : "1", focus: "canceled" })}
+                      onClick={() => updateQuery({ onlyCanceled: onlyCanceled ? null : "1" })}
                   />
                   <ToggleChip
                     active={onlyActive}
                     label="Только активные"
-                    onClick={() => updateQuery({ onlyActive: onlyActive ? null : "1", focus: "lines" })}
+                      onClick={() => updateQuery({ onlyActive: onlyActive ? null : "1" })}
                   />
 
                   <button
@@ -969,7 +916,6 @@ export default function SupplierAnalyticsDashboardPage() {
                         onlyOverdue: null,
                         onlyCanceled: null,
                         onlyActive: null,
-                        focus: null,
                         sort: "score",
                         dir: "desc",
                       })
@@ -997,81 +943,42 @@ export default function SupplierAnalyticsDashboardPage() {
                   value={sortedRows.length}
                   accent="bg-slate-500"
                   hint="Открыть supplier rating"
-                  onClick={() => handleKpiFocus("suppliers")}
                 />
                 <KpiActionCard
                   title="Всего заказов"
                   value={visibleOrders.length}
                   accent="bg-sky-500"
                   hint="Показать заказы"
-                  onClick={() => handleKpiFocus("orders")}
                 />
                 <KpiActionCard
                   title="Всего строк заказов"
                   value={visibleLines.length}
                   accent="bg-amber-500"
                   hint="Показать строки"
-                  onClick={() => handleKpiFocus("lines")}
                 />
                 <KpiActionCard
                   title="Процент исполненных строк"
                   value={formatPercent(overallMetrics.fillRate)}
                   accent="bg-emerald-500"
                   hint="Показать исполненные строки"
-                  onClick={() => handleKpiFocus("delivered")}
                 />
                 <KpiActionCard
                   title="Процент отказов"
                   value={formatPercent(overallMetrics.refusalRate)}
                   accent="bg-slate-400"
                   hint="Показать отмененные строки"
-                  onClick={() => handleKpiFocus("canceled")}
                 />
                 <KpiActionCard
                   title="Процент просрочек"
                   value={formatPercent(visibleLines.length > 0 ? (overallMetrics.overdueLinesCurrent / visibleLines.length) * 100 : 0)}
                   accent="bg-rose-500"
                   hint="Показать просроченные строки"
-                  onClick={() => handleKpiFocus("overdue")}
                 />
                 <KpiActionCard
                   title="Средний срок поставки"
                   value={overallMetrics.averageLeadTime ? `${overallMetrics.averageLeadTime} дн.` : "—"}
                   accent="bg-teal-500"
                   hint="Показать строки с lead time"
-                  onClick={() => handleKpiFocus("lead")}
-                />
-                <KpiActionCard
-                  title={`Лучший поставщик ${period === "all" ? "периода" : getAnalyticsPeriodLabel(period).toLowerCase()}`}
-                  value={bestSupplier ? bestSupplier.supplierName : "—"}
-                  accent="bg-emerald-500"
-                  hint={bestSupplier ? `Рейтинг ${Math.round(bestSupplier.score)}` : "Нет данных"}
-                  onClick={() =>
-                    bestSupplier
-                      ? updateQuery({
-                          supplier: bestSupplier.supplierId,
-                          focus: "orders",
-                        })
-                      : undefined
-                  }
-                />
-                <KpiActionCard
-                  title="Поставщик в зоне риска"
-                  value={riskSupplier ? riskSupplier.supplierName : "—"}
-                  accent="bg-rose-500"
-                  hint={
-                    riskSupplier
-                      ? `Рейтинг ${Math.round(riskSupplier.score)} · ${riskSupplier.healthLabel}`
-                      : "Нет данных"
-                  }
-                  onClick={() =>
-                    riskSupplier
-                      ? updateQuery({
-                          supplier: riskSupplier.supplierId,
-                          focus: "overdue",
-                        })
-                      : undefined
-                  }
                 />
               </div>
 
@@ -1316,49 +1223,6 @@ export default function SupplierAnalyticsDashboardPage() {
                 </div>
               </CardSection>
 
-              <CardSection
-                eyebrow="Drill-down"
-                title="Детализация KPI"
-                description="Здесь показываются конкретные строки или заказы, которые лежат в основе выбранного KPI."
-              >
-                <div className="mb-4 flex flex-wrap gap-2">
-                  {[
-                    { id: "suppliers", label: "Поставщики" },
-                    { id: "orders", label: "Заказы" },
-                    { id: "lines", label: "Все строки" },
-                    { id: "delivered", label: "Исполненные" },
-                    { id: "canceled", label: "Отказы" },
-                    { id: "overdue", label: "Просроченные" },
-                    { id: "lead", label: "Lead time" },
-                  ].map((option) => {
-                    const active = focus === option.id;
-                    return (
-                      <button
-                        key={option.id}
-                        type="button"
-                        onClick={() => updateQuery({ focus: option.id })}
-                        className={`rounded-[14px] border px-3.5 py-2 text-[13px] font-medium transition ${
-                          active
-                            ? "border-slate-900 bg-slate-900 text-white"
-                            : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
-                        }`}
-                      >
-                        {option.label}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {focus === "suppliers" ? (
-                  <div className="rounded-[18px] border border-dashed border-slate-200 bg-slate-50/70 p-4 text-sm text-slate-500">
-                    Основной источник для этого KPI — таблица Supplier Rating выше. Она уже отфильтрована и отсортирована по текущим настройкам.
-                  </div>
-                ) : focus === "orders" ? (
-                  <OrdersEvidenceTable orders={focusOrders.length ? focusOrders : visibleOrders} />
-                ) : (
-                  <LinesEvidenceTable lines={focusLines.length ? focusLines : visibleLines} />
-                )}
-              </CardSection>
             </>
           )}
         </div>
@@ -1460,16 +1324,14 @@ function KpiActionCard({
   value,
   accent,
   hint,
-  onClick,
 }: {
   title: string;
   value: number | string;
   accent: string;
   hint: string;
-  onClick?: () => void;
 }) {
-  const content = (
-    <div className="rounded-[22px] border border-slate-200 bg-white px-4 py-4 text-left shadow-[0_8px_24px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_32px_rgba(15,23,42,0.08)] md:px-5 md:py-5">
+  return (
+    <div className="rounded-[22px] border border-slate-200 bg-white px-4 py-4 text-left shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:px-5 md:py-5">
       <div className="flex min-h-[58px] items-start justify-between gap-3">
         <div className="max-w-[80%] text-[12px] font-medium uppercase tracking-[0.06em] leading-5 text-slate-500 md:text-[13px]">
           {title}
@@ -1481,14 +1343,6 @@ function KpiActionCard({
       </div>
       <div className="mt-2 text-[12px] text-slate-500">{hint}</div>
     </div>
-  );
-
-  if (!onClick) return content;
-
-  return (
-    <button type="button" onClick={onClick} className="block w-full">
-      {content}
-    </button>
   );
 }
 
@@ -1704,122 +1558,5 @@ function SortableHeader({
         </span>
       </button>
     </th>
-  );
-}
-
-function OrdersEvidenceTable({ orders }: { orders: OrderWithItems[] }) {
-  if (!orders.length) {
-    return (
-      <div className="rounded-[18px] border border-dashed border-slate-200 bg-slate-50/70 p-4 text-sm text-slate-500">
-        По текущим фильтрам нет заказов для детализации.
-      </div>
-    );
-  }
-
-  return (
-    <div className="rounded-[20px] border border-slate-200">
-      <div className="hidden divide-y divide-slate-200 md:block">
-        {orders.map((order) => (
-          <div key={order.id} className="grid grid-cols-[1.4fr_0.8fr_0.7fr_0.8fr_0.8fr] items-center gap-4 px-4 py-3.5">
-            <div>
-              <Link href={`/orders/${order.id}`} className="font-semibold text-slate-900 transition hover:text-slate-700">
-                {order.client_order || `Заказ #${order.id}`}
-              </Link>
-              <div className="mt-0.5 text-[12px] text-slate-500">
-                {formatDate(order.order_date)} · {order.order_type || "Стандартный"}
-              </div>
-            </div>
-            <div className="text-sm text-slate-700">{order.supplier?.name || "Без поставщика"}</div>
-            <div className="text-sm text-slate-700">{order.order_items?.length || 0} строк</div>
-            <div className="text-sm text-slate-700">
-              {(order.order_items || []).filter((item) => isCanceled(item)).length} отказ.
-            </div>
-            <div className="text-sm text-slate-700">
-              {(order.order_items || []).filter((item) => isCurrentOverdue(item, new Date().toISOString().slice(0, 10))).length} проср.
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="space-y-3 p-3 md:hidden">
-        {orders.map((order) => (
-          <Link key={order.id} href={`/orders/${order.id}`} className="block rounded-[18px] border border-slate-200 bg-white p-4">
-            <div className="text-[15px] font-semibold text-slate-900">
-              {order.client_order || `Заказ #${order.id}`}
-            </div>
-            <div className="mt-1 text-[12px] text-slate-500">
-              {formatDate(order.order_date)} · {order.supplier?.name || "Без поставщика"}
-            </div>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function LinesEvidenceTable({ lines }: { lines: LineRecord[] }) {
-  if (!lines.length) {
-    return (
-      <div className="rounded-[18px] border border-dashed border-slate-200 bg-slate-50/70 p-4 text-sm text-slate-500">
-        По текущим фильтрам нет строк для детализации.
-      </div>
-    );
-  }
-
-  return (
-    <div className="rounded-[20px] border border-slate-200">
-      <div className="hidden max-h-[620px] overflow-auto md:block">
-        <table className="min-w-full divide-y divide-slate-200 text-left">
-          <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur">
-            <tr>
-              {["Поставщик", "Заказ", "Артикул / Наименование", "Статус", "Order date", "Plan", "Delivered", "Lead", "Delay"].map((label) => (
-                <th key={label} className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
-                  {label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200">
-            {lines.map((line) => (
-              <tr key={line.id} className="bg-white transition hover:bg-slate-50/80">
-                <td className="px-4 py-3.5 text-sm text-slate-700">{line.supplierName}</td>
-                <td className="px-4 py-3.5">
-                  <Link href={`/orders/${line.orderId}`} className="font-semibold text-slate-900 transition hover:text-slate-700">
-                    {line.clientOrder}
-                  </Link>
-                </td>
-                <td className="px-4 py-3.5">
-                  <div className="text-sm font-semibold text-slate-900">{line.article}</div>
-                  <div className="text-[12px] text-slate-500">{line.name}</div>
-                </td>
-                <td className="px-4 py-3.5 text-sm text-slate-700">{line.status}</td>
-                <td className="px-4 py-3.5 text-sm text-slate-700">{formatDate(line.orderDate)}</td>
-                <td className="px-4 py-3.5 text-sm text-slate-700">{formatDate(line.plannedDate)}</td>
-                <td className="px-4 py-3.5 text-sm text-slate-700">{formatDate(line.deliveredDate)}</td>
-                <td className="px-4 py-3.5 text-sm text-slate-700">{line.leadTimeDays ?? "—"}</td>
-                <td className="px-4 py-3.5 text-sm text-slate-700">{line.delayDays ?? "—"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="space-y-3 p-3 md:hidden">
-        {lines.map((line) => (
-          <Link key={line.id} href={`/orders/${line.orderId}`} className="block rounded-[18px] border border-slate-200 bg-white p-4">
-            <div className="text-[15px] font-semibold text-slate-900">
-              {line.article}
-            </div>
-            <div className="mt-0.5 text-[12px] text-slate-500">
-              {line.name}
-            </div>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              <InfoMini label="Поставщик" value={line.supplierName} />
-              <InfoMini label="Статус" value={line.status} />
-            </div>
-          </Link>
-        ))}
-      </div>
-    </div>
   );
 }
