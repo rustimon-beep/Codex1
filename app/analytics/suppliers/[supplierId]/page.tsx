@@ -464,13 +464,13 @@ export default function SupplierAnalyticsDetailPage() {
                   </div>
                   <div className="min-w-0">
                     <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-medium text-slate-300">
-                      Supplier Card
+                      Карточка поставщика
                     </div>
                     <h1 className="mt-2 text-[24px] font-semibold tracking-tight text-white md:text-[32px]">
                       {supplierName}
                     </h1>
                     <p className="mt-1 max-w-3xl text-[14px] leading-6 text-slate-300">
-                      KPI, рейтинг, динамика по месяцам, проблемные артикулы и рабочая детализация по выбранному поставщику.
+                      Ключевые показатели, рейтинг, динамика по месяцам, проблемные артикулы и рабочая детализация по выбранному поставщику.
                     </p>
                   </div>
                 </div>
@@ -531,7 +531,7 @@ export default function SupplierAnalyticsDetailPage() {
                 <KpiCard title="Рейтинг" value={Math.round(score.total)} accent="bg-teal-500" />
                 <KpiCard title="Класс" value={supplierClass} accent="bg-slate-500" subtitle={getClassLabel(supplierClass)} />
                 <KpiCard
-                  title="Trend к прошлому периоду"
+                  title="Изменение к прошлому периоду"
                   value={formatSigned(scoreTrend.delta)}
                   accent={scoreTrend.direction === "down" ? "bg-rose-500" : scoreTrend.direction === "up" ? "bg-emerald-500" : "bg-slate-400"}
                 />
@@ -543,7 +543,7 @@ export default function SupplierAnalyticsDetailPage() {
               </div>
 
               <div className="grid gap-4 xl:grid-cols-2">
-                <CardSection eyebrow="Рейтинг" title="Динамика рейтинга по месяцам" description="Показывает, как supplier score менялся от месяца к месяцу.">
+                <CardSection eyebrow="Рейтинг" title="Динамика рейтинга по месяцам" description="Показывает, как общий рейтинг поставщика менялся от месяца к месяцу.">
                   <LineTrendChart
                     data={monthlyPoints.map((point) => ({ label: point.label, value: point.score }))}
                     color="#14B8A6"
@@ -573,20 +573,20 @@ export default function SupplierAnalyticsDetailPage() {
                   <DonutStatusCard segments={statusStructure} total={metrics.totalLines} />
                 </CardSection>
 
-                <CardSection eyebrow="Supplier KPI" title="Ключевые показатели" description="Верхнеуровневый профиль качества работы поставщика в текущем периоде.">
+                <CardSection eyebrow="Показатели поставщика" title="Ключевые показатели" description="Верхнеуровневый профиль качества работы поставщика в текущем периоде.">
                   <div className="grid gap-3 md:grid-cols-2">
-                    <InfoMini label="On-time delivery" value={formatPercent(metrics.onTimeDelivery)} />
-                    <InfoMini label="Fill rate" value={formatPercent(metrics.fillRate)} />
-                    <InfoMini label="Refusal rate" value={formatPercent(metrics.refusalRate)} />
-                    <InfoMini label="Average delay" value={metrics.averageDelay ? `${metrics.averageDelay} дн.` : "—"} />
+                    <InfoMini label="Поставка в срок" value={formatPercent(metrics.onTimeDelivery)} />
+                    <InfoMini label="Исполнение" value={formatPercent(metrics.fillRate)} />
+                    <InfoMini label="Доля отказов" value={formatPercent(metrics.refusalRate)} />
+                    <InfoMini label="Средняя задержка" value={metrics.averageDelay ? `${metrics.averageDelay} дн.` : "—"} />
                     <InfoMini label="Исполнено строк" value={metrics.deliveredLines} />
                     <InfoMini label="Всего строк" value={metrics.totalLines} />
                   </div>
 
                   <div className="mt-4 space-y-3">
-                    <MetricBar label="On-time delivery" value={metrics.onTimeDelivery} color="bg-teal-500" />
-                    <MetricBar label="Fill rate" value={metrics.fillRate} color="bg-emerald-500" />
-                    <MetricBar label="Refusal rate" value={metrics.refusalRate} color="bg-slate-500" />
+                    <MetricBar label="Поставка в срок" value={metrics.onTimeDelivery} color="bg-teal-500" />
+                    <MetricBar label="Исполнение" value={metrics.fillRate} color="bg-emerald-500" />
+                    <MetricBar label="Доля отказов" value={metrics.refusalRate} color="bg-slate-500" />
                   </div>
                 </CardSection>
               </div>
@@ -612,7 +612,7 @@ export default function SupplierAnalyticsDetailPage() {
                 <ProblemArticlesTable rows={problemArticles} />
               </CardSection>
 
-              <CardSection eyebrow="Заказы поставщика" title="Последние заказы" description="Быстрый переход к реальным заказам, которые формируют KPI поставщика.">
+              <CardSection eyebrow="Заказы поставщика" title="Последние заказы" description="Быстрый переход к реальным заказам, которые формируют ключевые показатели поставщика.">
                 <RecentOrdersTable orders={supplierOrders} today={today} />
               </CardSection>
             </>

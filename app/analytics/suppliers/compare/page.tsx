@@ -392,13 +392,13 @@ export default function SupplierComparePage() {
               {compareRows.length < 2 ? (
                 <EmptyStateCard
                   title="Выбери хотя бы двух поставщиков"
-                  description="После выбора 2–5 поставщиков здесь появятся radar-сравнение и KPI-таблица."
+                  description="После выбора 2–5 поставщиков здесь появятся сравнительная диаграмма и таблица показателей."
                 />
               ) : (
                 <>
                   <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
                     <CardSection
-                      eyebrow="Radar chart"
+                      eyebrow="Сравнительная диаграмма"
                       title="Сравнение по пяти осям"
                       description="Сроки, исполнение, отказы, скорость и стабильность."
                     >
@@ -407,8 +407,8 @@ export default function SupplierComparePage() {
 
                     <CardSection
                       eyebrow="Сводка"
-                      title="Ключевые KPI рядом"
-                      description="Сразу видно, кто сильнее по общему supplier score и кто проседает по срокам."
+                      title="Ключевые показатели рядом"
+                      description="Сразу видно, кто сильнее по общему рейтингу и кто проседает по срокам."
                     >
                       <div className="grid gap-3 md:grid-cols-2">
                         {compareRows.map((row) => (
@@ -430,7 +430,7 @@ export default function SupplierComparePage() {
                               <InfoMini label="Строк" value={row.totalLines} />
                               <InfoMini label="Просрочено" value={row.overdueLinesCurrent} />
                               <InfoMini label="Отказано" value={row.canceledLines} />
-                              <InfoMini label="Lead time" value={row.averageLeadTime || "—"} />
+                              <InfoMini label="Срок поставки" value={row.averageLeadTime || "—"} />
                             </div>
                           </div>
                         ))}
@@ -650,7 +650,7 @@ function CompareTable({ rows }: { rows: CompareRow[] }) {
         <table className="min-w-full divide-y divide-slate-200 text-left">
           <thead className="bg-slate-50/95">
             <tr>
-              {["Поставщик", "Рейтинг", "Класс", "Заказы", "Строки", "Исполнено", "Отказано", "Просрочено", "On-time %", "Fill rate %", "Refusal %", "Lead time", "Delay"].map((label) => (
+              {["Поставщик", "Рейтинг", "Класс", "Заказы", "Строки", "Исполнено", "Отказано", "Просрочено", "В срок, %", "Исполнение, %", "Отказы, %", "Срок поставки", "Задержка"].map((label) => (
                 <th key={label} className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
                   {label}
                 </th>
@@ -688,13 +688,13 @@ function CompareTable({ rows }: { rows: CompareRow[] }) {
           <div key={row.supplierId} className="rounded-[18px] border border-slate-200 bg-white p-4">
             <div className="text-[15px] font-semibold text-slate-900">{row.supplierName}</div>
             <div className="mt-1 text-[12px] text-slate-500">
-              Rating {Math.round(row.score)} · Класс {row.supplierClass}
+              Рейтинг {Math.round(row.score)} · Класс {row.supplierClass}
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2">
-              <InfoMini label="On-time" value={formatPercent(row.onTimeDelivery)} />
-              <InfoMini label="Fill rate" value={formatPercent(row.fillRate)} />
-              <InfoMini label="Refusal" value={formatPercent(row.refusalRate)} />
-              <InfoMini label="Lead time" value={row.averageLeadTime || "—"} />
+              <InfoMini label="Поставка в срок" value={formatPercent(row.onTimeDelivery)} />
+              <InfoMini label="Исполнение" value={formatPercent(row.fillRate)} />
+              <InfoMini label="Отказы" value={formatPercent(row.refusalRate)} />
+              <InfoMini label="Срок поставки" value={row.averageLeadTime || "—"} />
             </div>
           </div>
         ))}

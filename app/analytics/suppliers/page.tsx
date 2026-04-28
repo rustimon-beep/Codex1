@@ -401,18 +401,18 @@ function exportSupplierRating(rows: SupplierRatingRow[]) {
     "Исполнено строк": row.deliveredLines,
     "Отказано строк": row.canceledLines,
     "Просрочено строк": row.overdueLinesCurrent,
-    "On-time delivery %": Math.round(row.onTimeDelivery * 10) / 10,
-    "Fill rate %": Math.round(row.fillRate * 10) / 10,
-    "Refusal rate %": Math.round(row.refusalRate * 10) / 10,
-    "Average lead time": row.averageLeadTime,
-    "Average delay days": row.averageDelay,
-    "Trend к прошлому периоду": row.trendDelta,
+    "Поставка в срок %": Math.round(row.onTimeDelivery * 10) / 10,
+    "Исполнение %": Math.round(row.fillRate * 10) / 10,
+    "Отказы, %": Math.round(row.refusalRate * 10) / 10,
+    "Средний срок поставки": row.averageLeadTime,
+    "Средняя задержка, дн.": row.averageDelay,
+    "Изменение к прошлому периоду": row.trendDelta,
   }));
 
   const workbook = XLSX.utils.book_new();
   const worksheet = XLSX.utils.json_to_sheet(exportRows);
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Supplier Rating");
-  XLSX.writeFile(workbook, "supplier-rating.xlsx");
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Рейтинг поставщиков");
+  XLSX.writeFile(workbook, "reyting-postavshchikov.xlsx");
 }
 
 function getSortValue(row: SupplierRatingRow, field: SortField) {
@@ -525,7 +525,7 @@ export default function SupplierAnalyticsDashboardPage() {
       showToast("Ошибка загрузки аналитики", {
         description: getFriendlyErrorMessage(
           ordersResult.error,
-          "Не удалось загрузить данные для supplier analytics."
+          "Не удалось загрузить данные для аналитики поставщиков."
         ),
         variant: "error",
       });
@@ -701,7 +701,7 @@ export default function SupplierAnalyticsDashboardPage() {
           <div className="mx-auto max-w-5xl">
             <EmptyStateCard
               title="Сводная аналитика поставщиков недоступна"
-              description="Для роли поставщика здесь ничего не показываем. При необходимости потом сделаем отдельный supplier-only dashboard."
+              description="Для роли поставщика этот раздел не показываем."
             />
           </div>
         </div>
@@ -727,14 +727,14 @@ export default function SupplierAnalyticsDashboardPage() {
                   </div>
                   <div className="min-w-0">
                     <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-medium text-slate-300">
-                      Supplier Analytics
+                      Аналитика поставщиков
                     </div>
                     <h1 className="mt-2 text-[24px] font-semibold tracking-tight text-white md:text-[32px]">
                       Аналитика поставщиков
                     </h1>
                     <p className="mt-1 max-w-3xl text-[14px] leading-6 text-slate-300">
-                      Рейтинг, KPI, отказные и просроченные линии, зоны риска и быстрый drill-down
-                      до конкретных заказов.
+                      Рейтинг, ключевые показатели, отказные и просроченные линии, зоны
+                      внимания и переход к конкретным заказам.
                     </p>
                   </div>
                 </div>
@@ -781,12 +781,12 @@ export default function SupplierAnalyticsDashboardPage() {
           {loading ? (
             <div className="rounded-[24px] border border-slate-200 bg-white px-6 py-16 text-center shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
               <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-slate-700" />
-              <div className="mt-3 text-sm text-slate-500">Собираем supplier analytics...</div>
+              <div className="mt-3 text-sm text-slate-500">Собираем аналитику поставщиков...</div>
             </div>
           ) : !allRows.length ? (
             <EmptyStateCard
-              title="Пока нет данных для supplier analytics"
-              description="Когда в системе будут заказы со строками и назначенными поставщиками, здесь появится рейтинг и KPI."
+              title="Пока нет данных для аналитики поставщиков"
+              description="Когда в системе будут заказы со строками и назначенными поставщиками, здесь появится рейтинг и ключевые показатели."
             />
           ) : (
             <>
@@ -794,8 +794,8 @@ export default function SupplierAnalyticsDashboardPage() {
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
                   <SectionHeading
                     eyebrow="Глобальные фильтры"
-                    title="Supplier dashboard"
-                    description="Фильтры сохраняются в URL и влияют на KPI, рейтинг и drill-down ниже."
+                    title="Панель аналитики поставщиков"
+                    description="Фильтры сохраняются в адресной строке и влияют на верхние показатели, рейтинг и детализацию ниже."
                   />
 
                   <div className="flex flex-wrap gap-2">
@@ -931,7 +931,7 @@ export default function SupplierAnalyticsDashboardPage() {
                       onClick={handleExport}
                       className="rounded-[14px] border border-slate-900 bg-slate-900 px-3.5 py-2 text-[13px] font-medium text-white transition hover:bg-slate-800"
                     >
-                      Экспорт в Excel
+                      Экспорт в таблицу
                     </button>
                   ) : null}
                 </div>
@@ -960,7 +960,7 @@ export default function SupplierAnalyticsDashboardPage() {
                   title="Процент исполненных строк"
                   value={formatPercent(overallMetrics.fillRate)}
                   accent="bg-emerald-500"
-                  hint="Fill rate"
+                  hint="Уровень исполнения"
                 />
                 <KpiActionCard
                   title="Процент отказов"
@@ -978,7 +978,7 @@ export default function SupplierAnalyticsDashboardPage() {
                   title="Средний срок поставки"
                   value={overallMetrics.averageLeadTime ? `${overallMetrics.averageLeadTime} дн.` : "—"}
                   accent="bg-teal-500"
-                  hint="Средний lead time"
+                  hint="Среднее время поставки"
                 />
               </div>
 
@@ -1035,8 +1035,8 @@ export default function SupplierAnalyticsDashboardPage() {
 
                 <CardSection
                   eyebrow="Риски и потери"
-                  title="Просрочки, отказы и тренд"
-                  description="Здесь видно, кто чаще срывает сроки, кто теряет fill rate и кто уходит вниз к прошлому периоду."
+                  title="Просрочки, отказы и динамика"
+                  description="Здесь видно, кто чаще срывает сроки, кто теряет уровень исполнения и кто заметно проседает к прошлому периоду."
                 >
                   <div className="space-y-4">
                     {sortedRows.map((row) => (
@@ -1060,7 +1060,7 @@ export default function SupplierAnalyticsDashboardPage() {
                           <MetricBar label="Просрочки" value={row.totalLines ? (row.overdueLinesCurrent / row.totalLines) * 100 : 0} color="bg-rose-500" />
                           <MetricBar label="Отказы" value={row.refusalRate} color="bg-slate-500" />
                           <MetricBar
-                            label="On-time delivery"
+                            label="Поставка в срок"
                             value={row.onTimeDelivery}
                             color="bg-teal-500"
                           />
@@ -1075,7 +1075,7 @@ export default function SupplierAnalyticsDashboardPage() {
                 <HighlightPanel
                   eyebrow="Лучшие"
                   title="Топ поставщиков периода"
-                  description="На кого можно опираться по срокам, fill rate и дисциплине поставок."
+                  description="На кого можно опираться по срокам, уровню исполнения и дисциплине поставок."
                   tone="emerald"
                   rows={sortedRows
                     .slice()
@@ -1087,30 +1087,30 @@ export default function SupplierAnalyticsDashboardPage() {
                       title: row.supplierName,
                       meta: `Рейтинг ${Math.round(row.score)} · ${row.totalLines} строк · ${row.deliveredLines} исполнено`,
                       badge: `${row.supplierClass} / ${row.healthLabel}`,
-                      subbadge: `OTD ${formatPercent(row.onTimeDelivery)}`,
+                      subbadge: `В срок ${formatPercent(row.onTimeDelivery)}`,
                     }))}
                 />
 
                 <HighlightPanel
                   eyebrow="Зоны внимания"
                   title="Поставщики с риском"
-                  description="Самые слабые по срокам, отказам и общему supplier score."
+                  description="Самые слабые по срокам, отказам и общему рейтингу."
                   tone="rose"
                   rows={ratingSummary.riskRows.slice(0, 3).map((row) => ({
                     key: `risk-${row.supplierId}`,
                     href: getSupplierAnalyticsHref(row.supplierId, period),
                     title: row.supplierName,
-                    meta: `Просрочено ${row.overdueLinesCurrent} · Отказано ${row.canceledLines} · Trend ${formatTrend(
+                    meta: `Просрочено ${row.overdueLinesCurrent} · Отказано ${row.canceledLines} · Изменение ${formatTrend(
                       row.trendDelta
                     )}`,
                     badge: `${row.supplierClass} / ${row.healthLabel}`,
-                    subbadge: `Score ${Math.round(row.score)}`,
+                    subbadge: `Рейтинг ${Math.round(row.score)}`,
                   }))}
                 />
               </div>
 
               <CardSection
-                eyebrow="Supplier Rating"
+                eyebrow="Рейтинг поставщиков"
                 title="Рейтинг поставщиков"
                 description="Таблица поддерживает сортировку, фильтры, поиск и переход в карточку поставщика."
               >
@@ -1137,12 +1137,12 @@ export default function SupplierAnalyticsDashboardPage() {
                         <SortableHeader label="Исполнено" field="delivered" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
                         <SortableHeader label="Отказано" field="canceled" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
                         <SortableHeader label="Просрочено" field="overdue" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
-                        <SortableHeader label="On-time %" field="ontime" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
-                        <SortableHeader label="Fill rate %" field="fill" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
-                        <SortableHeader label="Refusal %" field="refusal" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
-                        <SortableHeader label="Lead time" field="lead" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
-                        <SortableHeader label="Delay" field="delay" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
-                        <SortableHeader label="Trend" field="trend" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
+                        <SortableHeader label="В срок, %" field="ontime" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
+                        <SortableHeader label="Исполнение, %" field="fill" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
+                        <SortableHeader label="Отказы, %" field="refusal" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
+                        <SortableHeader label="Срок поставки" field="lead" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
+                        <SortableHeader label="Задержка" field="delay" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
+                        <SortableHeader label="Изменение" field="trend" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
                         <SortableHeader label="Статус" field="health" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
                       </tr>
                     </thead>
@@ -1202,7 +1202,7 @@ export default function SupplierAnalyticsDashboardPage() {
                             {row.rank}. {row.supplierName}
                           </Link>
                           <div className="mt-1 text-[12px] text-slate-500">
-                            Rating {Math.round(row.score)} · {row.totalOrders} заказов · {row.totalLines} строк
+                            Рейтинг {Math.round(row.score)} · {row.totalOrders} заказов · {row.totalLines} строк
                           </div>
                         </div>
                         <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getHealthTone(row.health)}`}>
@@ -1214,9 +1214,9 @@ export default function SupplierAnalyticsDashboardPage() {
                         <InfoMini label="Класс" value={row.supplierClass} />
                         <InfoMini label="Просрочено" value={row.overdueLinesCurrent} />
                         <InfoMini label="Отказано" value={row.canceledLines} />
-                        <InfoMini label="On-time" value={formatPercent(row.onTimeDelivery)} />
-                        <InfoMini label="Fill rate" value={formatPercent(row.fillRate)} />
-                        <InfoMini label="Trend" value={formatTrend(row.trendDelta)} />
+                        <InfoMini label="В срок" value={formatPercent(row.onTimeDelivery)} />
+                        <InfoMini label="Исполнение" value={formatPercent(row.fillRate)} />
+                        <InfoMini label="Изменение" value={formatTrend(row.trendDelta)} />
                       </div>
                     </div>
                   ))}
