@@ -65,6 +65,7 @@ type SupplierRatingRow = {
   deliveredLines: number;
   canceledLines: number;
   overdueLinesCurrent: number;
+  overdueLinesEver: number;
   onTimeDelivery: number;
   fillRate: number;
   refusalRate: number;
@@ -96,6 +97,13 @@ type LineRecord = {
   deliveredOnTime: boolean;
   leadTimeDays: number | null;
   delayDays: number | null;
+};
+
+type HistoricalOverdueEntry = {
+  orderItemId: number;
+  orderId: number;
+  supplierId: number | null;
+  firstOverdueAt: string;
 };
 
 const PERIOD_OPTIONS: Array<{ id: AnalyticsPeriod; label: string }> = [
@@ -319,8 +327,9 @@ function buildSupplierRatingRows(params: {
   previousOrders: OrderWithItems[];
   suppliers: SupplierSummary[];
   today: string;
+  historicalOverdueItemIds: Set<number>;
 }) {
-  const { currentOrders, previousOrders, suppliers, today } = params;
+  const { currentOrders, previousOrders, suppliers, today, historicalOverdueItemIds } = params;
   const supplierNameMap = getSupplierNameMap(suppliers);
   const supplierIds = Array.from(new Set(currentOrders.map((order) => getSupplierKey(order))));
 
@@ -330,10 +339,14 @@ function buildSupplierRatingRows(params: {
       const previousSupplierOrders = previousOrders.filter(
         (order) => getSupplierKey(order) === supplierId
       );
-      const metrics = collectSupplierPeriodMetrics(supplierOrders, today);
+      const metrics = collectSupplierPeriodMetrics(supplierOrders, today, historicalOverdueItemIds);
       if (!metrics.totalLines) return null;
 
-      const previousMetrics = collectSupplierPeriodMetrics(previousSupplierOrders, today);
+      const previousMetrics = collectSupplierPeriodMetrics(
+        previousSupplierOrders,
+        today,
+        historicalOverdueItemIds
+      );
       const score = calculateSupplierScore({
         onTimeDelivery: metrics.onTimeDelivery,
         fillRate: metrics.fillRate,
@@ -365,6 +378,7 @@ function buildSupplierRatingRows(params: {
         deliveredLines: metrics.deliveredLines,
         canceledLines: metrics.canceledLines,
         overdueLinesCurrent: metrics.overdueLinesCurrent,
+        overdueLinesEver: metrics.overdueLinesEver,
         onTimeDelivery: metrics.onTimeDelivery,
         fillRate: metrics.fillRate,
         refusalRate: metrics.refusalRate,
@@ -378,7 +392,7 @@ function buildSupplierRatingRows(params: {
     .filter((row): row is SupplierRatingRow => !!row)
     .sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
-      if (a.overdueLinesCurrent !== b.overdueLinesCurrent) return a.overdueLinesCurrent - b.overdueLinesCurrent;
+      if (a.overdueLinesEver !== b.overdueLinesEver) return a.overdueLinesEver - b.overdueLinesEver;
       return a.supplierName.localeCompare(b.supplierName, "ru");
     })
     .map((row, index) => ({
@@ -400,7 +414,7 @@ function exportSupplierRating(rows: SupplierRatingRow[]) {
     Строк: row.totalLines,
     "Исполнено строк": row.deliveredLines,
     "Отказано строк": row.canceledLines,
-    "Просрочено строк": row.overdueLinesCurrent,
+    "Просрочено строк": row.overdueLinesEver,
     "Поставка в срок %": Math.round(row.onTimeDelivery * 10) / 10,
     "Исполнение %": Math.round(row.fillRate * 10) / 10,
     "Отказы, %": Math.round(row.refusalRate * 10) / 10,
@@ -434,7 +448,7 @@ function getSortValue(row: SupplierRatingRow, field: SortField) {
     case "canceled":
       return row.canceledLines;
     case "overdue":
-      return row.overdueLinesCurrent;
+      return row.overdueLinesEver;
     case "ontime":
       return row.onTimeDelivery;
     case "fill":
@@ -471,6 +485,7 @@ export default function SupplierAnalyticsDashboardPage() {
 
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [suppliers, setSuppliers] = useState<SupplierSummary[]>([]);
+  const [historicalOverdueEntries, setHistoricalOverdueEntries] = useState<HistoricalOverdueEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [helpOpen, setHelpOpen] = useState(false);
 
@@ -520,7 +535,16 @@ export default function SupplierAnalyticsDashboardPage() {
     if (!user) return;
 
     setLoading(true);
-    const [ordersResult, suppliersResult] = await Promise.all([fetchOrders(user), fetchSuppliers()]);
+    const [ordersResult, suppliersResult, overdueResult] = await Promise.all([
+      fetchOrders(user),
+      fetchSuppliers(),
+      fetch("/api/suppliers/analytics").then(async (response) => {
+        if (!response.ok) {
+          throw new Error("Не удалось загрузить журнал просрочек.");
+        }
+        return response.json();
+      }),
+    ]);
 
     if (ordersResult.error) {
       showToast("Ошибка загрузки аналитики", {
@@ -536,6 +560,7 @@ export default function SupplierAnalyticsDashboardPage() {
 
     setOrders((ordersResult.data as OrderWithItems[]) || []);
     setSuppliers(mapSuppliers((suppliersResult.data as SupplierSummary[]) || []));
+    setHistoricalOverdueEntries((overdueResult.overdueEntries as HistoricalOverdueEntry[]) || []);
     setLoading(false);
   }, [showToast, user]);
 
@@ -545,6 +570,7 @@ export default function SupplierAnalyticsDashboardPage() {
     } else {
       setOrders([]);
       setSuppliers([]);
+      setHistoricalOverdueEntries([]);
       setLoading(false);
     }
   }, [loadAnalytics, user]);
@@ -553,6 +579,10 @@ export default function SupplierAnalyticsDashboardPage() {
   const currentCutoff = useMemo(() => getAnalyticsCutoffDate(period), [period]);
   const previousWindow = useMemo(() => getAnalyticsPreviousWindow(period), [period]);
   const supplierNameMap = useMemo(() => getSupplierNameMap(suppliers), [suppliers]);
+  const historicalOverdueItemIds = useMemo(
+    () => new Set(historicalOverdueEntries.map((entry) => entry.orderItemId)),
+    [historicalOverdueEntries]
+  );
 
   const currentOrders = useMemo(() => {
     return orders
@@ -593,8 +623,9 @@ export default function SupplierAnalyticsDashboardPage() {
         previousOrders,
         suppliers,
         today,
+        historicalOverdueItemIds,
       }),
-    [currentOrders, previousOrders, suppliers, today]
+    [currentOrders, historicalOverdueItemIds, previousOrders, suppliers, today]
   );
 
   const filteredRows = useMemo(() => {
@@ -639,7 +670,10 @@ export default function SupplierAnalyticsDashboardPage() {
     [supplierNameMap, today, visibleOrders]
   );
 
-  const overallMetrics = useMemo(() => collectSupplierPeriodMetrics(visibleOrders, today), [today, visibleOrders]);
+  const overallMetrics = useMemo(
+    () => collectSupplierPeriodMetrics(visibleOrders, today, historicalOverdueItemIds),
+    [historicalOverdueItemIds, today, visibleOrders]
+  );
 
   const ratingSummary = useMemo(() => {
     const excellentCount = sortedRows.filter((row) => row.health === "excellent").length;
@@ -971,9 +1005,9 @@ export default function SupplierAnalyticsDashboardPage() {
                 />
                 <KpiActionCard
                   title="Процент просрочек"
-                  value={formatPercent(visibleLines.length > 0 ? (overallMetrics.overdueLinesCurrent / visibleLines.length) * 100 : 0)}
+                  value={formatPercent(visibleLines.length > 0 ? (overallMetrics.overdueLinesEver / visibleLines.length) * 100 : 0)}
                   accent="bg-rose-500"
-                  hint="Текущие просрочки"
+                  hint="Были просрочки"
                 />
                 <KpiActionCard
                   title="Средний срок поставки"
@@ -1053,12 +1087,12 @@ export default function SupplierAnalyticsDashboardPage() {
                             {row.supplierName}
                           </Link>
                           <span className="text-[11px] text-slate-500">
-                            {row.overdueLinesCurrent} проср. · {row.canceledLines} отказ.
+                            {row.overdueLinesEver} с просрочкой · {row.canceledLines} отказ.
                           </span>
                         </div>
 
                         <div className="mt-3 space-y-3">
-                          <MetricBar label="Просрочки" value={row.totalLines ? (row.overdueLinesCurrent / row.totalLines) * 100 : 0} color="bg-rose-500" />
+                          <MetricBar label="Просрочки" value={row.totalLines ? (row.overdueLinesEver / row.totalLines) * 100 : 0} color="bg-rose-500" />
                           <MetricBar label="Отказы" value={row.refusalRate} color="bg-slate-500" />
                           <MetricBar
                             label="Поставка в срок"
@@ -1101,7 +1135,7 @@ export default function SupplierAnalyticsDashboardPage() {
                     key: `risk-${row.supplierId}`,
                     href: getSupplierAnalyticsHref(row.supplierId, period),
                     title: row.supplierName,
-                    meta: `Просрочено ${row.overdueLinesCurrent} · Отказано ${row.canceledLines} · Изменение ${formatTrend(
+                    meta: `Было просрочено ${row.overdueLinesEver} · Отказано ${row.canceledLines} · Изменение ${formatTrend(
                       row.trendDelta
                     )}`,
                     badge: `${row.supplierClass} / ${row.healthLabel}`,
@@ -1169,7 +1203,7 @@ export default function SupplierAnalyticsDashboardPage() {
                           <td className="px-4 py-3.5 text-sm text-slate-700">{row.totalLines}</td>
                           <td className="px-4 py-3.5 text-sm text-slate-700">{row.deliveredLines}</td>
                           <td className="px-4 py-3.5 text-sm text-slate-700">{row.canceledLines}</td>
-                          <td className="px-4 py-3.5 text-sm text-slate-700">{row.overdueLinesCurrent}</td>
+                          <td className="px-4 py-3.5 text-sm text-slate-700">{row.overdueLinesEver}</td>
                           <td className="px-4 py-3.5 text-sm text-slate-700">{formatPercent(row.onTimeDelivery)}</td>
                           <td className="px-4 py-3.5 text-sm text-slate-700">{formatPercent(row.fillRate)}</td>
                           <td className="px-4 py-3.5 text-sm text-slate-700">{formatPercent(row.refusalRate)}</td>
@@ -1213,7 +1247,7 @@ export default function SupplierAnalyticsDashboardPage() {
 
                       <div className="mt-3 grid grid-cols-2 gap-2">
                         <InfoMini label="Класс" value={row.supplierClass} />
-                        <InfoMini label="Просрочено" value={row.overdueLinesCurrent} />
+                        <InfoMini label="Было просрочено" value={row.overdueLinesEver} />
                         <InfoMini label="Отказано" value={row.canceledLines} />
                         <InfoMini label="В срок" value={formatPercent(row.onTimeDelivery)} />
                         <InfoMini label="Исполнение" value={formatPercent(row.fillRate)} />

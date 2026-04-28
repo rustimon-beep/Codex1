@@ -437,15 +437,26 @@ export function useOrderDetailActions(params: {
         const nextPlannedDate = normalizeDateForCompare(item.plannedDate);
         const plannedDateChanged = previousPlannedDate !== nextPlannedDate;
         const previousItemWasOverdue = previousItem ? isItemOverdue(previousItem) : false;
+        const nextItemWillBeOverdue =
+          !!nextPlannedDate &&
+          nextPlannedDate < getTodayDate() &&
+          item.status !== "Поставлен" &&
+          item.status !== "Отменен" &&
+          !item.deliveredDate &&
+          !item.canceledDate;
 
         if (plannedDateChanged && previousItem) {
-          if (previousItemWasOverdue) {
+          if (previousItemWasOverdue || nextItemWillBeOverdue) {
             await registerFirstOverdueItem({
               order_item_id: previousItem.id,
               order_id: order.id,
               supplier_id: Number(form.supplierId) || null,
               first_planned_date:
-                normalizeDateForCompare(previousItem.initial_planned_date || previousItem.planned_date) ||
+                normalizeDateForCompare(
+                  previousItem.initial_planned_date ||
+                    (previousItemWasOverdue ? previousItem.planned_date : nextPlannedDate) ||
+                    previousItem.planned_date
+                ) ||
                 null,
             });
           }

@@ -39,12 +39,17 @@ type CompareRow = {
   deliveredLines: number;
   canceledLines: number;
   overdueLinesCurrent: number;
+  overdueLinesEver: number;
   onTimeDelivery: number;
   fillRate: number;
   refusalRate: number;
   averageLeadTime: number;
   averageDelay: number;
   stability: number;
+};
+
+type HistoricalOverdueEntry = {
+  orderItemId: number;
 };
 
 function normalizeDate(value: string | null | undefined) {
@@ -67,8 +72,9 @@ function buildCompareRows(params: {
   suppliers: SupplierSummary[];
   selectedIds: string[];
   today: string;
+  historicalOverdueItemIds: Set<number>;
 }) {
-  const { orders, suppliers, selectedIds, today } = params;
+  const { orders, suppliers, selectedIds, today, historicalOverdueItemIds } = params;
   const supplierNameMap = getSupplierNameMap(suppliers);
 
   return selectedIds
@@ -77,7 +83,7 @@ function buildCompareRows(params: {
         const key = order.supplier_id ? String(order.supplier_id) : "unassigned";
         return key === supplierId;
       });
-      const metrics = collectSupplierPeriodMetrics(supplierOrders, today);
+      const metrics = collectSupplierPeriodMetrics(supplierOrders, today, historicalOverdueItemIds);
       if (!metrics.totalLines) return null;
 
       const score = calculateSupplierScore({
@@ -98,12 +104,13 @@ function buildCompareRows(params: {
         deliveredLines: metrics.deliveredLines,
         canceledLines: metrics.canceledLines,
         overdueLinesCurrent: metrics.overdueLinesCurrent,
+        overdueLinesEver: metrics.overdueLinesEver,
         onTimeDelivery: metrics.onTimeDelivery,
         fillRate: metrics.fillRate,
         refusalRate: metrics.refusalRate,
         averageLeadTime: metrics.averageLeadTime,
         averageDelay: metrics.averageDelay,
-        stability: Math.max(0, 100 - metrics.refusalRate - (metrics.overdueLinesCurrent / Math.max(metrics.totalLines, 1)) * 100),
+        stability: Math.max(0, 100 - metrics.refusalRate - (metrics.overdueLinesEver / Math.max(metrics.totalLines, 1)) * 100),
       } satisfies CompareRow;
     })
     .filter(Boolean) as CompareRow[];
@@ -127,6 +134,7 @@ export default function SupplierComparePage() {
 
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [suppliers, setSuppliers] = useState<SupplierSummary[]>([]);
+  const [historicalOverdueEntries, setHistoricalOverdueEntries] = useState<HistoricalOverdueEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   const { user, setUser, authLoading, profileLoading, setProfileLoading } = useProfileAuth();
@@ -170,7 +178,16 @@ export default function SupplierComparePage() {
   const loadData = useCallback(async () => {
     if (!user) return;
     setLoading(true);
-    const [ordersResult, suppliersResult] = await Promise.all([fetchOrders(user), fetchSuppliers()]);
+    const [ordersResult, suppliersResult, overdueResult] = await Promise.all([
+      fetchOrders(user),
+      fetchSuppliers(),
+      fetch("/api/suppliers/analytics").then(async (response) => {
+        if (!response.ok) {
+          throw new Error("Не удалось загрузить журнал просрочек.");
+        }
+        return response.json();
+      }),
+    ]);
 
     if (ordersResult.error) {
       showToast("Ошибка загрузки сравнения", {
@@ -186,6 +203,7 @@ export default function SupplierComparePage() {
 
     setOrders((ordersResult.data as OrderWithItems[]) || []);
     setSuppliers(mapSuppliers((suppliersResult.data as SupplierSummary[]) || []));
+    setHistoricalOverdueEntries((overdueResult.overdueEntries as HistoricalOverdueEntry[]) || []);
     setLoading(false);
   }, [showToast, user]);
 
@@ -195,11 +213,16 @@ export default function SupplierComparePage() {
     } else {
       setOrders([]);
       setSuppliers([]);
+      setHistoricalOverdueEntries([]);
       setLoading(false);
     }
   }, [loadData, user]);
 
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const historicalOverdueItemIds = useMemo(
+    () => new Set(historicalOverdueEntries.map((entry) => entry.orderItemId)),
+    [historicalOverdueEntries]
+  );
   const cutoffDate = useMemo(() => getAnalyticsCutoffDate(period), [period]);
 
   const filteredOrders = useMemo(() => {
@@ -217,8 +240,9 @@ export default function SupplierComparePage() {
         suppliers,
         selectedIds,
         today,
+        historicalOverdueItemIds,
       }),
-    [filteredOrders, selectedIds, suppliers, today]
+    [filteredOrders, historicalOverdueItemIds, selectedIds, suppliers, today]
   );
 
   const handleLogout = () => {
@@ -428,7 +452,7 @@ export default function SupplierComparePage() {
                             </div>
                             <div className="mt-3 grid grid-cols-2 gap-2">
                               <InfoMini label="Строк" value={row.totalLines} />
-                              <InfoMini label="Просрочено" value={row.overdueLinesCurrent} />
+                              <InfoMini label="Было просрочено" value={row.overdueLinesEver} />
                               <InfoMini label="Отказано" value={row.canceledLines} />
                               <InfoMini label="Срок поставки" value={row.averageLeadTime || "—"} />
                             </div>
@@ -671,7 +695,7 @@ function CompareTable({ rows }: { rows: CompareRow[] }) {
                 <td className={`px-4 py-3.5 text-sm ${highlight(row.totalLines === bestLines)}`}>{row.totalLines}</td>
                 <td className={`px-4 py-3.5 text-sm ${highlight(row.deliveredLines === bestDelivered)}`}>{row.deliveredLines}</td>
                 <td className="px-4 py-3.5 text-sm text-slate-700">{row.canceledLines}</td>
-                <td className="px-4 py-3.5 text-sm text-slate-700">{row.overdueLinesCurrent}</td>
+                <td className="px-4 py-3.5 text-sm text-slate-700">{row.overdueLinesEver}</td>
                 <td className={`px-4 py-3.5 text-sm ${highlight(row.onTimeDelivery === bestOnTime)}`}>{formatPercent(row.onTimeDelivery)}</td>
                 <td className={`px-4 py-3.5 text-sm ${highlight(row.fillRate === bestFill)}`}>{formatPercent(row.fillRate)}</td>
                 <td className={`px-4 py-3.5 text-sm ${highlight(row.refusalRate === bestRefusal)}`}>{formatPercent(row.refusalRate)}</td>

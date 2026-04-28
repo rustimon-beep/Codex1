@@ -9,6 +9,7 @@ export type SupplierPeriodMetrics = {
   deliveredLines: number;
   canceledLines: number;
   overdueLinesCurrent: number;
+  overdueLinesEver: number;
   deliveredOnTimeLines: number;
   deliveredLateLines: number;
   averageLeadTime: number;
@@ -165,13 +166,15 @@ export function compareSupplierPeriods(current: number, previous: number): Suppl
 
 export function collectSupplierPeriodMetrics(
   orders: OrderWithItems[],
-  today = new Date().toISOString().slice(0, 10)
+  today = new Date().toISOString().slice(0, 10),
+  historicalOverdueItemIds?: Set<number>
 ): SupplierPeriodMetrics {
   const items = orders.flatMap((order) => (order.order_items || []).map((item) => ({ item, order })));
 
   let deliveredLines = 0;
   let canceledLines = 0;
   let overdueLinesCurrent = 0;
+  let overdueLinesEver = 0;
   let deliveredOnTimeLines = 0;
   let deliveredLateLines = 0;
 
@@ -207,6 +210,13 @@ export function collectSupplierPeriodMetrics(
     if (plannedDate && plannedDate < today && !delivered && !canceled) {
       overdueLinesCurrent += 1;
     }
+
+    if (
+      (typeof item.id === "number" && historicalOverdueItemIds?.has(item.id)) ||
+      (plannedDate && plannedDate < today && !delivered && !canceled)
+    ) {
+      overdueLinesEver += 1;
+    }
   }
 
   const totalLines = items.length;
@@ -229,6 +239,7 @@ export function collectSupplierPeriodMetrics(
     deliveredLines,
     canceledLines,
     overdueLinesCurrent,
+    overdueLinesEver,
     deliveredOnTimeLines,
     deliveredLateLines,
     averageLeadTime: calculateAverageLeadTime(leadTimeSamples),

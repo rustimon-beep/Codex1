@@ -62,6 +62,10 @@ type DecoratedLine = OrderItem & {
   delayDays: number | null;
 };
 
+type HistoricalOverdueEntry = {
+  orderItemId: number;
+};
+
 function normalizeDate(value: string | null | undefined) {
   return (value || "").slice(0, 10);
 }
@@ -123,7 +127,11 @@ function buildSupplierNameMap(suppliers: SupplierSummary[]) {
   return map;
 }
 
-function buildMonthlyPoints(orders: OrderWithItems[], today: string) {
+function buildMonthlyPoints(
+  orders: OrderWithItems[],
+  today: string,
+  historicalOverdueItemIds: Set<number>
+) {
   const currentMonth = startOfMonth(new Date());
   const monthKeys = Array.from({ length: 6 }, (_, index) => {
     const date = addMonths(currentMonth, -(5 - index));
@@ -133,7 +141,7 @@ function buildMonthlyPoints(orders: OrderWithItems[], today: string) {
 
   return monthKeys.map((key) => {
     const bucketOrders = orders.filter((order) => getMonthKey(order.order_date) === key);
-    const metrics = collectSupplierPeriodMetrics(bucketOrders, today);
+    const metrics = collectSupplierPeriodMetrics(bucketOrders, today, historicalOverdueItemIds);
     const score = calculateSupplierScore({
       onTimeDelivery: metrics.onTimeDelivery,
       fillRate: metrics.fillRate,
@@ -212,6 +220,7 @@ export default function SupplierAnalyticsDetailPage() {
 
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [suppliers, setSuppliers] = useState<SupplierSummary[]>([]);
+  const [historicalOverdueEntries, setHistoricalOverdueEntries] = useState<HistoricalOverdueEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   const { user, setUser, authLoading, profileLoading, setProfileLoading } = useProfileAuth();
@@ -242,7 +251,16 @@ export default function SupplierAnalyticsDetailPage() {
     if (!user) return;
 
     setLoading(true);
-    const [ordersResult, suppliersResult] = await Promise.all([fetchOrders(user), fetchSuppliers()]);
+    const [ordersResult, suppliersResult, overdueResult] = await Promise.all([
+      fetchOrders(user),
+      fetchSuppliers(),
+      fetch("/api/suppliers/analytics").then(async (response) => {
+        if (!response.ok) {
+          throw new Error("Не удалось загрузить журнал просрочек.");
+        }
+        return response.json();
+      }),
+    ]);
 
     if (ordersResult.error) {
       showToast("Ошибка загрузки поставщика", {
@@ -258,6 +276,7 @@ export default function SupplierAnalyticsDetailPage() {
 
     setOrders((ordersResult.data as OrderWithItems[]) || []);
     setSuppliers(mapSuppliers((suppliersResult.data as SupplierSummary[]) || []));
+    setHistoricalOverdueEntries((overdueResult.overdueEntries as HistoricalOverdueEntry[]) || []);
     setLoading(false);
   }, [showToast, user]);
 
@@ -267,11 +286,16 @@ export default function SupplierAnalyticsDetailPage() {
     } else {
       setOrders([]);
       setSuppliers([]);
+      setHistoricalOverdueEntries([]);
       setLoading(false);
     }
   }, [loadAnalytics, user]);
 
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const historicalOverdueItemIds = useMemo(
+    () => new Set(historicalOverdueEntries.map((entry) => entry.orderItemId)),
+    [historicalOverdueEntries]
+  );
   const cutoffDate = useMemo(() => getAnalyticsCutoffDate(period), [period]);
   const previousWindow = useMemo(() => getAnalyticsPreviousWindow(period), [period]);
   const supplierNameMap = useMemo(() => buildSupplierNameMap(suppliers), [suppliers]);
@@ -305,8 +329,14 @@ export default function SupplierAnalyticsDetailPage() {
     return supplierNameMap.get(supplierId) || "Поставщик";
   }, [supplierId, supplierNameMap]);
 
-  const metrics = useMemo(() => collectSupplierPeriodMetrics(supplierOrders, today), [supplierOrders, today]);
-  const previousMetrics = useMemo(() => collectSupplierPeriodMetrics(previousOrders, today), [previousOrders, today]);
+  const metrics = useMemo(
+    () => collectSupplierPeriodMetrics(supplierOrders, today, historicalOverdueItemIds),
+    [historicalOverdueItemIds, supplierOrders, today]
+  );
+  const previousMetrics = useMemo(
+    () => collectSupplierPeriodMetrics(previousOrders, today, historicalOverdueItemIds),
+    [historicalOverdueItemIds, previousOrders, today]
+  );
 
   const score = useMemo(
     () =>
@@ -340,8 +370,8 @@ export default function SupplierAnalyticsDetailPage() {
   const supplierClass = useMemo(() => classifySupplier(score.total), [score.total]);
 
   const monthlyPoints = useMemo(
-    () => buildMonthlyPoints(allSupplierOrders, today),
-    [allSupplierOrders, today]
+    () => buildMonthlyPoints(allSupplierOrders, today, historicalOverdueItemIds),
+    [allSupplierOrders, historicalOverdueItemIds, today]
   );
 
   const decoratedLines = useMemo<DecoratedLine[]>(() => {
@@ -536,7 +566,7 @@ export default function SupplierAnalyticsDetailPage() {
                   accent={scoreTrend.direction === "down" ? "bg-rose-500" : scoreTrend.direction === "up" ? "bg-emerald-500" : "bg-slate-400"}
                 />
                 <KpiCard title="Активные заказы" value={activeOrders} accent="bg-sky-500" />
-                <KpiCard title="Просроч. строки" value={metrics.overdueLinesCurrent} accent="bg-rose-500" />
+                <KpiCard title="Были в просрочке" value={metrics.overdueLinesEver} accent="bg-rose-500" />
                 <KpiCard title="Отказы" value={metrics.canceledLines} accent="bg-slate-400" />
                 <KpiCard title="Средний срок" value={metrics.averageLeadTime ? `${metrics.averageLeadTime} дн.` : "—"} accent="bg-amber-500" />
                 <KpiCard title="Период" value={getAnalyticsPeriodLabel(period)} accent="bg-slate-500" />

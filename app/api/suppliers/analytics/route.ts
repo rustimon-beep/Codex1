@@ -66,9 +66,27 @@ export async function GET() {
 
     await registerFirstOverdueItems(currentOverdueItems);
 
+    const { data: overdueHistoryRows, error: historyError } = await supabase
+      .from("order_item_schedule_history")
+      .select("order_item_id, order_id, supplier_id, previous_planned_date, changed_after_overdue")
+      .eq("changed_after_overdue", true);
+
+    if (historyError) {
+      throw historyError;
+    }
+
+    const historicalOverdueItems = (overdueHistoryRows || []).map((row) => ({
+      order_item_id: row.order_item_id,
+      order_id: row.order_id,
+      supplier_id: row.supplier_id || null,
+      first_planned_date: row.previous_planned_date ? row.previous_planned_date.slice(0, 10) : null,
+    }));
+
+    await registerFirstOverdueItems(historicalOverdueItems);
+
     const { data, error } = await supabase
       .from("order_item_first_overdue")
-      .select("order_id, supplier_id, first_overdue_at");
+      .select("order_item_id, order_id, supplier_id, first_overdue_at");
 
     if (error) {
       throw error;
@@ -77,6 +95,7 @@ export async function GET() {
     return NextResponse.json({
       ok: true,
       overdueEntries: (data || []).map((row) => ({
+        orderItemId: row.order_item_id,
         orderId: row.order_id,
         supplierId: row.supplier_id,
         firstOverdueAt: row.first_overdue_at,
