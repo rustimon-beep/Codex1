@@ -942,43 +942,43 @@ export default function SupplierAnalyticsDashboardPage() {
                   title="Всего поставщиков"
                   value={sortedRows.length}
                   accent="bg-slate-500"
-                  hint="Открыть supplier rating"
+                  hint="Активный пул"
                 />
                 <KpiActionCard
                   title="Всего заказов"
                   value={visibleOrders.length}
                   accent="bg-sky-500"
-                  hint="Показать заказы"
+                  hint="Заказы в периоде"
                 />
                 <KpiActionCard
                   title="Всего строк заказов"
                   value={visibleLines.length}
                   accent="bg-amber-500"
-                  hint="Показать строки"
+                  hint="Рабочий объём"
                 />
                 <KpiActionCard
                   title="Процент исполненных строк"
                   value={formatPercent(overallMetrics.fillRate)}
                   accent="bg-emerald-500"
-                  hint="Показать исполненные строки"
+                  hint="Fill rate"
                 />
                 <KpiActionCard
                   title="Процент отказов"
                   value={formatPercent(overallMetrics.refusalRate)}
                   accent="bg-slate-400"
-                  hint="Показать отмененные строки"
+                  hint="Отказанные линии"
                 />
                 <KpiActionCard
                   title="Процент просрочек"
                   value={formatPercent(visibleLines.length > 0 ? (overallMetrics.overdueLinesCurrent / visibleLines.length) * 100 : 0)}
                   accent="bg-rose-500"
-                  hint="Показать просроченные строки"
+                  hint="Текущие просрочки"
                 />
                 <KpiActionCard
                   title="Средний срок поставки"
                   value={overallMetrics.averageLeadTime ? `${overallMetrics.averageLeadTime} дн.` : "—"}
                   accent="bg-teal-500"
-                  hint="Показать строки с lead time"
+                  hint="Средний lead time"
                 />
               </div>
 
@@ -1331,17 +1331,17 @@ function KpiActionCard({
   hint: string;
 }) {
   return (
-    <div className="rounded-[22px] border border-slate-200 bg-white px-4 py-4 text-left shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:px-5 md:py-5">
-      <div className="flex min-h-[58px] items-start justify-between gap-3">
-        <div className="max-w-[80%] text-[12px] font-medium uppercase tracking-[0.06em] leading-5 text-slate-500 md:text-[13px]">
+    <div className="rounded-[22px] border border-slate-200 bg-white px-4 py-3.5 text-left shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:px-5 md:py-4">
+      <div className="flex min-h-[50px] items-start justify-between gap-3">
+        <div className="max-w-[82%] text-[11px] font-semibold uppercase tracking-[0.08em] leading-5 text-slate-500 md:text-[12px]">
           {title}
         </div>
-        <div className={`mt-1 h-2.5 w-2.5 rounded-full opacity-80 ${accent}`} />
+        <div className={`mt-1 h-2 w-2 rounded-full opacity-75 ${accent}`} />
       </div>
-      <div className="mt-3 text-[28px] font-semibold tracking-tight text-slate-900 md:text-[34px]">
+      <div className="mt-2 text-[30px] font-semibold tracking-tight text-slate-900 md:text-[34px]">
         {value}
       </div>
-      <div className="mt-2 text-[12px] text-slate-500">{hint}</div>
+      <div className="mt-1.5 text-[11px] font-medium text-slate-400 md:text-[12px]">{hint}</div>
     </div>
   );
 }
