@@ -73,11 +73,25 @@ export function useOrderDetailActions(params: {
   const updateItemField = useCallback(
     (index: number, field: keyof ItemForm, value: string | boolean) => {
       void (async () => {
+        const currentItem = form.items[index];
+        const originalItem = currentItem?.id
+          ? (order?.order_items || []).find((existing) => existing.id === currentItem.id) || null
+          : null;
+        const hasUnsavedSupplierPlannedDateChange =
+          user?.role === "supplier" &&
+          !!originalItem &&
+          normalizeDateForCompare(currentItem?.plannedDate) !==
+            normalizeDateForCompare(originalItem.planned_date);
+
         if (user?.role === "buyer" && (field === "plannedDate" || field === "status")) {
           return;
         }
 
-        if (field === "plannedDate" && !canEditItemPlannedDate(user, form.items[index])) {
+        if (
+          field === "plannedDate" &&
+          !canEditItemPlannedDate(user, originalItem || currentItem) &&
+          !hasUnsavedSupplierPlannedDateChange
+        ) {
           showToast("Срок нельзя перенести", {
             description:
               "Поставщик может менять плановую дату только после того, как позиция уже ушла в просрочку.",
@@ -173,7 +187,7 @@ export function useOrderDetailActions(params: {
         });
       })();
     },
-    [form.items, requestPrompt, setForm, showToast, user]
+    [form.items, order?.order_items, requestPrompt, setForm, showToast, user]
   );
 
   const applyBulkPlannedDate = useCallback(() => {

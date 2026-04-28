@@ -57,6 +57,7 @@ import {
   hasComment,
   hasReplacementInOrder,
   isItemOverdue,
+  normalizeDateForCompare,
   orderTypeClasses,
   parseComments,
   statusClasses,
@@ -80,7 +81,6 @@ export default function OrderDetailsPage() {
     "all" | "changed" | "overdue" | "replacement"
   >("all");
   const [itemSearch, setItemSearch] = useState("");
-  const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const { user, setUser, authLoading, profileLoading, setProfileLoading } =
     useProfileAuth();
@@ -164,6 +164,7 @@ export default function OrderDetailsPage() {
   const canBulkStatusItems = canUseBulkStatusActions(user);
   const canBulkPlannedDateItems = canUseBulkPlannedDateActions(user);
   const canCommentOnOrder = canComment(user);
+  const isAdmin = user?.role === "admin";
 
   const viewItems: OrderItem[] = useMemo(
     () => mapFormItemsToOrderItems(form.items, orderId || 0),
@@ -194,12 +195,6 @@ export default function OrderDetailsPage() {
       );
     }).length;
   }, [form.items, initialFormState]);
-
-  useEffect(() => {
-    if (!copiedField) return;
-    const timer = window.setTimeout(() => setCopiedField(null), 1400);
-    return () => window.clearTimeout(timer);
-  }, [copiedField]);
 
   const getChangedFields = useCallback(
     (item: ItemForm, index: number) => {
@@ -447,28 +442,6 @@ export default function OrderDetailsPage() {
   const handleReloadOrder = () => {
     void loadOrder();
   };
-
-  const handleCopyValue = useCallback(
-    async (value: string, label: string) => {
-      const normalizedValue = value.trim();
-      if (!normalizedValue) return;
-
-      try {
-        await navigator.clipboard.writeText(normalizedValue);
-        setCopiedField(label);
-        showToast("Скопировано", {
-          description: `${label} скопирован в буфер обмена.`,
-          variant: "success",
-        });
-      } catch {
-        showToast("Не удалось скопировать", {
-          description: "Браузер не дал доступ к буферу обмена.",
-          variant: "error",
-        });
-      }
-    },
-    [showToast]
-  );
 
   const handleBackNavigation = useCallback(
     async (event?: React.MouseEvent<HTMLAnchorElement>) => {
@@ -784,7 +757,7 @@ export default function OrderDetailsPage() {
                             <FieldBlock label="Плановая дата для всех позиций" compact>
                               <input
                                 type="date"
-                                min={getTodayDate()}
+                                min={isAdmin ? undefined : getTodayDate()}
                                 value={form.bulkPlannedDate}
                                 disabled={!canBulkPlannedDateItems || saving}
                                 onChange={(e) =>
@@ -964,6 +937,20 @@ export default function OrderDetailsPage() {
                         </div>
                       ) : (
                       itemRows.map(({ item, index, changedFields, itemOverdue }) => {
+                        const persistedItem = item.id
+                          ? (order?.order_items || []).find((existing) => existing.id === item.id) ||
+                            null
+                          : null;
+                        const hasUnsavedSupplierPlannedDateChange =
+                          user?.role === "supplier" &&
+                          !!persistedItem &&
+                          normalizeDateForCompare(item.plannedDate) !==
+                            normalizeDateForCompare(persistedItem.planned_date);
+                        const canEditPlannedDateForRow =
+                          canEditItemPlannedDate(user, persistedItem || item) ||
+                          hasUnsavedSupplierPlannedDateChange;
+                        const showPlannedDateLockHint =
+                          user?.role === "supplier" && !canEditPlannedDateForRow;
 
                         const eventLabel =
                           item.status === "Поставлен"
@@ -1026,12 +1013,6 @@ export default function OrderDetailsPage() {
                                       Не сохранено
                                     </div>
                                   ) : null}
-
-                                  {copiedField === `article-${index}` ? (
-                                    <div className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-medium text-emerald-700">
-                                      Артикул скопирован
-                                    </div>
-                                  ) : null}
                                 </div>
 
                                 {eventLabel ? (
@@ -1045,34 +1026,20 @@ export default function OrderDetailsPage() {
                             <div className="p-4 md:p-5">
                               <div className="grid grid-cols-1 gap-4 md:grid-cols-[1.3fr_1.45fr_0.5fr_0.95fr_1.12fr]">
                                 <FieldBlock label="Артикул" compact>
-                                  <div className="flex gap-2">
-                                    <input
-                                      value={item.article}
-                                      disabled={!canEditMainItemFields || saving}
-                                      onChange={(e) =>
-                                        updateItemField(index, "article", e.target.value)
-                                      }
-                                      className={`w-full rounded-2xl border px-4 py-3.5 font-mono text-[13px] text-slate-900 outline-none focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500 ${
-                                        isHighlightedArticle(item.article)
-                                          ? "border-amber-300 bg-amber-50/80 ring-2 ring-amber-100"
-                                          : changedFields.article
-                                          ? "border-blue-200 bg-blue-50/70"
-                                          : "border-slate-200 bg-slate-50"
-                                      }`}
-                                    />
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        void handleCopyValue(
-                                          item.article,
-                                          `article-${index}`
-                                        )
-                                      }
-                                      className="shrink-0 rounded-2xl border border-slate-200 bg-white px-3 text-[11px] font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
-                                    >
-                                      Копия
-                                    </button>
-                                  </div>
+                                  <input
+                                    value={item.article}
+                                    disabled={!canEditMainItemFields || saving}
+                                    onChange={(e) =>
+                                      updateItemField(index, "article", e.target.value)
+                                    }
+                                    className={`w-full rounded-2xl border px-4 py-3.5 font-mono text-[13px] text-slate-900 outline-none focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500 ${
+                                      isHighlightedArticle(item.article)
+                                        ? "border-amber-300 bg-amber-50/80 ring-2 ring-amber-100"
+                                        : changedFields.article
+                                        ? "border-blue-200 bg-blue-50/70"
+                                        : "border-slate-200 bg-slate-50"
+                                    }`}
+                                  />
                                 </FieldBlock>
 
                                 <FieldBlock label="Наименование" compact>
@@ -1107,20 +1074,29 @@ export default function OrderDetailsPage() {
 
                                 <FieldBlock label="Плановая" compact>
                                   <div className="space-y-2">
-                                    <input
-                                      type="date"
-                                      min={getTodayDate()}
-                                      value={item.plannedDate}
-                                      disabled={!canEditItemPlannedDate(user, item) || saving}
-                                      onChange={(e) =>
-                                        updateItemField(index, "plannedDate", e.target.value)
-                                      }
-                                      className={`w-full rounded-2xl border px-4 py-3.5 text-sm text-slate-900 outline-none focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500 ${
-                                        changedFields.plannedDate
-                                          ? "border-blue-200 bg-blue-50/70"
-                                          : "border-slate-200 bg-slate-50"
-                                      }`}
-                                    />
+                                    <div className="group relative">
+                                      <input
+                                        type="date"
+                                        min={isAdmin ? undefined : getTodayDate()}
+                                        value={item.plannedDate}
+                                        disabled={!canEditPlannedDateForRow || saving}
+                                        onChange={(e) =>
+                                          updateItemField(index, "plannedDate", e.target.value)
+                                        }
+                                        className={`w-full rounded-2xl border px-4 py-3.5 text-sm text-slate-900 outline-none focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500 ${
+                                          changedFields.plannedDate
+                                            ? "border-blue-200 bg-blue-50/70"
+                                            : "border-slate-200 bg-slate-50"
+                                        }`}
+                                      />
+
+                                      {showPlannedDateLockHint ? (
+                                        <div className="pointer-events-none absolute left-0 top-full z-20 hidden w-64 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-[11px] leading-5 text-slate-600 shadow-[0_18px_40px_rgba(15,23,42,0.12)] group-hover:block group-focus-within:block">
+                                          Поставщик может переносить срок только после фактической
+                                          просрочки позиции.
+                                        </div>
+                                      ) : null}
+                                    </div>
 
                                     {item.initialPlannedDate &&
                                     item.initialPlannedDate !== item.plannedDate ? (
@@ -1142,12 +1118,6 @@ export default function OrderDetailsPage() {
                                       </div>
                                     ) : null}
 
-                                    {user?.role === "supplier" && !canEditItemPlannedDate(user, item) ? (
-                                      <div className="text-[11px] leading-5 text-slate-500">
-                                        Поставщик может переносить срок только после фактической
-                                        просрочки позиции.
-                                      </div>
-                                    ) : null}
                                   </div>
                                 </FieldBlock>
 
@@ -1186,44 +1156,29 @@ export default function OrderDetailsPage() {
                                 </label>
 
                                 <FieldBlock label="Актуальный артикул" compact>
-                                  <div className="flex gap-2">
-                                    <input
-                                      value={item.replacementArticle}
-                                      disabled={
-                                        !canEditMainItemFields ||
-                                        !item.hasReplacement ||
-                                        saving
-                                      }
-                                      onChange={(e) =>
-                                        updateItemField(
-                                          index,
-                                          "replacementArticle",
-                                          e.target.value
-                                        )
-                                      }
-                                      placeholder="Укажи актуальный артикул"
-                                      className={`w-full rounded-2xl border px-4 py-3.5 font-mono text-[13px] text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500 ${
-                                        isHighlightedArticle(item.replacementArticle)
-                                          ? "border-amber-300 bg-amber-50/80 ring-2 ring-amber-100"
-                                          : changedFields.replacementArticle || changedFields.hasReplacement
-                                          ? "border-blue-200 bg-blue-50/70"
-                                          : "border-slate-200 bg-slate-50"
-                                      }`}
-                                    />
-                                    <button
-                                      type="button"
-                                      disabled={!item.replacementArticle}
-                                      onClick={() =>
-                                        void handleCopyValue(
-                                          item.replacementArticle,
-                                          `replacement-${index}`
-                                        )
-                                      }
-                                      className="shrink-0 rounded-2xl border border-slate-200 bg-white px-3 text-[11px] font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
-                                    >
-                                      Копия
-                                    </button>
-                                  </div>
+                                  <input
+                                    value={item.replacementArticle}
+                                    disabled={
+                                      !canEditMainItemFields ||
+                                      !item.hasReplacement ||
+                                      saving
+                                    }
+                                    onChange={(e) =>
+                                      updateItemField(
+                                        index,
+                                        "replacementArticle",
+                                        e.target.value
+                                      )
+                                    }
+                                    placeholder="Укажи актуальный артикул"
+                                    className={`w-full rounded-2xl border px-4 py-3.5 font-mono text-[13px] text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500 ${
+                                      isHighlightedArticle(item.replacementArticle)
+                                        ? "border-amber-300 bg-amber-50/80 ring-2 ring-amber-100"
+                                        : changedFields.replacementArticle || changedFields.hasReplacement
+                                        ? "border-blue-200 bg-blue-50/70"
+                                        : "border-slate-200 bg-slate-50"
+                                    }`}
+                                  />
                                 </FieldBlock>
 
                                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
