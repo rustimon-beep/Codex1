@@ -17,12 +17,16 @@ import { getFriendlyErrorMessage, normalizeToastOptions } from "../../../lib/ui/
 import { useToast } from "../../../lib/ui/useToast";
 import { fetchSuppliers, mapSuppliers } from "../../../lib/suppliers/api";
 import {
+  getAnalyticsCutoffDate,
+  getAnalyticsPeriodLabel,
+  parseAnalyticsPeriod,
+  type AnalyticsPeriod,
+} from "../../../lib/analytics/periods";
+import {
   buildSupplierAnalytics,
   formatPercent,
   getSupplierAnalyticsTone,
 } from "../../../lib/suppliers/analytics";
-
-type AnalyticsPeriod = "30d" | "90d" | "180d" | "all";
 type OverdueEntry = {
   orderId: number;
   supplierId: number | null;
@@ -42,15 +46,6 @@ type DecoratedLine = OrderItem & {
   isCanceled: boolean;
 };
 
-function getCutoffDate(period: AnalyticsPeriod) {
-  if (period === "all") return null;
-
-  const date = new Date();
-  const days = period === "30d" ? 30 : period === "90d" ? 90 : 180;
-  date.setDate(date.getDate() - days);
-  return date.toISOString().slice(0, 10);
-}
-
 function isItemCurrentOverdue(item: OrderItem, today: string) {
   const plannedDate = (item.planned_date || "").slice(0, 10);
   const delivered = item.status === "Поставлен" || !!item.delivered_date;
@@ -62,7 +57,7 @@ export default function SupplierAnalyticsDetailPage() {
   const params = useParams<{ supplierId: string }>();
   const searchParams = useSearchParams();
   const supplierId = params?.supplierId || "";
-  const period = (searchParams.get("period") as AnalyticsPeriod) || "90d";
+  const period = parseAnalyticsPeriod(searchParams.get("period"));
 
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [suppliers, setSuppliers] = useState<SupplierSummary[]>([]);
@@ -135,7 +130,7 @@ export default function SupplierAnalyticsDetailPage() {
     }
   }, [loadAnalytics, user]);
 
-  const cutoffDate = useMemo(() => getCutoffDate(period), [period]);
+  const cutoffDate = useMemo(() => getAnalyticsCutoffDate(period), [period]);
 
   const supplierOrders = useMemo(() => {
     const filteredBySupplier = orders.filter((order) => {
@@ -334,7 +329,7 @@ export default function SupplierAnalyticsDetailPage() {
 
                   <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
                     <Link
-                      href={`/analytics?period=${period}`}
+                      href={`/analytics/suppliers?period=${period}`}
                       className="rounded-[14px] bg-white px-4 py-2 text-center text-[12px] font-semibold text-slate-900 transition hover:bg-slate-100 md:px-4 md:py-2.5 md:text-[13px]"
                     >
                       К аналитике
@@ -378,7 +373,7 @@ export default function SupplierAnalyticsDetailPage() {
                     eyebrow="Итоги"
                     title="Профиль поставщика"
                     description={`Период: ${
-                      period === "30d" ? "30 дней" : period === "90d" ? "90 дней" : period === "180d" ? "180 дней" : "за всё время"
+                      getAnalyticsPeriodLabel(period).toLowerCase()
                     }.`}
                   />
                   <div className="mt-4 grid grid-cols-2 gap-3">
@@ -542,7 +537,7 @@ export default function SupplierAnalyticsDetailPage() {
           },
           {
             label: "Аналитика",
-            href: "/analytics",
+            href: "/analytics/suppliers",
             active: true,
             haptic: "light",
             icon: (

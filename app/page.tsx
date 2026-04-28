@@ -1842,7 +1842,7 @@ export default function OrdersPage() {
                   <div className="flex w-full flex-col gap-2 lg:w-auto lg:flex-row">
                     {user.role !== "supplier" ? (
                       <Link
-                        href="/analytics"
+                        href="/analytics/suppliers"
                         className="w-full rounded-[14px] border border-white/20 bg-white/10 px-4 py-2 text-center text-[12px] font-semibold text-white transition hover:bg-white/15 lg:w-auto md:rounded-[14px] md:px-4 md:py-2.5 md:text-[13px]"
                       >
                         Аналитика
@@ -2075,7 +2075,7 @@ export default function OrdersPage() {
             ? [
                 {
                   label: "Аналитика",
-                  href: "/analytics",
+                  href: "/analytics/suppliers",
                   haptic: "light" as const,
                   icon: (
                     <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
