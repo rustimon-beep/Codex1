@@ -153,7 +153,9 @@ export default function SupplierAnalyticsPage() {
   const rankedRows = useMemo(() => {
     return [...analytics.rows]
       .sort((a, b) => {
-        if (b.overdueShare !== a.overdueShare) return b.overdueShare - a.overdueShare;
+        if (b.overdueShareCurrent !== a.overdueShareCurrent) {
+          return b.overdueShareCurrent - a.overdueShareCurrent;
+        }
         if (b.canceledLines !== a.canceledLines) return b.canceledLines - a.canceledLines;
         if (b.totalLines !== a.totalLines) return b.totalLines - a.totalLines;
         return a.supplierName.localeCompare(b.supplierName, "ru");
@@ -168,7 +170,9 @@ export default function SupplierAnalyticsPage() {
   const topStableSuppliers = useMemo(() => {
     return [...rankedRows]
       .sort((a, b) => {
-        if (a.overdueShare !== b.overdueShare) return a.overdueShare - b.overdueShare;
+        if (a.overdueShareCurrent !== b.overdueShareCurrent) {
+          return a.overdueShareCurrent - b.overdueShareCurrent;
+        }
         if (a.canceledShare !== b.canceledShare) return a.canceledShare - b.canceledShare;
         if (b.totalLines !== a.totalLines) return b.totalLines - a.totalLines;
         return a.supplierName.localeCompare(b.supplierName, "ru");
@@ -394,7 +398,7 @@ export default function SupplierAnalyticsPage() {
                 />
                 <KpiCard
                   title="Доля просрочек по линиям"
-                  value={formatPercent(analytics.overview.overdueShareTotal)}
+                  value={formatPercent(analytics.overview.overdueShareTotalCurrent)}
                   accent="bg-rose-500"
                 />
               </div>
@@ -428,7 +432,7 @@ export default function SupplierAnalyticsPage() {
                               </div>
                             </div>
                             <div className="text-[12px] font-medium text-slate-500">
-                              Просрочки: {formatPercent(row.overdueShare)}
+                              Просрочки: {formatPercent(row.overdueShareCurrent)}
                             </div>
                           </div>
 
@@ -489,14 +493,14 @@ export default function SupplierAnalyticsPage() {
                               {row.supplierName}
                             </Link>
                             <div className="text-[11px] text-slate-500">
-                              {row.overdueLinesEver} проср. · {row.canceledLines} отмен.
+                              {row.overdueLinesCurrent} проср. · {row.canceledLines} отмен.
                             </div>
                           </div>
 
                           <div className="mt-3 space-y-3">
                             <MetricBar
                               label="Просрочки"
-                              value={row.overdueShare}
+                              value={row.overdueShareCurrent}
                               color="bg-rose-500"
                             />
                             <MetricBar
@@ -545,7 +549,7 @@ export default function SupplierAnalyticsPage() {
                             row
                           )}`}
                         >
-                          {formatPercent(row.overdueShare)}
+                          {formatPercent(row.overdueShareCurrent)}
                         </span>
                       </div>
 
@@ -571,7 +575,7 @@ export default function SupplierAnalyticsPage() {
                     href: getSupplierAnalyticsHref(row.supplierId, period),
                     title: row.supplierName,
                     meta: `Линий: ${row.totalLines} · Поставлено: ${row.deliveredLines}`,
-                    badge: `Просрочки ${formatPercent(row.overdueShare)}`,
+                    badge: `Просрочки ${formatPercent(row.overdueShareCurrent)}`,
                     subbadge: `Отмены ${Math.round(row.canceledShare)}%`,
                   }))}
                 />
@@ -585,8 +589,8 @@ export default function SupplierAnalyticsPage() {
                     key: `risk-top-${row.supplierId}`,
                     href: getSupplierAnalyticsHref(row.supplierId, period),
                     title: row.supplierName,
-                    meta: `Просрочено: ${row.overdueLinesEver} · Отменено: ${row.canceledLines}`,
-                    badge: `Просрочки ${formatPercent(row.overdueShare)}`,
+                    meta: `Просрочено: ${row.overdueLinesCurrent} · Отменено: ${row.canceledLines}`,
+                    badge: `Просрочки ${formatPercent(row.overdueShareCurrent)}`,
                     subbadge: `Отмены ${Math.round(row.canceledShare)}%`,
                   }))}
                 />
@@ -660,7 +664,7 @@ export default function SupplierAnalyticsPage() {
                                 row
                               )}`}
                             >
-                              {formatPercent(row.overdueShare)}
+                              {formatPercent(row.overdueShareCurrent)}
                             </span>
                           </td>
                         </tr>
@@ -693,7 +697,7 @@ export default function SupplierAnalyticsPage() {
                             row
                           )}`}
                         >
-                          {formatPercent(row.overdueShare)}
+                          {formatPercent(row.overdueShareCurrent)}
                         </span>
                       </div>
 

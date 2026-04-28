@@ -14,6 +14,7 @@ export type SupplierAnalyticsRow = {
   canceledLines: number;
   overdueLinesCurrent: number;
   overdueLinesEver: number;
+  overdueShareCurrent: number;
   overdueShare: number;
   deliveredShare: number;
 };
@@ -23,10 +24,12 @@ export function formatPercent(value: number) {
 }
 
 export function getSupplierAnalyticsTone(row: SupplierAnalyticsRow) {
-  if (row.overdueShare >= 40) {
+  const riskShare = row.overdueShareCurrent;
+
+  if (riskShare >= 40) {
     return "border-rose-200 bg-rose-50/70";
   }
-  if (row.overdueShare >= 20) {
+  if (riskShare >= 20) {
     return "border-amber-200 bg-amber-50/70";
   }
   return "border-emerald-200 bg-emerald-50/60";
@@ -79,7 +82,16 @@ export function buildSupplierAnalytics(params: {
         return !!plannedDate && plannedDate < today && !delivered && !canceled;
       }).length;
       const activeLines = totalLines - deliveredLines - canceledLines;
-      const overdueLinesEver = historicalOverdueBySupplier[supplierId] || 0;
+      // Dashboard should never show fewer historical overdue lines than are
+      // currently overdue right now. This keeps analytics consistent even if
+      // the first-overdue log is still being backfilled.
+      const overdueLinesEver = Math.max(
+        historicalOverdueBySupplier[supplierId] || 0,
+        overdueLinesCurrent
+      );
+
+      const overdueShareCurrent =
+        totalLines > 0 ? (overdueLinesCurrent / totalLines) * 100 : 0;
 
       return {
         supplierId,
@@ -94,6 +106,7 @@ export function buildSupplierAnalytics(params: {
         canceledLines,
         overdueLinesCurrent,
         overdueLinesEver,
+        overdueShareCurrent,
         overdueShare: totalLines > 0 ? (overdueLinesEver / totalLines) * 100 : 0,
         deliveredShare: totalLines > 0 ? (deliveredLines / totalLines) * 100 : 0,
       };
@@ -101,7 +114,9 @@ export function buildSupplierAnalytics(params: {
   );
 
   rows.sort((a, b) => {
-    if (b.overdueShare !== a.overdueShare) return b.overdueShare - a.overdueShare;
+    if (b.overdueShareCurrent !== a.overdueShareCurrent) {
+      return b.overdueShareCurrent - a.overdueShareCurrent;
+    }
     if (b.totalLines !== a.totalLines) return b.totalLines - a.totalLines;
     return a.supplierName.localeCompare(b.supplierName, "ru");
   });
@@ -114,9 +129,12 @@ export function buildSupplierAnalytics(params: {
     totalLines: rows.reduce((sum, row) => sum + row.totalLines, 0),
     activeLines: rows.reduce((sum, row) => sum + row.activeLines, 0),
     canceledLines: rows.reduce((sum, row) => sum + row.canceledLines, 0),
+    overdueLinesCurrent: rows.reduce((sum, row) => sum + row.overdueLinesCurrent, 0),
     overdueLinesEver: rows.reduce((sum, row) => sum + row.overdueLinesEver, 0),
   };
 
+  const overdueShareTotalCurrent =
+    overview.totalLines > 0 ? (overview.overdueLinesCurrent / overview.totalLines) * 100 : 0;
   const overdueShareTotal =
     overview.totalLines > 0 ? (overview.overdueLinesEver / overview.totalLines) * 100 : 0;
 
@@ -124,6 +142,7 @@ export function buildSupplierAnalytics(params: {
     rows,
     overview: {
       ...overview,
+      overdueShareTotalCurrent,
       overdueShareTotal,
     },
   };
