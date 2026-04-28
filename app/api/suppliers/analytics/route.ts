@@ -33,7 +33,7 @@ export async function GET() {
     const { data: ordersWithItems, error: ordersError } = await supabase
       .from("orders_v2")
       .select(
-        "id, supplier_id, order_items!left(id, planned_date, status, delivered_date, canceled_date)"
+        "id, supplier_id, order_items!left(id, planned_date, initial_planned_date, planned_date_change_count, status, delivered_date, canceled_date)"
       )
       .not("order_items", "is", null);
 
@@ -46,6 +46,8 @@ export async function GET() {
         .filter((item: {
           id: number;
           planned_date: string | null;
+          initial_planned_date?: string | null;
+          planned_date_change_count?: number | null;
           status: string | null;
           delivered_date: string | null;
           canceled_date: string | null;
@@ -65,6 +67,26 @@ export async function GET() {
     );
 
     await registerFirstOverdueItems(currentOverdueItems);
+
+    const overdueFromInitialDate = (ordersWithItems || []).flatMap((order) =>
+      (order.order_items || [])
+        .filter((item: {
+          id: number;
+          initial_planned_date?: string | null;
+          planned_date_change_count?: number | null;
+        }) => {
+          const initialPlannedDate = (item.initial_planned_date || "").slice(0, 10);
+          return !!initialPlannedDate && initialPlannedDate < today && (item.planned_date_change_count || 0) > 0;
+        })
+        .map((item: { id: number; initial_planned_date?: string | null }) => ({
+          order_item_id: item.id,
+          order_id: order.id,
+          supplier_id: order.supplier_id || null,
+          first_planned_date: item.initial_planned_date ? item.initial_planned_date.slice(0, 10) : null,
+        }))
+    );
+
+    await registerFirstOverdueItems(overdueFromInitialDate);
 
     const { data: overdueHistoryRows, error: historyError } = await supabase
       .from("order_item_schedule_history")

@@ -172,6 +172,44 @@ export async function createPlannedDateHistoryEntry(payload: {
   return supabase.from("order_item_schedule_history").insert(payload);
 }
 
+export async function persistPlannedDateAudit(payload: {
+  firstOverdueItems?: Array<{
+    order_item_id: number;
+    order_id: number;
+    supplier_id: number | null;
+    first_planned_date: string | null;
+  }>;
+  plannedDateHistoryEntries?: Array<{
+    order_item_id: number;
+    order_id: number;
+    supplier_id: number | null;
+    previous_planned_date: string | null;
+    next_planned_date: string | null;
+    changed_by: string;
+    changed_at: string;
+    changed_after_overdue: boolean;
+  }>;
+}) {
+  const response = await fetch("/api/orders/planned-date-audit", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (response.ok) {
+    return { error: null as null };
+  }
+
+  const data = (await response.json().catch(() => ({}))) as { error?: string };
+  return {
+    error: {
+      message: data.error || "Не удалось сохранить аудит изменения срока.",
+    },
+  };
+}
+
 export async function markItemAsDelivered(itemId: number, deliveredDate: string) {
   return supabase
     .from("order_items")

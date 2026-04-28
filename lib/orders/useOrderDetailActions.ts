@@ -7,6 +7,7 @@ import {
   createPlannedDateHistoryEntry,
   deleteItemsByOrderId,
   deleteOrderById,
+  persistPlannedDateAudit,
   registerFirstOverdueItem,
   updateOrderHeader,
   updateOrderItem,
@@ -446,7 +447,38 @@ export function useOrderDetailActions(params: {
           !item.canceledDate;
 
         if (plannedDateChanged && previousItem) {
-          if (previousItemWasOverdue || nextItemWillBeOverdue) {
+          const auditResult = await persistPlannedDateAudit({
+            firstOverdueItems:
+              previousItemWasOverdue || nextItemWillBeOverdue
+                ? [
+                    {
+                      order_item_id: previousItem.id,
+                      order_id: order.id,
+                      supplier_id: Number(form.supplierId) || null,
+                      first_planned_date:
+                        normalizeDateForCompare(
+                          previousItem.initial_planned_date ||
+                            (previousItemWasOverdue ? previousItem.planned_date : nextPlannedDate) ||
+                            previousItem.planned_date
+                        ) || null,
+                    },
+                  ]
+                : [],
+            plannedDateHistoryEntries: [
+              {
+                order_item_id: previousItem.id,
+                order_id: order.id,
+                supplier_id: Number(form.supplierId) || null,
+                previous_planned_date: previousPlannedDate || null,
+                next_planned_date: nextPlannedDate || null,
+                changed_by: user.name,
+                changed_at: formatDateTimeForDb(),
+                changed_after_overdue: previousItemWasOverdue,
+              },
+            ],
+          });
+
+          if (auditResult.error) {
             await registerFirstOverdueItem({
               order_item_id: previousItem.id,
               order_id: order.id,
@@ -459,18 +491,18 @@ export function useOrderDetailActions(params: {
                 ) ||
                 null,
             });
-          }
 
-          await createPlannedDateHistoryEntry({
-            order_item_id: previousItem.id,
-            order_id: order.id,
-            supplier_id: Number(form.supplierId) || null,
-            previous_planned_date: previousPlannedDate || null,
-            next_planned_date: nextPlannedDate || null,
-            changed_by: user.name,
-            changed_at: formatDateTimeForDb(),
-            changed_after_overdue: previousItemWasOverdue,
-          });
+            await createPlannedDateHistoryEntry({
+              order_item_id: previousItem.id,
+              order_id: order.id,
+              supplier_id: Number(form.supplierId) || null,
+              previous_planned_date: previousPlannedDate || null,
+              next_planned_date: nextPlannedDate || null,
+              changed_by: user.name,
+              changed_at: formatDateTimeForDb(),
+              changed_after_overdue: previousItemWasOverdue,
+            });
+          }
         }
 
         const nextItemPayload = {
