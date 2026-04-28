@@ -493,6 +493,16 @@ export function OrdersListMobile({
                                 compact
                                 danger={itemOverdue}
                               />
+                              {item.initial_planned_date &&
+                              item.initial_planned_date !== item.planned_date ? (
+                                <div className="col-span-2 rounded-xl border border-amber-200 bg-amber-50/70 px-3 py-2 text-[10px] leading-4 text-amber-800">
+                                  Первая дата: {formatDate(item.initial_planned_date)}. Новая дата:{" "}
+                                  {formatDate(item.planned_date)}
+                                  {item.planned_date_change_count ? (
+                                    <span> · переносов: {item.planned_date_change_count}</span>
+                                  ) : null}
+                                </div>
+                              ) : null}
                               <MobileInfo
                                 label="Поставка"
                                 value={formatDate(item.delivered_date)}

@@ -26,6 +26,10 @@ export type OrderItem = {
   name: string | null;
   quantity: string | null;
   planned_date: string | null;
+  initial_planned_date?: string | null;
+  planned_date_change_count?: number | null;
+  planned_date_last_changed_at?: string | null;
+  planned_date_last_changed_by?: string | null;
   status: string | null;
   delivered_date: string | null;
   canceled_date: string | null;
@@ -43,6 +47,10 @@ export type ItemForm = {
   name: string;
   quantity: string;
   plannedDate: string;
+  initialPlannedDate?: string;
+  plannedDateChangeCount?: number;
+  plannedDateLastChangedAt?: string;
+  plannedDateLastChangedBy?: string;
   status: string;
   deliveredDate: string;
   canceledDate: string;

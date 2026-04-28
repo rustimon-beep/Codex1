@@ -4,11 +4,14 @@ import { useCallback } from "react";
 import { notifyOrderChanged } from "../notifications/api";
 import {
   buildOrderItemPayload,
+  createPlannedDateHistoryEntry,
   deleteItemsByOrderId,
   deleteOrderById,
+  registerFirstOverdueItem,
   updateOrderHeader,
   updateOrderItem,
 } from "./api";
+import { canEditItemPlannedDate } from "./permissions";
 import {
   appendCancellationComment,
   buildPlannedDateChangeComments,
@@ -16,7 +19,7 @@ import {
   getValidItems,
 } from "./operations";
 import type { ItemForm, OrderFormState, OrderWithItems, UserProfile } from "./types";
-import { appendCommentEntries, formatDateTimeForDb, getTodayDate, hasComment, mergeComments, normalizeDateForCompare } from "./utils";
+import { appendCommentEntries, formatDateTimeForDb, getTodayDate, hasComment, isItemOverdue, mergeComments, normalizeDateForCompare } from "./utils";
 
 type ToastFn = (
   title: string,
@@ -71,6 +74,15 @@ export function useOrderDetailActions(params: {
     (index: number, field: keyof ItemForm, value: string | boolean) => {
       void (async () => {
         if (user?.role === "buyer" && (field === "plannedDate" || field === "status")) {
+          return;
+        }
+
+        if (field === "plannedDate" && !canEditItemPlannedDate(user, form.items[index])) {
+          showToast("Срок нельзя перенести", {
+            description:
+              "Поставщик может менять плановую дату только после того, как позиция уже ушла в просрочку.",
+            variant: "error",
+          });
           return;
         }
 
@@ -165,7 +177,7 @@ export function useOrderDetailActions(params: {
   );
 
   const applyBulkPlannedDate = useCallback(() => {
-    if (user?.role === "buyer") {
+    if (user?.role !== "admin") {
       return;
     }
 
@@ -319,6 +331,25 @@ export function useOrderDetailActions(params: {
       });
 
       for (const item of validItems) {
+        const oldItem = item.id
+          ? (order.order_items || []).find((existing) => existing.id === item.id) || null
+          : null;
+
+        if (
+          user.role === "supplier" &&
+          oldItem &&
+          normalizeDateForCompare(oldItem.planned_date) !== normalizeDateForCompare(item.plannedDate) &&
+          !canEditItemPlannedDate(user, oldItem)
+        ) {
+          showToast("Срок нельзя перенести", {
+            description: `Позиция "${getItemLabel(
+              item
+            )}" ещё не ушла в просрочку. Поставщик не может заранее переносить плановую дату.`,
+            variant: "error",
+          });
+          return;
+        }
+
         if (item.hasReplacement && !item.replacementArticle.trim()) {
           showToast("Не заполнена замена", {
             description: `Для позиции "${getItemLabel(
@@ -386,9 +417,55 @@ export function useOrderDetailActions(params: {
       }
 
       for (const item of validItems) {
+        const previousItem =
+          (order.order_items || []).find((existing) => existing.id === item.id) || null;
+        const previousPlannedDate = normalizeDateForCompare(previousItem?.planned_date);
+        const nextPlannedDate = normalizeDateForCompare(item.plannedDate);
+        const plannedDateChanged = previousPlannedDate !== nextPlannedDate;
+        const previousItemWasOverdue = previousItem ? isItemOverdue(previousItem) : false;
+
+        if (plannedDateChanged && previousItem) {
+          if (previousItemWasOverdue) {
+            await registerFirstOverdueItem({
+              order_item_id: previousItem.id,
+              order_id: order.id,
+              supplier_id: Number(form.supplierId) || null,
+              first_planned_date:
+                normalizeDateForCompare(previousItem.initial_planned_date || previousItem.planned_date) ||
+                null,
+            });
+          }
+
+          await createPlannedDateHistoryEntry({
+            order_item_id: previousItem.id,
+            order_id: order.id,
+            supplier_id: Number(form.supplierId) || null,
+            previous_planned_date: previousPlannedDate || null,
+            next_planned_date: nextPlannedDate || null,
+            changed_by: user.name,
+            changed_at: formatDateTimeForDb(),
+            changed_after_overdue: previousItemWasOverdue,
+          });
+        }
+
+        const nextItemPayload = {
+          ...item,
+          initialPlannedDate:
+            item.initialPlannedDate ||
+            previousItem?.initial_planned_date ||
+            previousItem?.planned_date ||
+            item.plannedDate ||
+            "",
+          plannedDateChangeCount:
+            (previousItem?.planned_date_change_count || item.plannedDateChangeCount || 0) +
+            (plannedDateChanged ? 1 : 0),
+          plannedDateLastChangedAt: plannedDateChanged ? formatDateTimeForDb() : item.plannedDateLastChangedAt || previousItem?.planned_date_last_changed_at || "",
+          plannedDateLastChangedBy: plannedDateChanged ? user.name : item.plannedDateLastChangedBy || previousItem?.planned_date_last_changed_by || "",
+        };
+
         const { error } = await updateOrderItem(
           item.id!,
-          buildOrderItemPayload(order.id, item)
+          buildOrderItemPayload(order.id, nextItemPayload)
         );
 
         if (error) {

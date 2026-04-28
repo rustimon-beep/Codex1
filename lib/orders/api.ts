@@ -18,10 +18,26 @@ type OrderItemPayload = {
   name: string;
   quantity: string;
   planned_date: string | null;
+  initial_planned_date?: string | null;
+  planned_date_change_count?: number;
+  planned_date_last_changed_at?: string | null;
+  planned_date_last_changed_by?: string | null;
   status: string;
   delivered_date: string | null;
   canceled_date: string | null;
 };
+
+function toLegacyOrderItemPayload(payload: OrderItemPayload) {
+  const {
+    initial_planned_date,
+    planned_date_change_count,
+    planned_date_last_changed_at,
+    planned_date_last_changed_by,
+    ...legacyPayload
+  } = payload;
+
+  return legacyPayload;
+}
 
 function applyOrderScope<T extends { eq: (column: string, value: unknown) => T }>(
   query: T,
@@ -94,6 +110,10 @@ export function buildOrderItemPayload(orderId: number, item: ItemForm): OrderIte
     name: item.name,
     quantity: item.quantity,
     planned_date: item.plannedDate || null,
+    initial_planned_date: item.initialPlannedDate || item.plannedDate || null,
+    planned_date_change_count: item.plannedDateChangeCount || 0,
+    planned_date_last_changed_at: item.plannedDateLastChangedAt || null,
+    planned_date_last_changed_by: item.plannedDateLastChangedBy || null,
     status: item.status,
     delivered_date: item.deliveredDate || null,
     canceled_date: item.canceledDate || null,
@@ -101,11 +121,22 @@ export function buildOrderItemPayload(orderId: number, item: ItemForm): OrderIte
 }
 
 export async function updateOrderItem(itemId: number, payload: OrderItemPayload) {
-  return supabase.from("order_items").update(payload).eq("id", itemId);
+  const result = await supabase.from("order_items").update(payload).eq("id", itemId);
+
+  if (!result.error) return result;
+
+  return supabase
+    .from("order_items")
+    .update(toLegacyOrderItemPayload(payload))
+    .eq("id", itemId);
 }
 
 export async function createOrderItem(payload: OrderItemPayload) {
-  return supabase.from("order_items").insert(payload);
+  const result = await supabase.from("order_items").insert(payload);
+
+  if (!result.error) return result;
+
+  return supabase.from("order_items").insert(toLegacyOrderItemPayload(payload));
 }
 
 export async function deleteOrderById(orderId: number) {
@@ -114,6 +145,31 @@ export async function deleteOrderById(orderId: number) {
 
 export async function deleteItemsByOrderId(orderId: number) {
   return supabase.from("order_items").delete().eq("order_id", orderId);
+}
+
+export async function registerFirstOverdueItem(payload: {
+  order_item_id: number;
+  order_id: number;
+  supplier_id: number | null;
+  first_planned_date: string | null;
+}) {
+  return supabase.from("order_item_first_overdue").upsert(payload, {
+    onConflict: "order_item_id",
+    ignoreDuplicates: true,
+  });
+}
+
+export async function createPlannedDateHistoryEntry(payload: {
+  order_item_id: number;
+  order_id: number;
+  supplier_id: number | null;
+  previous_planned_date: string | null;
+  next_planned_date: string | null;
+  changed_by: string;
+  changed_at: string;
+  changed_after_overdue: boolean;
+}) {
+  return supabase.from("order_item_schedule_history").insert(payload);
 }
 
 export async function markItemAsDelivered(itemId: number, deliveredDate: string) {

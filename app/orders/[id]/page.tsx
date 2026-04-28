@@ -160,7 +160,6 @@ export default function OrderDetailsPage() {
   const canEditSupplierAssignment = user?.role === "admin" || user?.role === "buyer";
   const canEditMainItemFields = canEditItemMainFields(user);
   const canEditItemStatusFields = canEditItemStatusFieldsByRole(user);
-  const canEditPlannedDateFields = canEditItemPlannedDate(user);
   const canBulkEditItems = canUseBulkActions(user);
   const canBulkStatusItems = canUseBulkStatusActions(user);
   const canBulkPlannedDateItems = canUseBulkPlannedDateActions(user);
@@ -1107,20 +1106,49 @@ export default function OrderDetailsPage() {
                                 </FieldBlock>
 
                                 <FieldBlock label="Плановая" compact>
-                                  <input
-                                    type="date"
-                                    min={getTodayDate()}
-                                    value={item.plannedDate}
-                                    disabled={!canEditPlannedDateFields || saving}
-                                    onChange={(e) =>
-                                      updateItemField(index, "plannedDate", e.target.value)
-                                    }
-                                    className={`w-full rounded-2xl border px-4 py-3.5 text-sm text-slate-900 outline-none focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500 ${
-                                      changedFields.plannedDate
-                                        ? "border-blue-200 bg-blue-50/70"
-                                        : "border-slate-200 bg-slate-50"
-                                    }`}
-                                  />
+                                  <div className="space-y-2">
+                                    <input
+                                      type="date"
+                                      min={getTodayDate()}
+                                      value={item.plannedDate}
+                                      disabled={!canEditItemPlannedDate(user, item) || saving}
+                                      onChange={(e) =>
+                                        updateItemField(index, "plannedDate", e.target.value)
+                                      }
+                                      className={`w-full rounded-2xl border px-4 py-3.5 text-sm text-slate-900 outline-none focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500 ${
+                                        changedFields.plannedDate
+                                          ? "border-blue-200 bg-blue-50/70"
+                                          : "border-slate-200 bg-slate-50"
+                                      }`}
+                                    />
+
+                                    {item.initialPlannedDate &&
+                                    item.initialPlannedDate !== item.plannedDate ? (
+                                      <div className="rounded-2xl border border-amber-200 bg-amber-50/70 px-3 py-2 text-[12px] leading-5 text-amber-900">
+                                        <div>
+                                          Первая дата:{" "}
+                                          <span className="font-semibold">
+                                            {formatDate(item.initialPlannedDate || null)}
+                                          </span>
+                                        </div>
+                                        <div className="mt-0.5 text-amber-800">
+                                          Новая дата: {formatDate(item.plannedDate || null)}
+                                        </div>
+                                        {(item.plannedDateChangeCount || 0) > 0 ? (
+                                          <div className="mt-0.5 text-amber-800">
+                                            Переносов: {item.plannedDateChangeCount}
+                                          </div>
+                                        ) : null}
+                                      </div>
+                                    ) : null}
+
+                                    {user?.role === "supplier" && !canEditItemPlannedDate(user, item) ? (
+                                      <div className="text-[11px] leading-5 text-slate-500">
+                                        Поставщик может переносить срок только после фактической
+                                        просрочки позиции.
+                                      </div>
+                                    ) : null}
+                                  </div>
                                 </FieldBlock>
 
                                 <FieldBlock label="Статус" compact>

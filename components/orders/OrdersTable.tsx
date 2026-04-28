@@ -564,6 +564,15 @@ export function OrdersTable({
                                       <div className="text-sm text-slate-700">
                                         {formatDate(item.planned_date)}
                                       </div>
+                                      {item.initial_planned_date &&
+                                      item.initial_planned_date !== item.planned_date ? (
+                                        <div className="mt-1 text-[10px] leading-4 text-amber-700">
+                                          Первая: {formatDate(item.initial_planned_date)}
+                                          {item.planned_date_change_count ? (
+                                            <span> · переносов: {item.planned_date_change_count}</span>
+                                          ) : null}
+                                        </div>
+                                      ) : null}
                                       {itemOverdue ? (
                                         <div className="mt-1 text-[10px] font-medium text-rose-600">
                                           Просрочено
