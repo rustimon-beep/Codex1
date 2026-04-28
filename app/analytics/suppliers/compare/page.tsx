@@ -181,7 +181,7 @@ export default function SupplierComparePage() {
     const [ordersResult, suppliersResult, overdueResult] = await Promise.all([
       fetchOrders(user),
       fetchSuppliers(),
-      fetch("/api/suppliers/analytics").then(async (response) => {
+      fetch("/api/suppliers/analytics", { cache: "no-store" }).then(async (response) => {
         if (!response.ok) {
           throw new Error("Не удалось загрузить журнал просрочек.");
         }

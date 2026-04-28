@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { registerFirstOverdueItems } from "../../../../lib/notifications/server-events";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function getRequiredEnv(name: string) {
   const value = process.env[name];
 
@@ -114,15 +117,22 @@ export async function GET() {
       throw error;
     }
 
-    return NextResponse.json({
-      ok: true,
-      overdueEntries: (data || []).map((row) => ({
-        orderItemId: row.order_item_id,
-        orderId: row.order_id,
-        supplierId: row.supplier_id,
-        firstOverdueAt: row.first_overdue_at,
-      })),
-    });
+    return NextResponse.json(
+      {
+        ok: true,
+        overdueEntries: (data || []).map((row) => ({
+          orderItemId: row.order_item_id,
+          orderId: row.order_id,
+          supplierId: row.supplier_id,
+          firstOverdueAt: row.first_overdue_at,
+        })),
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        },
+      }
+    );
   } catch (error) {
     return NextResponse.json(
       {
