@@ -61,6 +61,8 @@ type SupplierRatingRow = {
   healthLabel: string;
   score: number;
   totalOrders: number;
+  breachedOrdersEver: number;
+  overdueOrdersCurrent: number;
   totalLines: number;
   deliveredLines: number;
   canceledLines: number;
@@ -374,6 +376,8 @@ function buildSupplierRatingRows(params: {
         healthLabel: getHealthLabel(health),
         score: score.total,
         totalOrders: metrics.totalOrders,
+        breachedOrdersEver: metrics.breachedOrdersEver,
+        overdueOrdersCurrent: metrics.overdueOrdersCurrent,
         totalLines: metrics.totalLines,
         deliveredLines: metrics.deliveredLines,
         canceledLines: metrics.canceledLines,
@@ -411,10 +415,13 @@ function exportSupplierRating(rows: SupplierRatingRow[]) {
     Класс: row.supplierClass,
     Статус: row.healthLabel,
     Заказов: row.totalOrders,
+    "Заказов с нарушенным 1-м сроком": row.breachedOrdersEver,
+    "Заказов с текущей просрочкой": row.overdueOrdersCurrent,
     Строк: row.totalLines,
     "Исполнено строк": row.deliveredLines,
     "Отказано строк": row.canceledLines,
-    "Просрочено строк": row.overdueLinesEver,
+    "Строк с нарушенным 1-м сроком": row.overdueLinesEver,
+    "Строк с текущей просрочкой": row.overdueLinesCurrent,
     "Поставка в срок %": Math.round(row.onTimeDelivery * 10) / 10,
     "Исполнение %": Math.round(row.fillRate * 10) / 10,
     "Отказы, %": Math.round(row.refusalRate * 10) / 10,
@@ -1004,10 +1011,28 @@ export default function SupplierAnalyticsDashboardPage() {
                   hint="Отказанные линии"
                 />
                 <KpiActionCard
-                  title="Процент просрочек"
-                  value={formatPercent(visibleLines.length > 0 ? (overallMetrics.overdueLinesEver / visibleLines.length) * 100 : 0)}
+                  title="Заказов с нарушенным первым сроком"
+                  value={overallMetrics.breachedOrdersEver}
                   accent="bg-rose-500"
-                  hint="Были просрочки"
+                  hint="Историческое нарушение"
+                />
+                <KpiActionCard
+                  title="Строк с нарушенным первым сроком"
+                  value={overallMetrics.overdueLinesEver}
+                  accent="bg-rose-400"
+                  hint="Нарушение не снимается"
+                />
+                <KpiActionCard
+                  title="Заказов с текущей просрочкой"
+                  value={overallMetrics.overdueOrdersCurrent}
+                  accent="bg-orange-500"
+                  hint="Новый срок уже прошёл"
+                />
+                <KpiActionCard
+                  title="Строк с текущей просрочкой"
+                  value={overallMetrics.overdueLinesCurrent}
+                  accent="bg-orange-400"
+                  hint="Требуют действий сейчас"
                 />
                 <KpiActionCard
                   title="Средний срок поставки"
@@ -1021,7 +1046,7 @@ export default function SupplierAnalyticsDashboardPage() {
                 <CardSection
                   eyebrow="Структура поставщиков"
                   title="Рабочая загрузка по линиям"
-                  description="Сколько линий реально в работе, уже просрочено, поставлено и отказано у каждого поставщика."
+                  description="Сколько линий в работе, сколько уже нарушили первый срок, сколько сейчас реально просрочены, поставлены и отказаны."
                 >
                   <div className="space-y-4">
                     {sortedRows.map((row) => {
@@ -1056,7 +1081,7 @@ export default function SupplierAnalyticsDashboardPage() {
                             <StackedBar
                               segments={[
                                 { label: "В работе", value: healthyActive, color: "bg-sky-500/85" },
-                                { label: "Просрочено", value: row.overdueLinesCurrent, color: "bg-rose-500/90" },
+                                { label: "Текущая просрочка", value: row.overdueLinesCurrent, color: "bg-orange-500/90" },
                                 { label: "Поставлено", value: row.deliveredLines, color: "bg-emerald-500/90" },
                                 { label: "Отказано", value: row.canceledLines, color: "bg-slate-400/90" },
                               ]}
@@ -1070,8 +1095,8 @@ export default function SupplierAnalyticsDashboardPage() {
 
                 <CardSection
                   eyebrow="Риски и потери"
-                  title="Просрочки, отказы и динамика"
-                  description="Здесь видно, кто чаще срывает сроки, кто теряет уровень исполнения и кто заметно проседает к прошлому периоду."
+                  title="Нарушения сроков, отказы и динамика"
+                  description="Здесь видно, у кого чаще нарушается первый срок, у кого уже сорван новый срок и кто заметно проседает к прошлому периоду."
                 >
                   <div className="space-y-4">
                     {sortedRows.map((row) => (
@@ -1087,18 +1112,14 @@ export default function SupplierAnalyticsDashboardPage() {
                             {row.supplierName}
                           </Link>
                           <span className="text-[11px] text-slate-500">
-                            {row.overdueLinesEver} с просрочкой · {row.canceledLines} отказ.
+                            {row.breachedOrdersEver} заказов и {row.overdueLinesEver} строк с нарушением 1-го срока · {row.canceledLines} отказ.
                           </span>
                         </div>
 
                         <div className="mt-3 space-y-3">
-                          <MetricBar label="Просрочки" value={row.totalLines ? (row.overdueLinesEver / row.totalLines) * 100 : 0} color="bg-rose-500" />
+                          <MetricBar label="Нарушен 1-й срок" value={row.totalLines ? (row.overdueLinesEver / row.totalLines) * 100 : 0} color="bg-rose-500" />
+                          <MetricBar label="Текущая просрочка" value={row.totalLines ? (row.overdueLinesCurrent / row.totalLines) * 100 : 0} color="bg-orange-500" />
                           <MetricBar label="Отказы" value={row.refusalRate} color="bg-slate-500" />
-                          <MetricBar
-                            label="Поставка в срок"
-                            value={row.onTimeDelivery}
-                            color="bg-teal-500"
-                          />
                         </div>
                       </div>
                     ))}
@@ -1135,7 +1156,7 @@ export default function SupplierAnalyticsDashboardPage() {
                     key: `risk-${row.supplierId}`,
                     href: getSupplierAnalyticsHref(row.supplierId, period),
                     title: row.supplierName,
-                    meta: `Было просрочено ${row.overdueLinesEver} · Отказано ${row.canceledLines} · Изменение ${formatTrend(
+                    meta: `Нарушен 1-й срок: ${row.overdueLinesEver} · Текущая просрочка: ${row.overdueLinesCurrent} · Изменение ${formatTrend(
                       row.trendDelta
                     )}`,
                     badge: `${row.supplierClass} / ${row.healthLabel}`,
@@ -1157,6 +1178,8 @@ export default function SupplierAnalyticsDashboardPage() {
                   <span>Критичных: {ratingSummary.criticalCount}</span>
                   <span>•</span>
                   <span>Отличных: {ratingSummary.excellentCount}</span>
+                  <span>•</span>
+                  <span>Заказов с нарушенным 1-м сроком: {overallMetrics.breachedOrdersEver}</span>
                 </div>
 
                 <div className="hidden max-h-[680px] overflow-auto rounded-[22px] border border-slate-200 md:block">
@@ -1171,7 +1194,7 @@ export default function SupplierAnalyticsDashboardPage() {
                         <SortableHeader label="Строки" field="lines" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
                         <SortableHeader label="Исполнено" field="delivered" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
                         <SortableHeader label="Отказано" field="canceled" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
-                        <SortableHeader label="Просрочено" field="overdue" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
+                        <SortableHeader label="Нарушен 1-й срок" field="overdue" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
                         <SortableHeader label="В срок, %" field="ontime" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
                         <SortableHeader label="Исполнение, %" field="fill" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
                         <SortableHeader label="Отказы, %" field="refusal" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
@@ -1247,9 +1270,10 @@ export default function SupplierAnalyticsDashboardPage() {
 
                       <div className="mt-3 grid grid-cols-2 gap-2">
                         <InfoMini label="Класс" value={row.supplierClass} />
-                        <InfoMini label="Было просрочено" value={row.overdueLinesEver} />
+                        <InfoMini label="Нарушен 1-й срок" value={row.overdueLinesEver} />
+                        <InfoMini label="Текущая просрочка" value={row.overdueLinesCurrent} />
+                        <InfoMini label="Заказы с нарушением" value={row.breachedOrdersEver} />
                         <InfoMini label="Отказано" value={row.canceledLines} />
-                        <InfoMini label="В срок" value={formatPercent(row.onTimeDelivery)} />
                         <InfoMini label="Исполнение" value={formatPercent(row.fillRate)} />
                         <InfoMini label="Изменение" value={formatTrend(row.trendDelta)} />
                       </div>
@@ -1312,8 +1336,8 @@ export default function SupplierAnalyticsDashboardPage() {
                       Рейтинг поставщика
                     </div>
                     <p className="mt-2 text-[13px] leading-6 text-slate-600">
-                      Рейтинг считается по шкале от 0 до 100. Чем выше процент поставок в срок,
-                      чем меньше отказов и чем стабильнее работа, тем выше итоговый балл.
+                      Рейтинг считается по шкале от 0 до 100. Чем выше доля поставок в срок,
+                      чем меньше отказов и чем реже нарушается первый обещанный срок, тем выше итоговый балл.
                     </p>
                     <div className="mt-3 rounded-[16px] border border-white/80 bg-white px-3 py-3 text-[12px] leading-6 text-slate-600">
                       Основа рейтинга:
@@ -1356,19 +1380,25 @@ export default function SupplierAnalyticsDashboardPage() {
                     <HelpMetricCard title="Всего строк заказов" description="Количество строк внутри заказов, которые участвуют в расчёте." />
                     <HelpMetricCard title="Процент исполненных строк" description="Доля строк со статусом «Поставлен» от общего числа строк." />
                     <HelpMetricCard title="Процент отказов" description="Доля строк со статусом отмены или отказа от общего числа строк." />
-                    <HelpMetricCard title="Процент просрочек" description="Доля активных строк, у которых плановая дата уже меньше сегодняшней даты." />
+                    <HelpMetricCard title="Заказов с нарушенным первым сроком" description="Сколько заказов содержат хотя бы одну строку, где первый обещанный срок уже был нарушен." />
+                    <HelpMetricCard title="Строк с нарушенным первым сроком" description="Сколько строк уже нарушили первый обещанный срок. Этот факт больше не снимается переносом новой даты." />
+                    <HelpMetricCard title="Заказов с текущей просрочкой" description="Сколько заказов содержат хотя бы одну строку, у которой новый текущий срок уже снова прошёл." />
+                    <HelpMetricCard title="Строк с текущей просрочкой" description="Сколько строк прямо сейчас просрочены по текущему сроку поставки." />
                     <HelpMetricCard title="Средний срок поставки" description="Среднее число дней между датой заказа и фактической датой поставки." />
-                    <HelpMetricCard title="Поставка в срок" description="Доля строк, которые были поставлены не позже своей плановой даты." />
+                    <HelpMetricCard title="Поставка в срок" description="Доля строк, которые были поставлены не позже первого обещанного срока." />
                     <HelpMetricCard title="Исполнение" description="Сколько строк удалось закрыть поставкой от общего объёма строк." />
                     <HelpMetricCard title="Средняя задержка" description="Среднее число дней просрочки по тем строкам, где поставка пришла позже плановой даты." />
                     <HelpMetricCard title="Изменение к прошлому периоду" description="Показывает, вырос или снизился рейтинг по сравнению с предыдущим таким же периодом." />
-                    <HelpMetricCard title="Зоны внимания" description="Поставщики, у которых выше просрочки, больше отказов или заметно хуже общий рейтинг." />
+                    <HelpMetricCard title="Зоны внимания" description="Поставщики, у которых чаще нарушается первый срок, больше текущих просрочек, отказов или заметно хуже общий рейтинг." />
                   </div>
                 </div>
 
                 <div className="mt-4 rounded-[20px] border border-amber-200 bg-amber-50/70 px-4 py-3 text-[12px] leading-6 text-amber-900 md:text-[13px]">
-                  Важно: просроченной считается только активная строка, у которой плановая дата уже
-                  прошла, а сама строка ещё не поставлена и не отменена.
+                  Важно: в этой аналитике есть две разные сущности. &quot;Нарушен первый срок&quot; означает,
+                  что первый обещанный срок уже был сорван, и этот факт больше не снимается переносом
+                  новой даты. &quot;Текущая просрочка&quot; означает, что уже прошёл и новый, актуальный срок
+                  поставки. Поэтому строка может уже не быть в текущей просрочке, но всё равно
+                  оставаться строкой с нарушенным первым сроком.
                 </div>
               </div>
             </div>

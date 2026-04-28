@@ -427,7 +427,7 @@ export default function SupplierAnalyticsDetailPage() {
     );
     return [
       { label: "В работе", value: healthyActive, color: "#0F766E" },
-      { label: "Просрочено", value: metrics.overdueLinesCurrent, color: "#DC2626" },
+      { label: "Текущая просрочка", value: metrics.overdueLinesCurrent, color: "#DC2626" },
       { label: "Поставлено", value: metrics.deliveredLines, color: "#16A34A" },
       { label: "Отказано", value: metrics.canceledLines, color: "#64748B" },
     ];
@@ -566,7 +566,8 @@ export default function SupplierAnalyticsDetailPage() {
                   accent={scoreTrend.direction === "down" ? "bg-rose-500" : scoreTrend.direction === "up" ? "bg-emerald-500" : "bg-slate-400"}
                 />
                 <KpiCard title="Активные заказы" value={activeOrders} accent="bg-sky-500" />
-                <KpiCard title="Были в просрочке" value={metrics.overdueLinesEver} accent="bg-rose-500" />
+                <KpiCard title="Строк с нарушенным 1-м сроком" value={metrics.overdueLinesEver} accent="bg-rose-500" />
+                <KpiCard title="Строк с текущей просрочкой" value={metrics.overdueLinesCurrent} accent="bg-orange-500" />
                 <KpiCard title="Отказы" value={metrics.canceledLines} accent="bg-slate-400" />
                 <KpiCard title="Средний срок" value={metrics.averageLeadTime ? `${metrics.averageLeadTime} дн.` : "—"} accent="bg-amber-500" />
                 <KpiCard title="Период" value={getAnalyticsPeriodLabel(period)} accent="bg-slate-500" />
@@ -586,7 +587,7 @@ export default function SupplierAnalyticsDetailPage() {
               </div>
 
               <div className="grid gap-4 xl:grid-cols-2">
-                <CardSection eyebrow="Качество исполнения" title="Выполнено / отказано / просрочено" description="Структура линий по месяцам — где теряется качество исполнения.">
+                <CardSection eyebrow="Качество исполнения" title="Выполнено / отказано / текущая просрочка" description="Структура линий по месяцам — где теряется качество исполнения и где новый срок уже снова сорван.">
                   <MonthlyStackedStatusChart data={monthlyPoints} />
                 </CardSection>
 
@@ -623,11 +624,11 @@ export default function SupplierAnalyticsDetailPage() {
 
               <div className="grid gap-4 xl:grid-cols-2">
                 <LinesPanel
-                  title="Просроченные строки"
-                  description="Текущие активные просрочки, которые требуют ручного контроля."
+                  title="Строки с текущей просрочкой"
+                  description="Текущие активные просрочки по новому сроку, которые требуют ручного контроля."
                   tone="rose"
                   lines={overdueLines}
-                  emptyText="Сейчас у поставщика нет активных просроченных строк."
+                  emptyText="Сейчас у поставщика нет строк с текущей просрочкой."
                 />
                 <LinesPanel
                   title="Отказанные строки"
@@ -1060,7 +1061,7 @@ function ProblemArticlesTable({ rows }: { rows: ProblemArticle[] }) {
         <table className="min-w-full divide-y divide-slate-200 text-left">
           <thead className="bg-slate-50/95">
             <tr>
-              {["Артикул", "Наименование", "Заказов", "Отказов", "Просрочек", "Средняя задержка"].map((label) => (
+              {["Артикул", "Наименование", "Заказов", "Нарушений 1-го срока", "Отказов", "Средняя задержка"].map((label) => (
                 <th key={label} className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
                   {label}
                 </th>
@@ -1073,8 +1074,8 @@ function ProblemArticlesTable({ rows }: { rows: ProblemArticle[] }) {
                 <td className="px-4 py-3.5 text-sm font-semibold text-slate-900">{row.article}</td>
                 <td className="px-4 py-3.5 text-sm text-slate-700">{row.name}</td>
                 <td className="px-4 py-3.5 text-sm text-slate-700">{row.ordersCount}</td>
-                <td className="px-4 py-3.5 text-sm text-slate-700">{row.canceledCount}</td>
                 <td className="px-4 py-3.5 text-sm text-slate-700">{row.overdueCount}</td>
+                <td className="px-4 py-3.5 text-sm text-slate-700">{row.canceledCount}</td>
                 <td className="px-4 py-3.5 text-sm text-slate-700">
                   {row.averageDelay ? `${Math.round(row.averageDelay * 10) / 10} дн.` : "—"}
                 </td>
@@ -1091,8 +1092,8 @@ function ProblemArticlesTable({ rows }: { rows: ProblemArticle[] }) {
             <div className="mt-0.5 text-[12px] text-slate-500">{row.name}</div>
             <div className="mt-3 grid grid-cols-2 gap-2">
               <InfoMini label="Заказов" value={row.ordersCount} />
+              <InfoMini label="Нарушений 1-го срока" value={row.overdueCount} />
               <InfoMini label="Отказов" value={row.canceledCount} />
-              <InfoMini label="Просрочек" value={row.overdueCount} />
               <InfoMini
                 label="Средняя задержка"
                 value={row.averageDelay ? `${Math.round(row.averageDelay * 10) / 10} дн.` : "—"}
@@ -1130,7 +1131,7 @@ function RecentOrdersTable({
         <table className="min-w-full divide-y divide-slate-200 text-left">
           <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur">
             <tr>
-              {["Заказ", "Дата", "Тип", "Линий", "Поставлено", "Отказано", "Просрочено сейчас"].map((label) => (
+              {["Заказ", "Дата", "Тип", "Линий", "Поставлено", "Отказано", "Текущая просрочка"].map((label) => (
                 <th key={label} className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
                   {label}
                 </th>
@@ -1169,7 +1170,7 @@ function RecentOrdersTable({
             <div className="mt-3 grid grid-cols-3 gap-2">
               <InfoMini label="Поставлено" value={order.deliveredLines} />
               <InfoMini label="Отказано" value={order.canceledLines} />
-              <InfoMini label="Просрочено" value={order.overdueLines} />
+              <InfoMini label="Текущая просрочка" value={order.overdueLines} />
             </div>
           </Link>
         ))}

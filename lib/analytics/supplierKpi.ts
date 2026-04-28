@@ -5,6 +5,8 @@ export type SupplierTrendDirection = "up" | "down" | "flat";
 
 export type SupplierPeriodMetrics = {
   totalOrders: number;
+  breachedOrdersEver: number;
+  overdueOrdersCurrent: number;
   totalLines: number;
   deliveredLines: number;
   canceledLines: number;
@@ -170,6 +172,8 @@ export function collectSupplierPeriodMetrics(
   historicalOverdueItemIds?: Set<number>
 ): SupplierPeriodMetrics {
   const items = orders.flatMap((order) => (order.order_items || []).map((item) => ({ item, order })));
+  const breachedOrderIds = new Set<number>();
+  const currentOverdueOrderIds = new Set<number>();
 
   let deliveredLines = 0;
   let canceledLines = 0;
@@ -209,6 +213,7 @@ export function collectSupplierPeriodMetrics(
 
     if (plannedDate && plannedDate < today && !delivered && !canceled) {
       overdueLinesCurrent += 1;
+      currentOverdueOrderIds.add(order.id);
     }
 
     if (
@@ -217,6 +222,7 @@ export function collectSupplierPeriodMetrics(
       (plannedDate && plannedDate < today && !delivered && !canceled)
     ) {
       overdueLinesEver += 1;
+      breachedOrderIds.add(order.id);
     }
   }
 
@@ -236,6 +242,8 @@ export function collectSupplierPeriodMetrics(
 
   return {
     totalOrders: orders.length,
+    breachedOrdersEver: breachedOrderIds.size,
+    overdueOrdersCurrent: currentOverdueOrderIds.size,
     totalLines,
     deliveredLines,
     canceledLines,
