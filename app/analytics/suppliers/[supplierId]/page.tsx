@@ -158,13 +158,13 @@ function buildMonthlyPoints(
       lines: metrics.totalLines,
       delivered: metrics.deliveredLines,
       canceled: metrics.canceledLines,
-      overdue: metrics.overdueLinesCurrent,
+      overdue: metrics.overdueLinesEver,
       averageDelay: metrics.averageDelay,
     };
   });
 }
 
-function buildProblemArticles(orders: OrderWithItems[]) {
+function buildProblemArticles(orders: OrderWithItems[], historicalOverdueItemIds: Set<number>) {
   const groups = new Map<string, ProblemArticle>();
 
   for (const order of orders) {
@@ -175,7 +175,10 @@ function buildProblemArticles(orders: OrderWithItems[]) {
       const plannedDate = normalizeDate(item.planned_date);
       const deliveredDate = normalizeDate(item.delivered_date);
       const canceled = isCanceled(item);
-      const overdue = !!plannedDate && ((!deliveredDate && !canceled) || deliveredDate > plannedDate);
+      const overdue =
+        Boolean(item.deadline_breached_at) ||
+        historicalOverdueItemIds.has(item.id) ||
+        (!!plannedDate && !!deliveredDate && deliveredDate > plannedDate);
       const delayDays =
         plannedDate && deliveredDate && deliveredDate > plannedDate
           ? diffDays(plannedDate, deliveredDate)
@@ -384,7 +387,7 @@ export default function SupplierAnalyticsDetailPage() {
           orderId: order.id,
           clientOrder: order.client_order || `Заказ #${order.id}`,
           orderDate: normalizeDate(order.order_date),
-          isOverdue: isCurrentOverdue(item, today),
+          isOverdue: Boolean(item.deadline_breached_at) || historicalOverdueItemIds.has(item.id),
           isCanceled: isCanceled(item),
           isDelivered: isDelivered(item),
           delayDays:
@@ -394,9 +397,9 @@ export default function SupplierAnalyticsDetailPage() {
         };
       })
     );
-  }, [supplierOrders, today]);
+  }, [historicalOverdueItemIds, supplierOrders]);
 
-  const overdueLines = useMemo(
+  const breachedLines = useMemo(
     () =>
       decoratedLines
         .filter((line) => line.isOverdue)
@@ -412,7 +415,10 @@ export default function SupplierAnalyticsDetailPage() {
     [decoratedLines]
   );
 
-  const problemArticles = useMemo(() => buildProblemArticles(supplierOrders), [supplierOrders]);
+  const problemArticles = useMemo(
+    () => buildProblemArticles(supplierOrders, historicalOverdueItemIds),
+    [historicalOverdueItemIds, supplierOrders]
+  );
 
   const activeOrders = useMemo(() => {
     return supplierOrders.filter((order) =>
@@ -422,16 +428,16 @@ export default function SupplierAnalyticsDetailPage() {
 
   const statusStructure = useMemo(() => {
     const healthyActive = Math.max(
-      metrics.totalLines - metrics.deliveredLines - metrics.canceledLines - metrics.overdueLinesCurrent,
+      metrics.totalLines - metrics.deliveredLines - metrics.canceledLines - metrics.overdueLinesEver,
       0
     );
     return [
       { label: "В работе", value: healthyActive, color: "#0F766E" },
-      { label: "Текущая просрочка", value: metrics.overdueLinesCurrent, color: "#DC2626" },
+      { label: "Нарушен 1-й срок", value: metrics.overdueLinesEver, color: "#DC2626" },
       { label: "Поставлено", value: metrics.deliveredLines, color: "#16A34A" },
       { label: "Отказано", value: metrics.canceledLines, color: "#64748B" },
     ];
-  }, [metrics.canceledLines, metrics.deliveredLines, metrics.overdueLinesCurrent, metrics.totalLines]);
+  }, [metrics.canceledLines, metrics.deliveredLines, metrics.overdueLinesEver, metrics.totalLines]);
 
   const compareHref = `/analytics/suppliers/compare?suppliers=${supplierId}&period=${period}`;
 
@@ -566,8 +572,8 @@ export default function SupplierAnalyticsDetailPage() {
                   accent={scoreTrend.direction === "down" ? "bg-rose-500" : scoreTrend.direction === "up" ? "bg-emerald-500" : "bg-slate-400"}
                 />
                 <KpiCard title="Активные заказы" value={activeOrders} accent="bg-sky-500" />
+                <KpiCard title="Заказов с нарушенным 1-м сроком" value={metrics.breachedOrdersEver} accent="bg-rose-400" />
                 <KpiCard title="Строк с нарушенным 1-м сроком" value={metrics.overdueLinesEver} accent="bg-rose-500" />
-                <KpiCard title="Строк с текущей просрочкой" value={metrics.overdueLinesCurrent} accent="bg-orange-500" />
                 <KpiCard title="Отказы" value={metrics.canceledLines} accent="bg-slate-400" />
                 <KpiCard title="Средний срок" value={metrics.averageLeadTime ? `${metrics.averageLeadTime} дн.` : "—"} accent="bg-amber-500" />
                 <KpiCard title="Период" value={getAnalyticsPeriodLabel(period)} accent="bg-slate-500" />
@@ -587,7 +593,7 @@ export default function SupplierAnalyticsDetailPage() {
               </div>
 
               <div className="grid gap-4 xl:grid-cols-2">
-                <CardSection eyebrow="Качество исполнения" title="Выполнено / отказано / текущая просрочка" description="Структура линий по месяцам — где теряется качество исполнения и где новый срок уже снова сорван.">
+                <CardSection eyebrow="Качество исполнения" title="Выполнено / отказано / нарушен 1-й срок" description="Структура линий по месяцам — где теряется качество исполнения и где срывается первый обещанный срок.">
                   <MonthlyStackedStatusChart data={monthlyPoints} />
                 </CardSection>
 
@@ -624,11 +630,11 @@ export default function SupplierAnalyticsDetailPage() {
 
               <div className="grid gap-4 xl:grid-cols-2">
                 <LinesPanel
-                  title="Строки с текущей просрочкой"
-                  description="Текущие активные просрочки по новому сроку, которые требуют ручного контроля."
+                  title="Строки с нарушенным 1-м сроком"
+                  description="Все строки, где первый обещанный срок уже был нарушен. Этот факт остаётся в аналитике."
                   tone="rose"
-                  lines={overdueLines}
-                  emptyText="Сейчас у поставщика нет строк с текущей просрочкой."
+                  lines={breachedLines}
+                  emptyText="Сейчас у поставщика нет строк с нарушенным первым сроком."
                 />
                 <LinesPanel
                   title="Отказанные строки"
@@ -639,12 +645,12 @@ export default function SupplierAnalyticsDetailPage() {
                 />
               </div>
 
-              <CardSection eyebrow="Проблемные артикулы" title="Топ проблемных артикулов" description="Артикулы, по которым чаще всего возникают просрочки, отмены и задержки.">
+              <CardSection eyebrow="Проблемные артикулы" title="Топ проблемных артикулов" description="Артикулы, по которым чаще всего нарушается первый срок, возникают отказы и задержки.">
                 <ProblemArticlesTable rows={problemArticles} />
               </CardSection>
 
               <CardSection eyebrow="Заказы поставщика" title="Последние заказы" description="Быстрый переход к реальным заказам, которые формируют ключевые показатели поставщика.">
-                <RecentOrdersTable orders={supplierOrders} today={today} />
+                <RecentOrdersTable orders={supplierOrders} historicalOverdueItemIds={historicalOverdueItemIds} />
               </CardSection>
             </>
           )}
@@ -1108,10 +1114,10 @@ function ProblemArticlesTable({ rows }: { rows: ProblemArticle[] }) {
 
 function RecentOrdersTable({
   orders,
-  today,
+  historicalOverdueItemIds,
 }: {
   orders: OrderWithItems[];
-  today: string;
+  historicalOverdueItemIds: Set<number>;
 }) {
   const rows = [...orders]
     .map((order) => {
@@ -1120,7 +1126,9 @@ function RecentOrdersTable({
         ...order,
         deliveredLines: items.filter((item) => isDelivered(item)).length,
         canceledLines: items.filter((item) => isCanceled(item)).length,
-        overdueLines: items.filter((item) => isCurrentOverdue(item, today)).length,
+        breachedLines: items.filter(
+          (item) => Boolean(item.deadline_breached_at) || historicalOverdueItemIds.has(item.id)
+        ).length,
       };
     })
     .sort((a, b) => normalizeDate(b.order_date).localeCompare(normalizeDate(a.order_date)));
@@ -1131,7 +1139,7 @@ function RecentOrdersTable({
         <table className="min-w-full divide-y divide-slate-200 text-left">
           <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur">
             <tr>
-              {["Заказ", "Дата", "Тип", "Линий", "Поставлено", "Отказано", "Текущая просрочка"].map((label) => (
+              {["Заказ", "Дата", "Тип", "Линий", "Поставлено", "Отказано", "Нарушен 1-й срок"].map((label) => (
                 <th key={label} className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
                   {label}
                 </th>
@@ -1151,7 +1159,7 @@ function RecentOrdersTable({
                 <td className="px-4 py-3.5 text-sm text-slate-700">{order.order_items?.length || 0}</td>
                 <td className="px-4 py-3.5 text-sm text-slate-700">{order.deliveredLines}</td>
                 <td className="px-4 py-3.5 text-sm text-slate-700">{order.canceledLines}</td>
-                <td className="px-4 py-3.5 text-sm text-slate-700">{order.overdueLines}</td>
+                <td className="px-4 py-3.5 text-sm text-slate-700">{order.breachedLines}</td>
               </tr>
             ))}
           </tbody>
@@ -1170,7 +1178,7 @@ function RecentOrdersTable({
             <div className="mt-3 grid grid-cols-3 gap-2">
               <InfoMini label="Поставлено" value={order.deliveredLines} />
               <InfoMini label="Отказано" value={order.canceledLines} />
-              <InfoMini label="Текущая просрочка" value={order.overdueLines} />
+              <InfoMini label="Нарушен 1-й срок" value={order.breachedLines} />
             </div>
           </Link>
         ))}

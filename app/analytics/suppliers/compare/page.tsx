@@ -38,7 +38,6 @@ type CompareRow = {
   totalLines: number;
   deliveredLines: number;
   canceledLines: number;
-  overdueLinesCurrent: number;
   overdueLinesEver: number;
   onTimeDelivery: number;
   fillRate: number;
@@ -103,7 +102,6 @@ function buildCompareRows(params: {
         totalLines: metrics.totalLines,
         deliveredLines: metrics.deliveredLines,
         canceledLines: metrics.canceledLines,
-        overdueLinesCurrent: metrics.overdueLinesCurrent,
         overdueLinesEver: metrics.overdueLinesEver,
         onTimeDelivery: metrics.onTimeDelivery,
         fillRate: metrics.fillRate,
