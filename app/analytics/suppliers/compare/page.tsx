@@ -181,7 +181,7 @@ export default function SupplierComparePage() {
       fetchSuppliers(),
       fetch("/api/suppliers/analytics", { cache: "no-store" }).then(async (response) => {
         if (!response.ok) {
-          throw new Error("Не удалось загрузить журнал просрочек.");
+          throw new Error("Не удалось загрузить журнал нарушений срока.");
         }
         return response.json();
       }),
@@ -450,7 +450,7 @@ export default function SupplierComparePage() {
                             </div>
                             <div className="mt-3 grid grid-cols-2 gap-2">
                               <InfoMini label="Строк" value={row.totalLines} />
-                              <InfoMini label="Было просрочено" value={row.overdueLinesEver} />
+                              <InfoMini label="Нарушен первый срок" value={row.overdueLinesEver} />
                               <InfoMini label="Отказано" value={row.canceledLines} />
                               <InfoMini label="Срок поставки" value={row.averageLeadTime || "—"} />
                             </div>
@@ -672,7 +672,7 @@ function CompareTable({ rows }: { rows: CompareRow[] }) {
         <table className="min-w-full divide-y divide-slate-200 text-left">
           <thead className="bg-slate-50/95">
             <tr>
-              {["Поставщик", "Рейтинг", "Класс", "Заказы", "Строки", "Исполнено", "Отказано", "Нарушен 1-й срок", "В срок, %", "Исполнение, %", "Отказы, %", "Срок поставки", "Задержка"].map((label) => (
+              {["Поставщик", "Рейтинг", "Класс", "Заказы", "Строки", "Исполнено", "Отказано", "Нарушен первый срок", "В срок, %", "Исполнение, %", "Отказы, %", "Срок поставки", "Задержка"].map((label) => (
                 <th key={label} className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
                   {label}
                 </th>

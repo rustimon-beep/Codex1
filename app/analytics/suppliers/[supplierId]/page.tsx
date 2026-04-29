@@ -259,7 +259,7 @@ export default function SupplierAnalyticsDetailPage() {
       fetchSuppliers(),
       fetch("/api/suppliers/analytics", { cache: "no-store" }).then(async (response) => {
         if (!response.ok) {
-          throw new Error("Не удалось загрузить журнал просрочек.");
+          throw new Error("Не удалось загрузить журнал нарушений срока.");
         }
         return response.json();
       }),
@@ -433,7 +433,7 @@ export default function SupplierAnalyticsDetailPage() {
     );
     return [
       { label: "В работе", value: healthyActive, color: "#0F766E" },
-      { label: "Нарушен 1-й срок", value: metrics.overdueLinesEver, color: "#DC2626" },
+      { label: "Нарушен первый срок", value: metrics.overdueLinesEver, color: "#DC2626" },
       { label: "Поставлено", value: metrics.deliveredLines, color: "#16A34A" },
       { label: "Отказано", value: metrics.canceledLines, color: "#64748B" },
     ];
@@ -572,8 +572,8 @@ export default function SupplierAnalyticsDetailPage() {
                   accent={scoreTrend.direction === "down" ? "bg-rose-500" : scoreTrend.direction === "up" ? "bg-emerald-500" : "bg-slate-400"}
                 />
                 <KpiCard title="Активные заказы" value={activeOrders} accent="bg-sky-500" />
-                <KpiCard title="Заказов с нарушенным 1-м сроком" value={metrics.breachedOrdersEver} accent="bg-rose-400" />
-                <KpiCard title="Строк с нарушенным 1-м сроком" value={metrics.overdueLinesEver} accent="bg-rose-500" />
+                <KpiCard title="Заказов с нарушенным первым сроком" value={metrics.breachedOrdersEver} accent="bg-rose-400" />
+                <KpiCard title="Строк с нарушенным первым сроком" value={metrics.overdueLinesEver} accent="bg-rose-500" />
                 <KpiCard title="Отказы" value={metrics.canceledLines} accent="bg-slate-400" />
                 <KpiCard title="Средний срок" value={metrics.averageLeadTime ? `${metrics.averageLeadTime} дн.` : "—"} accent="bg-amber-500" />
                 <KpiCard title="Период" value={getAnalyticsPeriodLabel(period)} accent="bg-slate-500" />
@@ -593,11 +593,11 @@ export default function SupplierAnalyticsDetailPage() {
               </div>
 
               <div className="grid gap-4 xl:grid-cols-2">
-                <CardSection eyebrow="Качество исполнения" title="Выполнено / отказано / нарушен 1-й срок" description="Структура линий по месяцам — где теряется качество исполнения и где срывается первый обещанный срок.">
+                <CardSection eyebrow="Качество исполнения" title="Выполнено / отказано / нарушен первый срок" description="Структура линий по месяцам — где теряется качество исполнения и где срывается первый обещанный срок.">
                   <MonthlyStackedStatusChart data={monthlyPoints} />
                 </CardSection>
 
-                <CardSection eyebrow="Задержки" title="Средняя просрочка по месяцам" description="Средняя задержка считается только по тем линиям, где delivered_date позже planned_date.">
+                <CardSection eyebrow="Задержки" title="Средняя задержка по месяцам" description="Средняя задержка считается только по тем линиям, где поставка пришла позже первой обещанной даты.">
                   <LineTrendChart
                     data={monthlyPoints.map((point) => ({ label: point.label, value: point.averageDelay }))}
                     color="#DC2626"
@@ -630,7 +630,7 @@ export default function SupplierAnalyticsDetailPage() {
 
               <div className="grid gap-4 xl:grid-cols-2">
                 <LinesPanel
-                  title="Строки с нарушенным 1-м сроком"
+                  title="Строки с нарушенным первым сроком"
                   description="Все строки, где первый обещанный срок уже был нарушен. Этот факт остаётся в аналитике."
                   tone="rose"
                   lines={breachedLines}
@@ -1067,7 +1067,7 @@ function ProblemArticlesTable({ rows }: { rows: ProblemArticle[] }) {
         <table className="min-w-full divide-y divide-slate-200 text-left">
           <thead className="bg-slate-50/95">
             <tr>
-              {["Артикул", "Наименование", "Заказов", "Нарушений 1-го срока", "Отказов", "Средняя задержка"].map((label) => (
+              {["Артикул", "Наименование", "Заказов", "Нарушений первого срока", "Отказов", "Средняя задержка"].map((label) => (
                 <th key={label} className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
                   {label}
                 </th>
@@ -1098,7 +1098,7 @@ function ProblemArticlesTable({ rows }: { rows: ProblemArticle[] }) {
             <div className="mt-0.5 text-[12px] text-slate-500">{row.name}</div>
             <div className="mt-3 grid grid-cols-2 gap-2">
               <InfoMini label="Заказов" value={row.ordersCount} />
-              <InfoMini label="Нарушений 1-го срока" value={row.overdueCount} />
+              <InfoMini label="Нарушений первого срока" value={row.overdueCount} />
               <InfoMini label="Отказов" value={row.canceledCount} />
               <InfoMini
                 label="Средняя задержка"
@@ -1139,7 +1139,7 @@ function RecentOrdersTable({
         <table className="min-w-full divide-y divide-slate-200 text-left">
           <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur">
             <tr>
-              {["Заказ", "Дата", "Тип", "Линий", "Поставлено", "Отказано", "Нарушен 1-й срок"].map((label) => (
+              {["Заказ", "Дата", "Тип", "Линий", "Поставлено", "Отказано", "Нарушен первый срок"].map((label) => (
                 <th key={label} className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
                   {label}
                 </th>
@@ -1178,7 +1178,7 @@ function RecentOrdersTable({
             <div className="mt-3 grid grid-cols-3 gap-2">
               <InfoMini label="Поставлено" value={order.deliveredLines} />
               <InfoMini label="Отказано" value={order.canceledLines} />
-              <InfoMini label="Нарушен 1-й срок" value={order.breachedLines} />
+              <InfoMini label="Нарушен первый срок" value={order.breachedLines} />
             </div>
           </Link>
         ))}
