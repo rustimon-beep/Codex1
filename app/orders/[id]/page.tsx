@@ -79,7 +79,7 @@ export default function OrderDetailsPage() {
   const [saving, setSaving] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [itemViewFilter, setItemViewFilter] = useState<
-    "all" | "changed" | "breached" | "needsDeadline" | "rescheduled" | "replacement"
+    "all" | "changed" | "overdue" | "replacement"
   >("all");
   const [itemSearch, setItemSearch] = useState("");
 
@@ -147,16 +147,6 @@ export default function OrderDetailsPage() {
   );
   const isFormDirty =
     !!order && initialFormSnapshot !== "" && serializeOrderForm(form) !== initialFormSnapshot;
-
-  const hasDeadlineBreach = useCallback((item: ItemForm) => Boolean(item.deadlineBreachedAt), []);
-  const hasRescheduledDeadline = useCallback(
-    (item: ItemForm) => (item.plannedDateChangeCount || 0) > 0,
-    []
-  );
-  const needsNewDeadline = useCallback((item: ItemForm) => {
-    if (!item.deadlineBreachedAt) return false;
-    return normalizeDateForCompare(item.initialPlannedDate || "") === normalizeDateForCompare(item.plannedDate || "");
-  }, []);
 
   useConnectionFeedback(showToast);
   const isHighlightedArticle = useCallback(
@@ -276,12 +266,8 @@ export default function OrderDetailsPage() {
             ? true
             : itemViewFilter === "changed"
             ? changedFields.any
-            : itemViewFilter === "breached"
-            ? hasDeadlineBreach(item) || itemOverdue
-            : itemViewFilter === "needsDeadline"
-            ? needsNewDeadline(item)
-            : itemViewFilter === "rescheduled"
-            ? hasRescheduledDeadline(item)
+            : itemViewFilter === "overdue"
+            ? itemOverdue
             : item.hasReplacement;
 
         return {
@@ -293,23 +279,13 @@ export default function OrderDetailsPage() {
         };
       })
       .filter((row) => row.visible);
-  }, [
-    form.items,
-    getChangedFields,
-    hasDeadlineBreach,
-    hasRescheduledDeadline,
-    itemSearch,
-    itemViewFilter,
-    needsNewDeadline,
-    order?.id,
-    orderId,
-  ]);
+  }, [form.items, getChangedFields, itemSearch, itemViewFilter, order?.id, orderId]);
 
   const itemViewStats = useMemo(
     () => ({
       all: form.items.length,
       changed: changedItemsCount,
-      breached: form.items.filter((item, index) =>
+      overdue: form.items.filter((item, index) =>
         isItemOverdue({
           id: item.id || -(index + 1),
           order_id: order?.id || orderId || 0,
@@ -323,11 +299,9 @@ export default function OrderDetailsPage() {
           canceled_date: item.canceledDate || null,
         })
       ).length,
-      needsDeadline: form.items.filter((item) => needsNewDeadline(item)).length,
-      rescheduled: form.items.filter((item) => hasRescheduledDeadline(item)).length,
       replacement: form.items.filter((item) => item.hasReplacement).length,
     }),
-    [changedItemsCount, form.items, hasRescheduledDeadline, needsNewDeadline, order?.id, orderId]
+    [changedItemsCount, form.items, order?.id, orderId]
   );
 
   const loadOrder = useCallback(async () => {
@@ -924,9 +898,7 @@ export default function OrderDetailsPage() {
                           {[
                             ["all", "Все", itemViewStats.all],
                             ["changed", "Изменены", itemViewStats.changed],
-                            ["breached", "Нарушен 1-й срок", itemViewStats.breached],
-                            ["needsDeadline", "Без нового срока", itemViewStats.needsDeadline],
-                            ["rescheduled", "Переносы", itemViewStats.rescheduled],
+                            ["overdue", "Просрочены", itemViewStats.overdue],
                             ["replacement", "С заменой", itemViewStats.replacement],
                           ].map(([key, label, count]) => (
                             <button
@@ -934,13 +906,7 @@ export default function OrderDetailsPage() {
                               type="button"
                               onClick={() =>
                                 setItemViewFilter(
-                                  key as
-                                    | "all"
-                                    | "changed"
-                                    | "breached"
-                                    | "needsDeadline"
-                                    | "rescheduled"
-                                    | "replacement"
+                                  key as "all" | "changed" | "overdue" | "replacement"
                                 )
                               }
                               className={`rounded-full border px-3 py-1.5 text-[11px] font-medium transition ${
@@ -1338,29 +1304,6 @@ export default function OrderDetailsPage() {
                         }
                       />
 
-                      <div className="grid grid-cols-2 gap-2">
-                        <StatMini
-                          title="Нарушен 1-й срок"
-                          value={String(itemViewStats.breached)}
-                          badgeClass="border border-rose-200 bg-rose-50 text-rose-700"
-                        />
-                        <StatMini
-                          title="Переносы срока"
-                          value={String(itemViewStats.rescheduled)}
-                          badgeClass="border border-amber-200 bg-amber-50 text-amber-700"
-                        />
-                        <StatMini
-                          title="Без нового срока"
-                          value={String(itemViewStats.needsDeadline)}
-                          badgeClass="border border-sky-200 bg-sky-50 text-sky-700"
-                        />
-                        <StatMini
-                          title="С заменой"
-                          value={String(itemViewStats.replacement)}
-                          badgeClass="border border-slate-200 bg-slate-50 text-slate-700"
-                        />
-                      </div>
-
                       {hasComment(form.comment) ? (
                         <div className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3.5 text-sm text-slate-700">
                           В заказе есть история комментариев.
@@ -1425,32 +1368,6 @@ export default function OrderDetailsPage() {
                     </div>
 
                     <div className="mt-4">
-                      <div className="mb-3 flex flex-wrap gap-2">
-                        {[
-                          "Нужен новый срок по нарушенным позициям.",
-                          "Проверь замены по позициям заказа.",
-                          "Заказ требует ручного контроля.",
-                          "Ждём подтверждение поставки по позициям.",
-                        ].map((template) => (
-                          <button
-                            key={template}
-                            type="button"
-                            disabled={!canCommentOnOrder || saving}
-                            onClick={() =>
-                              setForm((prev) => ({
-                                ...prev,
-                                newComment: prev.newComment.trim()
-                                  ? `${prev.newComment.trim()}\n${template}`
-                                  : template,
-                              }))
-                            }
-                            className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-medium text-slate-600 transition hover:border-slate-300 hover:bg-white hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            {template}
-                          </button>
-                        ))}
-                      </div>
-
                       <FieldBlock label="Новый комментарий">
                         <textarea
                           value={form.newComment}
