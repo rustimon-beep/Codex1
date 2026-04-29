@@ -62,13 +62,10 @@ type SupplierRatingRow = {
   score: number;
   totalOrders: number;
   breachedOrdersEver: number;
-  rescheduledOrders: number;
   totalLines: number;
   deliveredLines: number;
   canceledLines: number;
   overdueLinesEver: number;
-  rescheduledLines: number;
-  rescheduleCount: number;
   onTimeDelivery: number;
   fillRate: number;
   refusalRate: number;
@@ -378,13 +375,10 @@ function buildSupplierRatingRows(params: {
         score: score.total,
         totalOrders: metrics.totalOrders,
         breachedOrdersEver: metrics.breachedOrdersEver,
-        rescheduledOrders: metrics.rescheduledOrders,
         totalLines: metrics.totalLines,
         deliveredLines: metrics.deliveredLines,
         canceledLines: metrics.canceledLines,
         overdueLinesEver: metrics.overdueLinesEver,
-        rescheduledLines: metrics.rescheduledLines,
-        rescheduleCount: metrics.rescheduleCount,
         onTimeDelivery: metrics.onTimeDelivery,
         fillRate: metrics.fillRate,
         refusalRate: metrics.refusalRate,
@@ -418,13 +412,10 @@ function exportSupplierRating(rows: SupplierRatingRow[]) {
     Статус: row.healthLabel,
     Заказов: row.totalOrders,
     "Заказов с нарушенным 1-м сроком": row.breachedOrdersEver,
-    "Заказов с переносом срока": row.rescheduledOrders,
     Строк: row.totalLines,
     "Исполнено строк": row.deliveredLines,
     "Отказано строк": row.canceledLines,
     "Строк с нарушенным 1-м сроком": row.overdueLinesEver,
-    "Строк с переносом срока": row.rescheduledLines,
-    "Всего переносов": row.rescheduleCount,
     "Поставка в срок %": Math.round(row.onTimeDelivery * 10) / 10,
     "Исполнение %": Math.round(row.fillRate * 10) / 10,
     "Отказы, %": Math.round(row.refusalRate * 10) / 10,
@@ -1026,24 +1017,6 @@ export default function SupplierAnalyticsDashboardPage() {
                   hint="Нарушение не снимается"
                 />
                 <KpiActionCard
-                  title="Заказов с переносом срока"
-                  value={overallMetrics.rescheduledOrders}
-                  accent="bg-amber-500"
-                  hint="Хотя бы один перенос"
-                />
-                <KpiActionCard
-                  title="Строк с переносом срока"
-                  value={overallMetrics.rescheduledLines}
-                  accent="bg-amber-400"
-                  hint="Срок сдвигался"
-                />
-                <KpiActionCard
-                  title="Всего переносов"
-                  value={overallMetrics.rescheduleCount}
-                  accent="bg-amber-300"
-                  hint="Сумма переносов"
-                />
-                <KpiActionCard
                   title="Средний срок поставки"
                   value={overallMetrics.averageLeadTime ? `${overallMetrics.averageLeadTime} дн.` : "—"}
                   accent="bg-teal-500"
@@ -1103,46 +1076,6 @@ export default function SupplierAnalyticsDashboardPage() {
                 </CardSection>
 
                 <CardSection
-                  eyebrow="Переносы сроков"
-                  title="Дисциплина по переносам"
-                  description="Показывает, где сроки чаще всего сдвигаются после первого обещания и насколько это массовое явление."
-                >
-                  <div className="space-y-4">
-                    {sortedRows.map((row) => (
-                      <div
-                        key={`reschedules-${row.supplierId}`}
-                        className="rounded-[18px] border border-slate-100 bg-slate-50/70 px-4 py-3.5"
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="min-w-0">
-                            <Link
-                              href={getSupplierAnalyticsHref(row.supplierId, period)}
-                              className="truncate text-[15px] font-semibold tracking-tight text-slate-900 transition hover:text-slate-700"
-                            >
-                              {row.supplierName}
-                            </Link>
-                            <div className="mt-0.5 text-[12px] text-slate-500">
-                              {row.rescheduledOrders} заказов · {row.rescheduledLines} строк с переносом срока
-                            </div>
-                          </div>
-                          <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700">
-                            {row.rescheduleCount} переносов
-                          </span>
-                        </div>
-
-                        <div className="mt-3 space-y-3">
-                          <MetricBar
-                            label="Доля строк с переносом"
-                            value={row.totalLines ? (row.rescheduledLines / row.totalLines) * 100 : 0}
-                            color="bg-amber-500"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardSection>
-
-                <CardSection
                   eyebrow="Риски и потери"
                   title="Нарушения сроков, отказы и динамика"
                   description="Здесь видно, у кого чаще нарушается первый срок, кто чаще уходит в отказ и кто заметно проседает к прошлому периоду."
@@ -1161,13 +1094,12 @@ export default function SupplierAnalyticsDashboardPage() {
                             {row.supplierName}
                           </Link>
                           <span className="text-[11px] text-slate-500">
-                            {row.breachedOrdersEver} заказов и {row.overdueLinesEver} строк с нарушением 1-го срока · {row.rescheduleCount} переносов · {row.canceledLines} отказ.
+                            {row.breachedOrdersEver} заказов и {row.overdueLinesEver} строк с нарушением 1-го срока · {row.canceledLines} отказ.
                           </span>
                         </div>
 
                         <div className="mt-3 space-y-3">
                           <MetricBar label="Нарушен первый срок" value={row.totalLines ? (row.overdueLinesEver / row.totalLines) * 100 : 0} color="bg-rose-500" />
-                          <MetricBar label="Строки с переносом срока" value={row.totalLines ? (row.rescheduledLines / row.totalLines) * 100 : 0} color="bg-amber-500" />
                           <MetricBar label="Отказы" value={row.refusalRate} color="bg-slate-500" />
                         </div>
                       </div>
@@ -1205,7 +1137,7 @@ export default function SupplierAnalyticsDashboardPage() {
                     key: `risk-${row.supplierId}`,
                     href: getSupplierAnalyticsHref(row.supplierId, period),
                     title: row.supplierName,
-                    meta: `Нарушен первый срок: ${row.overdueLinesEver} · Переносов: ${row.rescheduleCount} · Отказано: ${row.canceledLines} · Изменение ${formatTrend(
+                    meta: `Нарушен первый срок: ${row.overdueLinesEver} · Отказано: ${row.canceledLines} · Изменение ${formatTrend(
                       row.trendDelta
                     )}`,
                     badge: `${row.supplierClass} / ${row.healthLabel}`,
@@ -1229,8 +1161,6 @@ export default function SupplierAnalyticsDashboardPage() {
                   <span>Отличных: {ratingSummary.excellentCount}</span>
                   <span>•</span>
                   <span>Заказов с нарушенным 1-м сроком: {overallMetrics.breachedOrdersEver}</span>
-                  <span>•</span>
-                  <span>Строк с переносом срока: {overallMetrics.rescheduledLines}</span>
                 </div>
 
                 <div className="hidden max-h-[680px] overflow-auto rounded-[22px] border border-slate-200 md:block">
@@ -1246,9 +1176,6 @@ export default function SupplierAnalyticsDashboardPage() {
                         <SortableHeader label="Исполнено" field="delivered" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
                         <SortableHeader label="Отказано" field="canceled" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
                         <SortableHeader label="Нарушен первый срок" field="overdue" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
-                        <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">Заказы с переносом</th>
-                        <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">Строки с переносом</th>
-                        <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">Всего переносов</th>
                         <SortableHeader label="В срок, %" field="ontime" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
                         <SortableHeader label="Исполнение, %" field="fill" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
                         <SortableHeader label="Отказы, %" field="refusal" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
@@ -1281,9 +1208,6 @@ export default function SupplierAnalyticsDashboardPage() {
                           <td className="px-4 py-3.5 text-sm text-slate-700">{row.deliveredLines}</td>
                           <td className="px-4 py-3.5 text-sm text-slate-700">{row.canceledLines}</td>
                           <td className="px-4 py-3.5 text-sm text-slate-700">{row.overdueLinesEver}</td>
-                          <td className="px-4 py-3.5 text-sm text-slate-700">{row.rescheduledOrders}</td>
-                          <td className="px-4 py-3.5 text-sm text-slate-700">{row.rescheduledLines}</td>
-                          <td className="px-4 py-3.5 text-sm text-slate-700">{row.rescheduleCount}</td>
                           <td className="px-4 py-3.5 text-sm text-slate-700">{formatPercent(row.onTimeDelivery)}</td>
                           <td className="px-4 py-3.5 text-sm text-slate-700">{formatPercent(row.fillRate)}</td>
                           <td className="px-4 py-3.5 text-sm text-slate-700">{formatPercent(row.refusalRate)}</td>
@@ -1329,9 +1253,7 @@ export default function SupplierAnalyticsDashboardPage() {
                         <InfoMini label="Класс" value={row.supplierClass} />
                         <InfoMini label="Нарушен первый срок" value={row.overdueLinesEver} />
                         <InfoMini label="Заказы с нарушением" value={row.breachedOrdersEver} />
-                        <InfoMini label="Строки с переносом" value={row.rescheduledLines} />
                         <InfoMini label="Отказано" value={row.canceledLines} />
-                        <InfoMini label="Всего переносов" value={row.rescheduleCount} />
                         <InfoMini label="Изменение" value={formatTrend(row.trendDelta)} />
                         <InfoMini label="Исполнение" value={formatPercent(row.fillRate)} />
                       </div>
@@ -1440,9 +1362,6 @@ export default function SupplierAnalyticsDashboardPage() {
                     <HelpMetricCard title="Процент отказов" description="Доля строк со статусом отмены или отказа от общего числа строк." />
                     <HelpMetricCard title="Заказов с нарушенным первым сроком" description="Сколько заказов содержат хотя бы одну строку, где первый обещанный срок уже был нарушен." />
                     <HelpMetricCard title="Строк с нарушенным первым сроком" description="Сколько строк уже нарушили первый обещанный срок. Этот факт больше не снимается переносом новой даты." />
-                    <HelpMetricCard title="Заказов с переносом срока" description="Сколько заказов содержат хотя бы одну строку, где поставщик или администратор уже переносили срок поставки." />
-                    <HelpMetricCard title="Строк с переносом срока" description="Сколько строк хотя бы раз получили новый срок после первоначального обещания." />
-                    <HelpMetricCard title="Всего переносов" description="Суммарное количество переносов срока по всем строкам в выбранном периоде." />
                     <HelpMetricCard title="Средний срок поставки" description="Среднее число дней между датой заказа и фактической датой поставки." />
                     <HelpMetricCard title="Поставка в срок" description="Доля строк, которые были поставлены не позже первого обещанного срока." />
                     <HelpMetricCard title="Исполнение" description="Сколько строк удалось закрыть поставкой от общего объёма строк." />

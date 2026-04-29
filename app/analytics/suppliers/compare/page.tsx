@@ -35,13 +35,10 @@ type CompareRow = {
   score: number;
   supplierClass: SupplierClass;
   totalOrders: number;
-  rescheduledOrders: number;
   totalLines: number;
   deliveredLines: number;
   canceledLines: number;
   overdueLinesEver: number;
-  rescheduledLines: number;
-  rescheduleCount: number;
   onTimeDelivery: number;
   fillRate: number;
   refusalRate: number;
@@ -102,13 +99,10 @@ function buildCompareRows(params: {
         score: score.total,
         supplierClass: classifySupplier(score.total),
         totalOrders: metrics.totalOrders,
-        rescheduledOrders: metrics.rescheduledOrders,
         totalLines: metrics.totalLines,
         deliveredLines: metrics.deliveredLines,
         canceledLines: metrics.canceledLines,
         overdueLinesEver: metrics.overdueLinesEver,
-        rescheduledLines: metrics.rescheduledLines,
-        rescheduleCount: metrics.rescheduleCount,
         onTimeDelivery: metrics.onTimeDelivery,
         fillRate: metrics.fillRate,
         refusalRate: metrics.refusalRate,
@@ -457,10 +451,9 @@ export default function SupplierComparePage() {
                             <div className="mt-3 grid grid-cols-2 gap-2">
                               <InfoMini label="Строк" value={row.totalLines} />
                               <InfoMini label="Нарушен первый срок" value={row.overdueLinesEver} />
-                              <InfoMini label="Строк с переносом" value={row.rescheduledLines} />
                               <InfoMini label="Отказано" value={row.canceledLines} />
                               <InfoMini label="Срок поставки" value={row.averageLeadTime || "—"} />
-                              <InfoMini label="Всего переносов" value={row.rescheduleCount} />
+                              <InfoMini label="Поставка в срок" value={formatPercent(row.onTimeDelivery)} />
                             </div>
                           </div>
                         ))}
@@ -680,7 +673,7 @@ function CompareTable({ rows }: { rows: CompareRow[] }) {
         <table className="min-w-full divide-y divide-slate-200 text-left">
           <thead className="bg-slate-50/95">
             <tr>
-                {["Поставщик", "Рейтинг", "Класс", "Заказы", "Строки", "Исполнено", "Отказано", "Нарушен первый срок", "Строки с переносом", "Всего переносов", "В срок, %", "Исполнение, %", "Отказы, %", "Срок поставки", "Задержка"].map((label) => (
+                {["Поставщик", "Рейтинг", "Класс", "Заказы", "Строки", "Исполнено", "Отказано", "Нарушен первый срок", "В срок, %", "Исполнение, %", "Отказы, %", "Срок поставки", "Задержка"].map((label) => (
                 <th key={label} className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
                   {label}
                 </th>
@@ -702,8 +695,6 @@ function CompareTable({ rows }: { rows: CompareRow[] }) {
                 <td className={`px-4 py-3.5 text-sm ${highlight(row.deliveredLines === bestDelivered)}`}>{row.deliveredLines}</td>
                 <td className="px-4 py-3.5 text-sm text-slate-700">{row.canceledLines}</td>
                 <td className="px-4 py-3.5 text-sm text-slate-700">{row.overdueLinesEver}</td>
-                <td className="px-4 py-3.5 text-sm text-slate-700">{row.rescheduledLines}</td>
-                <td className="px-4 py-3.5 text-sm text-slate-700">{row.rescheduleCount}</td>
                 <td className={`px-4 py-3.5 text-sm ${highlight(row.onTimeDelivery === bestOnTime)}`}>{formatPercent(row.onTimeDelivery)}</td>
                 <td className={`px-4 py-3.5 text-sm ${highlight(row.fillRate === bestFill)}`}>{formatPercent(row.fillRate)}</td>
                 <td className={`px-4 py-3.5 text-sm ${highlight(row.refusalRate === bestRefusal)}`}>{formatPercent(row.refusalRate)}</td>
@@ -727,8 +718,8 @@ function CompareTable({ rows }: { rows: CompareRow[] }) {
               <InfoMini label="Исполнение" value={formatPercent(row.fillRate)} />
               <InfoMini label="Отказы" value={formatPercent(row.refusalRate)} />
               <InfoMini label="Срок поставки" value={row.averageLeadTime || "—"} />
-              <InfoMini label="Строк с переносом" value={row.rescheduledLines} />
-              <InfoMini label="Всего переносов" value={row.rescheduleCount} />
+              <InfoMini label="Нарушен первый срок" value={row.overdueLinesEver} />
+              <InfoMini label="Отказано" value={row.canceledLines} />
             </div>
           </div>
         ))}

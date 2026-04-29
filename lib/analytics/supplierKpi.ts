@@ -7,14 +7,11 @@ export type SupplierPeriodMetrics = {
   totalOrders: number;
   breachedOrdersEver: number;
   overdueOrdersCurrent: number;
-  rescheduledOrders: number;
   totalLines: number;
   deliveredLines: number;
   canceledLines: number;
   overdueLinesCurrent: number;
   overdueLinesEver: number;
-  rescheduledLines: number;
-  rescheduleCount: number;
   deliveredOnTimeLines: number;
   deliveredLateLines: number;
   averageLeadTime: number;
@@ -177,14 +174,11 @@ export function collectSupplierPeriodMetrics(
   const items = orders.flatMap((order) => (order.order_items || []).map((item) => ({ item, order })));
   const breachedOrderIds = new Set<number>();
   const currentOverdueOrderIds = new Set<number>();
-  const rescheduledOrderIds = new Set<number>();
 
   let deliveredLines = 0;
   let canceledLines = 0;
   let overdueLinesCurrent = 0;
   let overdueLinesEver = 0;
-  let rescheduledLines = 0;
-  let rescheduleCount = 0;
   let deliveredOnTimeLines = 0;
   let deliveredLateLines = 0;
 
@@ -197,13 +191,6 @@ export function collectSupplierPeriodMetrics(
     const orderDate = normalizeDate(order.order_date);
     const delivered = isDelivered(item);
     const canceled = isCanceled(item);
-    const plannedDateChangeCount = Math.max(item.planned_date_change_count || 0, 0);
-
-    if (plannedDateChangeCount > 0) {
-      rescheduledLines += 1;
-      rescheduleCount += plannedDateChangeCount;
-      rescheduledOrderIds.add(order.id);
-    }
 
     if (delivered) {
       deliveredLines += 1;
@@ -257,14 +244,11 @@ export function collectSupplierPeriodMetrics(
     totalOrders: orders.length,
     breachedOrdersEver: breachedOrderIds.size,
     overdueOrdersCurrent: currentOverdueOrderIds.size,
-    rescheduledOrders: rescheduledOrderIds.size,
     totalLines,
     deliveredLines,
     canceledLines,
     overdueLinesCurrent,
     overdueLinesEver,
-    rescheduledLines,
-    rescheduleCount,
     deliveredOnTimeLines,
     deliveredLateLines,
     averageLeadTime: calculateAverageLeadTime(leadTimeSamples),

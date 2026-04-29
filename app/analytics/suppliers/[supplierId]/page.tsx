@@ -574,8 +574,6 @@ export default function SupplierAnalyticsDetailPage() {
                 <KpiCard title="Активные заказы" value={activeOrders} accent="bg-sky-500" />
                 <KpiCard title="Заказов с нарушенным первым сроком" value={metrics.breachedOrdersEver} accent="bg-rose-400" />
                 <KpiCard title="Строк с нарушенным первым сроком" value={metrics.overdueLinesEver} accent="bg-rose-500" />
-                <KpiCard title="Строк с переносом срока" value={metrics.rescheduledLines} accent="bg-amber-400" />
-                <KpiCard title="Всего переносов" value={metrics.rescheduleCount} accent="bg-amber-500" />
                 <KpiCard title="Отказы" value={metrics.canceledLines} accent="bg-slate-400" />
                 <KpiCard title="Средний срок" value={metrics.averageLeadTime ? `${metrics.averageLeadTime} дн.` : "—"} accent="bg-amber-500" />
                 <KpiCard title="Период" value={getAnalyticsPeriodLabel(period)} accent="bg-slate-500" />
@@ -620,42 +618,15 @@ export default function SupplierAnalyticsDetailPage() {
                     <InfoMini label="Средняя задержка" value={metrics.averageDelay ? `${metrics.averageDelay} дн.` : "—"} />
                     <InfoMini label="Исполнено строк" value={metrics.deliveredLines} />
                     <InfoMini label="Всего строк" value={metrics.totalLines} />
-                    <InfoMini label="Заказов с переносом" value={metrics.rescheduledOrders} />
-                    <InfoMini label="Строк с переносом" value={metrics.rescheduledLines} />
                   </div>
 
                   <div className="mt-4 space-y-3">
                     <MetricBar label="Поставка в срок" value={metrics.onTimeDelivery} color="bg-teal-500" />
                     <MetricBar label="Исполнение" value={metrics.fillRate} color="bg-emerald-500" />
-                    <MetricBar label="Строки с переносом срока" value={metrics.totalLines ? (metrics.rescheduledLines / metrics.totalLines) * 100 : 0} color="bg-amber-500" />
                     <MetricBar label="Доля отказов" value={metrics.refusalRate} color="bg-slate-500" />
                   </div>
                 </CardSection>
               </div>
-
-              <CardSection
-                eyebrow="Переносы сроков"
-                title="Картина по переносам"
-                description="Здесь видно, насколько часто поставщик сдвигает обещанные сроки после первого назначения."
-              >
-                <div className="grid gap-3 md:grid-cols-3">
-                  <InfoMini label="Заказов с переносом" value={metrics.rescheduledOrders} />
-                  <InfoMini label="Строк с переносом" value={metrics.rescheduledLines} />
-                  <InfoMini label="Всего переносов" value={metrics.rescheduleCount} />
-                </div>
-                <div className="mt-4 space-y-3">
-                  <MetricBar
-                    label="Доля строк с переносом"
-                    value={metrics.totalLines ? (metrics.rescheduledLines / metrics.totalLines) * 100 : 0}
-                    color="bg-amber-500"
-                  />
-                  <MetricBar
-                    label="Переносов на 100 строк"
-                    value={metrics.totalLines ? (metrics.rescheduleCount / metrics.totalLines) * 100 : 0}
-                    color="bg-amber-400"
-                  />
-                </div>
-              </CardSection>
 
               <div className="grid gap-4 xl:grid-cols-2">
                 <LinesPanel
