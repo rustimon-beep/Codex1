@@ -9,7 +9,8 @@ type NotificationEventType =
   | "overdue"
   | "status_changed"
   | "cancellation"
-  | "planned_date_changed";
+  | "planned_date_changed"
+  | "replacement_set";
 
 type NotificationEventRow = {
   id: string;
@@ -161,6 +162,10 @@ function getStatusDiff(beforeItems: OrderItem[], afterItems: OrderItem[]) {
   let singlePlannedDateChange:
     | { before: string | null; after: string | null; article: string | null; name: string | null }
     | null = null;
+  let replacementSetCount = 0;
+  let singleReplacementSet:
+    | { article: string | null; replacementArticle: string | null; name: string | null }
+    | null = null;
 
   for (const item of afterItems) {
     const beforeItem = beforeById.get(item.id);
@@ -168,6 +173,8 @@ function getStatusDiff(beforeItems: OrderItem[], afterItems: OrderItem[]) {
     const afterStatus = item.status || "Новый";
     const beforePlannedDate = (beforeItem?.planned_date || "").slice(0, 10);
     const afterPlannedDate = (item.planned_date || "").slice(0, 10);
+    const beforeReplacement = (beforeItem?.replacement_article || "").trim();
+    const afterReplacement = (item.replacement_article || "").trim();
     const becameCanceled = beforeStatus !== "Отменен" && afterStatus === "Отменен";
 
     if (beforeStatus !== afterStatus) {
@@ -200,6 +207,19 @@ function getStatusDiff(beforeItems: OrderItem[], afterItems: OrderItem[]) {
       }
     }
 
+    if (afterReplacement && beforeReplacement !== afterReplacement) {
+      replacementSetCount += 1;
+      if (replacementSetCount === 1) {
+        singleReplacementSet = {
+          article: item.article || beforeItem?.article || null,
+          replacementArticle: item.replacement_article || null,
+          name: item.name || beforeItem?.name || null,
+        };
+      } else {
+        singleReplacementSet = null;
+      }
+    }
+
     if (becameCanceled) {
       canceledCount += 1;
       if (canceledCount === 1) {
@@ -223,6 +243,8 @@ function getStatusDiff(beforeItems: OrderItem[], afterItems: OrderItem[]) {
     singleStatusChange,
     plannedDateChangedCount,
     singlePlannedDateChange,
+    replacementSetCount,
+    singleReplacementSet,
   };
 }
 
@@ -242,6 +264,8 @@ export async function notifyOrderChanged(params: {
     singleStatusChange,
     plannedDateChangedCount,
     singlePlannedDateChange,
+    replacementSetCount,
+    singleReplacementSet,
   } = getStatusDiff(beforeItems, afterItems);
 
   const events: Array<{
@@ -362,6 +386,45 @@ export async function notifyOrderChanged(params: {
         },
         recipientRoles: ["admin", "buyer"],
       });
+  }
+
+  if (replacementSetCount > 0) {
+    const replacementLabel = pluralizeRu(replacementSetCount, [
+      "позиции",
+      "позиций",
+      "позиций",
+    ]);
+    const singleLineLabel =
+      singleReplacementSet &&
+      [singleReplacementSet.article, singleReplacementSet.name]
+        .filter(Boolean)
+        .join(" · ");
+
+    events.push({
+      eventKey: `replacement-set:${params.afterOrder.id}:${params.updatedAtKey}:${replacementSetCount}`,
+      eventType: "replacement_set",
+      orderId: params.afterOrder.id,
+      title: "Проставлена замена",
+      body:
+        replacementSetCount === 1 && singleReplacementSet
+          ? `В заказе ${getOrderLabel(params.afterOrder)} проставлена замена${
+              singleLineLabel ? ` (${singleLineLabel})` : ""
+            }${
+              singleReplacementSet.replacementArticle
+                ? ` → ${singleReplacementSet.replacementArticle}`
+                : ""
+            }.`
+          : `В заказе ${getOrderLabel(params.afterOrder)} проставлена замена у ${replacementSetCount} ${replacementLabel}.`,
+      payload: {
+        clientOrder: params.afterOrder.client_order || "",
+        replacementCount: replacementSetCount,
+        lineLabel: replacementSetCount === 1 ? singleLineLabel || "" : "",
+        replacementArticle:
+          replacementSetCount === 1 ? singleReplacementSet?.replacementArticle || "" : "",
+        url: `/orders/${params.afterOrder.id}`,
+      },
+      recipientRoles: ["admin", "buyer"],
+    });
   }
 
   if (events.length > 0) {

@@ -19,6 +19,7 @@ create table if not exists public.notification_recipients (
   user_id uuid not null references public.profiles (id) on delete cascade,
   role text not null check (role in ('admin', 'supplier', 'buyer')),
   delivered_at timestamptz null,
+  emailed_at timestamptz null,
   seen_at timestamptz null,
   created_at timestamptz not null default now(),
   unique (event_id, user_id)
@@ -41,6 +42,9 @@ create index if not exists notification_recipients_user_id_idx
 
 create index if not exists notification_recipients_delivered_at_idx
   on public.notification_recipients (delivered_at);
+
+create index if not exists notification_recipients_emailed_at_idx
+  on public.notification_recipients (emailed_at);
 
 create index if not exists push_subscriptions_user_id_idx
   on public.push_subscriptions (user_id);
@@ -122,5 +126,8 @@ alter table public.notification_events
 alter table public.notification_events
   add constraint notification_events_event_type_check
   check (
-    event_type in ('new_order', 'overdue', 'status_changed', 'cancellation', 'planned_date_changed')
+    event_type in ('new_order', 'overdue', 'status_changed', 'cancellation', 'planned_date_changed', 'replacement_set')
   );
+
+alter table public.notification_recipients
+  add column if not exists emailed_at timestamptz null;
