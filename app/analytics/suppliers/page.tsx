@@ -769,7 +769,7 @@ export default function SupplierAnalyticsDashboardPage() {
                       Аналитика поставщиков
                     </h1>
                     <p className="mt-1 max-w-3xl text-[14px] leading-6 text-slate-300">
-                      Рейтинг, ключевые показатели, отказные линии, нарушения первых сроков, зоны
+                      Рейтинг, ключевые показатели, отказные линии, нарушения первого срока, зоны
                       внимания и переход к конкретным заказам.
                     </p>
                   </div>
@@ -925,7 +925,7 @@ export default function SupplierAnalyticsDashboardPage() {
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <ToggleChip
                     active={onlyOverdue}
-                    label="Только с нарушением 1-го срока"
+                    label="Только с нарушением первого срока"
                       onClick={() => updateQuery({ onlyOverdue: onlyOverdue ? null : "1" })}
                   />
                   <ToggleChip
@@ -1063,7 +1063,7 @@ export default function SupplierAnalyticsDashboardPage() {
                             <StackedBar
                               segments={[
                                 { label: "В работе", value: healthyActive, color: "bg-sky-500/85" },
-                                { label: "Нарушен первый срок", value: row.overdueLinesEver, color: "bg-rose-500/90" },
+                                { label: "Нарушение первого срока", value: row.overdueLinesEver, color: "bg-rose-500/90" },
                                 { label: "Поставлено", value: row.deliveredLines, color: "bg-emerald-500/90" },
                                 { label: "Отказано", value: row.canceledLines, color: "bg-slate-400/90" },
                               ]}
@@ -1077,8 +1077,8 @@ export default function SupplierAnalyticsDashboardPage() {
 
                 <CardSection
                   eyebrow="Риски и потери"
-                  title="Нарушения сроков, отказы и динамика"
-                  description="Здесь видно, у кого чаще нарушается первый срок, кто чаще уходит в отказ и кто заметно проседает к прошлому периоду."
+                  title="Нарушение первого срока, отказы и динамика"
+                  description="Здесь видно, у кого чаще нарушается первый обещанный срок, кто чаще уходит в отказ и кто заметно проседает к прошлому периоду."
                 >
                   <div className="space-y-4">
                     {sortedRows.map((row) => (
@@ -1094,12 +1094,12 @@ export default function SupplierAnalyticsDashboardPage() {
                             {row.supplierName}
                           </Link>
                           <span className="text-[11px] text-slate-500">
-                            {row.breachedOrdersEver} заказов и {row.overdueLinesEver} строк с нарушением 1-го срока · {row.canceledLines} отказ.
+                            {row.breachedOrdersEver} заказов и {row.overdueLinesEver} строк с нарушенным первым сроком · {row.canceledLines} отказ.
                           </span>
                         </div>
 
                         <div className="mt-3 space-y-3">
-                          <MetricBar label="Нарушен первый срок" value={row.totalLines ? (row.overdueLinesEver / row.totalLines) * 100 : 0} color="bg-rose-500" />
+                          <MetricBar label="Доля строк с нарушенным первым сроком" value={row.totalLines ? (row.overdueLinesEver / row.totalLines) * 100 : 0} color="bg-rose-500" />
                           <MetricBar label="Отказы" value={row.refusalRate} color="bg-slate-500" />
                         </div>
                       </div>
@@ -1112,7 +1112,7 @@ export default function SupplierAnalyticsDashboardPage() {
                 <HighlightPanel
                   eyebrow="Лучшие"
                   title="Топ поставщиков периода"
-                  description="На кого можно опираться по срокам, уровню исполнения и дисциплине поставок."
+                  description="На кого можно опираться по дисциплине первого срока, уровню исполнения и общей надёжности поставок."
                   tone="emerald"
                   rows={sortedRows
                     .slice()
@@ -1131,13 +1131,13 @@ export default function SupplierAnalyticsDashboardPage() {
                 <HighlightPanel
                   eyebrow="Зоны внимания"
                   title="Поставщики с риском"
-                  description="Самые слабые по срокам, отказам и общему рейтингу."
+                  description="Самые слабые по нарушению первого срока, отказам и общему рейтингу."
                   tone="rose"
                   rows={ratingSummary.riskRows.slice(0, 3).map((row) => ({
                     key: `risk-${row.supplierId}`,
                     href: getSupplierAnalyticsHref(row.supplierId, period),
                     title: row.supplierName,
-                    meta: `Нарушен первый срок: ${row.overdueLinesEver} · Отказано: ${row.canceledLines} · Изменение ${formatTrend(
+                    meta: `Строк с нарушенным первым сроком: ${row.overdueLinesEver} · Отказано: ${row.canceledLines} · Изменение ${formatTrend(
                       row.trendDelta
                     )}`,
                     badge: `${row.supplierClass} / ${row.healthLabel}`,
@@ -1160,7 +1160,7 @@ export default function SupplierAnalyticsDashboardPage() {
                   <span>•</span>
                   <span>Отличных: {ratingSummary.excellentCount}</span>
                   <span>•</span>
-                  <span>Заказов с нарушенным 1-м сроком: {overallMetrics.breachedOrdersEver}</span>
+                  <span>Заказов с нарушенным первым сроком: {overallMetrics.breachedOrdersEver}</span>
                 </div>
 
                 <div className="hidden max-h-[680px] overflow-auto rounded-[22px] border border-slate-200 md:block">
@@ -1175,7 +1175,7 @@ export default function SupplierAnalyticsDashboardPage() {
                         <SortableHeader label="Строки" field="lines" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
                         <SortableHeader label="Исполнено" field="delivered" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
                         <SortableHeader label="Отказано" field="canceled" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
-                        <SortableHeader label="Нарушен первый срок" field="overdue" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
+                        <SortableHeader label="Строк с нарушенным первым сроком" field="overdue" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
                         <SortableHeader label="В срок, %" field="ontime" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
                         <SortableHeader label="Исполнение, %" field="fill" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
                         <SortableHeader label="Отказы, %" field="refusal" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
@@ -1251,8 +1251,8 @@ export default function SupplierAnalyticsDashboardPage() {
 
                       <div className="mt-3 grid grid-cols-2 gap-2">
                         <InfoMini label="Класс" value={row.supplierClass} />
-                        <InfoMini label="Нарушен первый срок" value={row.overdueLinesEver} />
-                        <InfoMini label="Заказы с нарушением" value={row.breachedOrdersEver} />
+                        <InfoMini label="Строк с нарушенным первым сроком" value={row.overdueLinesEver} />
+                        <InfoMini label="Заказов с нарушенным первым сроком" value={row.breachedOrdersEver} />
                         <InfoMini label="Отказано" value={row.canceledLines} />
                         <InfoMini label="Изменение" value={formatTrend(row.trendDelta)} />
                         <InfoMini label="Исполнение" value={formatPercent(row.fillRate)} />
@@ -1317,7 +1317,7 @@ export default function SupplierAnalyticsDashboardPage() {
                     </div>
                     <p className="mt-2 text-[13px] leading-6 text-slate-600">
                       Рейтинг считается по шкале от 0 до 100. Чем выше доля поставок в срок,
-                      чем меньше отказов и чем реже нарушается первый обещанный срок, тем выше итоговый балл.
+                      чем меньше отказов и чем реже нарушается первый обещанный срок поставки, тем выше итоговый балл.
                     </p>
                     <div className="mt-3 rounded-[16px] border border-white/80 bg-white px-3 py-3 text-[12px] leading-6 text-slate-600">
                       Основа рейтинга:
@@ -1360,21 +1360,21 @@ export default function SupplierAnalyticsDashboardPage() {
                     <HelpMetricCard title="Всего строк заказов" description="Количество строк внутри заказов, которые участвуют в расчёте." />
                     <HelpMetricCard title="Процент исполненных строк" description="Доля строк со статусом «Поставлен» от общего числа строк." />
                     <HelpMetricCard title="Процент отказов" description="Доля строк со статусом отмены или отказа от общего числа строк." />
-                    <HelpMetricCard title="Заказов с нарушенным первым сроком" description="Сколько заказов содержат хотя бы одну строку, где первый обещанный срок уже был нарушен." />
-                    <HelpMetricCard title="Строк с нарушенным первым сроком" description="Сколько строк уже нарушили первый обещанный срок. Этот факт больше не снимается переносом новой даты." />
+                    <HelpMetricCard title="Заказов с нарушенным первым сроком" description="Сколько заказов содержат хотя бы одну строку, где первый обещанный срок поставки уже был нарушен." />
+                    <HelpMetricCard title="Строк с нарушенным первым сроком" description="Сколько строк уже нарушили первый обещанный срок поставки. Этот факт больше не снимается переносом новой даты." />
                     <HelpMetricCard title="Средний срок поставки" description="Среднее число дней между датой заказа и фактической датой поставки." />
                     <HelpMetricCard title="Поставка в срок" description="Доля строк, которые были поставлены не позже первого обещанного срока." />
                     <HelpMetricCard title="Исполнение" description="Сколько строк удалось закрыть поставкой от общего объёма строк." />
                     <HelpMetricCard title="Средняя задержка" description="Среднее число дней задержки по тем строкам, где поставка пришла позже первой обещанной даты." />
                     <HelpMetricCard title="Изменение к прошлому периоду" description="Показывает, вырос или снизился рейтинг по сравнению с предыдущим таким же периодом." />
-                    <HelpMetricCard title="Зоны внимания" description="Поставщики, у которых чаще нарушается первый срок, больше отказов или заметно хуже общий рейтинг." />
+                    <HelpMetricCard title="Зоны внимания" description="Поставщики, у которых чаще нарушается первый обещанный срок поставки, больше отказов или заметно хуже общий рейтинг." />
                   </div>
                 </div>
 
                 <div className="mt-4 rounded-[20px] border border-amber-200 bg-amber-50/70 px-4 py-3 text-[12px] leading-6 text-amber-900 md:text-[13px]">
-                  Важно: в этой аналитике мы смотрим только на факт нарушения первого обещанного срока.
+                  Важно: в этой аналитике мы смотрим только на факт нарушения первого обещанного срока поставки.
                   Если первый срок уже был сорван, строка и заказ навсегда попадают в метрику
-                  нарушения срока, даже если позже поставщик указал новый срок и продолжил работу.
+                  нарушения первого срока поставки, даже если позже поставщик указал новый срок и продолжил работу.
                 </div>
               </div>
             </div>

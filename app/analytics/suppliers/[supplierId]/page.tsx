@@ -433,7 +433,7 @@ export default function SupplierAnalyticsDetailPage() {
     );
     return [
       { label: "В работе", value: healthyActive, color: "#0F766E" },
-      { label: "Нарушен первый срок", value: metrics.overdueLinesEver, color: "#DC2626" },
+      { label: "Нарушение первого срока", value: metrics.overdueLinesEver, color: "#DC2626" },
       { label: "Поставлено", value: metrics.deliveredLines, color: "#16A34A" },
       { label: "Отказано", value: metrics.canceledLines, color: "#64748B" },
     ];
@@ -593,7 +593,7 @@ export default function SupplierAnalyticsDetailPage() {
               </div>
 
               <div className="grid gap-4 xl:grid-cols-2">
-                <CardSection eyebrow="Качество исполнения" title="Выполнено / отказано / нарушен первый срок" description="Структура линий по месяцам — где теряется качество исполнения и где срывается первый обещанный срок.">
+                <CardSection eyebrow="Качество исполнения" title="Выполнено / отказано / нарушение первого срока" description="Структура линий по месяцам — где теряется качество исполнения и где срывается первый обещанный срок поставки.">
                   <MonthlyStackedStatusChart data={monthlyPoints} />
                 </CardSection>
 
@@ -631,10 +631,10 @@ export default function SupplierAnalyticsDetailPage() {
               <div className="grid gap-4 xl:grid-cols-2">
                 <LinesPanel
                   title="Строки с нарушенным первым сроком"
-                  description="Все строки, где первый обещанный срок уже был нарушен. Этот факт остаётся в аналитике."
+                  description="Все строки, где первый обещанный срок поставки уже был нарушен. Этот факт остаётся в аналитике."
                   tone="rose"
                   lines={breachedLines}
-                  emptyText="Сейчас у поставщика нет строк с нарушенным первым сроком."
+                  emptyText="Сейчас у поставщика нет строк с нарушенным первым сроком поставки."
                 />
                 <LinesPanel
                   title="Отказанные строки"
@@ -645,7 +645,7 @@ export default function SupplierAnalyticsDetailPage() {
                 />
               </div>
 
-              <CardSection eyebrow="Проблемные артикулы" title="Топ проблемных артикулов" description="Артикулы, по которым чаще всего нарушается первый срок, возникают отказы и задержки.">
+              <CardSection eyebrow="Проблемные артикулы" title="Топ проблемных артикулов" description="Артикулы, по которым чаще всего нарушается первый обещанный срок поставки, возникают отказы и задержки.">
                 <ProblemArticlesTable rows={problemArticles} />
               </CardSection>
 
@@ -1139,7 +1139,7 @@ function RecentOrdersTable({
         <table className="min-w-full divide-y divide-slate-200 text-left">
           <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur">
             <tr>
-              {["Заказ", "Дата", "Тип", "Линий", "Поставлено", "Отказано", "Нарушен первый срок"].map((label) => (
+              {["Заказ", "Дата", "Тип", "Линий", "Поставлено", "Отказано", "Нарушен первый срок поставки"].map((label) => (
                 <th key={label} className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
                   {label}
                 </th>
@@ -1178,7 +1178,7 @@ function RecentOrdersTable({
             <div className="mt-3 grid grid-cols-3 gap-2">
               <InfoMini label="Поставлено" value={order.deliveredLines} />
               <InfoMini label="Отказано" value={order.canceledLines} />
-              <InfoMini label="Нарушен первый срок" value={order.breachedLines} />
+              <InfoMini label="Нарушен первый срок поставки" value={order.breachedLines} />
             </div>
           </Link>
         ))}

@@ -308,7 +308,7 @@ export default function SupplierComparePage() {
                       Сравнение поставщиков
                     </h1>
                     <p className="mt-1 max-w-3xl text-[14px] leading-6 text-slate-300">
-                      Выбери от 2 до 5 поставщиков и сравни их по срокам, исполнению, отказам, скорости и стабильности.
+                      Выбери от 2 до 5 поставщиков и сравни их по нарушению первого срока, исполнению, отказам, скорости и стабильности.
                     </p>
                   </div>
                 </div>
@@ -430,7 +430,7 @@ export default function SupplierComparePage() {
                     <CardSection
                       eyebrow="Сводка"
                       title="Ключевые показатели рядом"
-                      description="Сразу видно, кто сильнее по общему рейтингу и кто проседает по срокам."
+                      description="Сразу видно, кто сильнее по общему рейтингу и кто чаще нарушает первый обещанный срок поставки."
                     >
                       <div className="grid gap-3 md:grid-cols-2">
                         {compareRows.map((row) => (
@@ -450,7 +450,7 @@ export default function SupplierComparePage() {
                             </div>
                             <div className="mt-3 grid grid-cols-2 gap-2">
                               <InfoMini label="Строк" value={row.totalLines} />
-                              <InfoMini label="Нарушен первый срок" value={row.overdueLinesEver} />
+                              <InfoMini label="Строк с нарушенным первым сроком" value={row.overdueLinesEver} />
                               <InfoMini label="Отказано" value={row.canceledLines} />
                               <InfoMini label="Срок поставки" value={row.averageLeadTime || "—"} />
                               <InfoMini label="Поставка в срок" value={formatPercent(row.onTimeDelivery)} />
@@ -673,7 +673,7 @@ function CompareTable({ rows }: { rows: CompareRow[] }) {
         <table className="min-w-full divide-y divide-slate-200 text-left">
           <thead className="bg-slate-50/95">
             <tr>
-                {["Поставщик", "Рейтинг", "Класс", "Заказы", "Строки", "Исполнено", "Отказано", "Нарушен первый срок", "В срок, %", "Исполнение, %", "Отказы, %", "Срок поставки", "Задержка"].map((label) => (
+                {["Поставщик", "Рейтинг", "Класс", "Заказы", "Строки", "Исполнено", "Отказано", "Строк с нарушенным первым сроком", "В срок, %", "Исполнение, %", "Отказы, %", "Срок поставки", "Задержка"].map((label) => (
                 <th key={label} className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
                   {label}
                 </th>
@@ -718,7 +718,7 @@ function CompareTable({ rows }: { rows: CompareRow[] }) {
               <InfoMini label="Исполнение" value={formatPercent(row.fillRate)} />
               <InfoMini label="Отказы" value={formatPercent(row.refusalRate)} />
               <InfoMini label="Срок поставки" value={row.averageLeadTime || "—"} />
-              <InfoMini label="Нарушен первый срок" value={row.overdueLinesEver} />
+              <InfoMini label="Строк с нарушенным первым сроком" value={row.overdueLinesEver} />
               <InfoMini label="Отказано" value={row.canceledLines} />
             </div>
           </div>
