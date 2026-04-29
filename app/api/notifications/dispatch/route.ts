@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { dispatchNotificationEventPush } from "../../../../lib/notifications/push-server";
-import { dispatchNotificationEventEmail } from "../../../../lib/notifications/email-server";
 
 export async function POST(request: Request) {
   try {
@@ -11,7 +10,6 @@ export async function POST(request: Request) {
     }
 
     await dispatchNotificationEventPush(body.eventId);
-    await dispatchNotificationEventEmail(body.eventId);
 
     return NextResponse.json({ ok: true });
   } catch (error) {

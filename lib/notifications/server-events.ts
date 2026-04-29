@@ -1,6 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
 import { dispatchNotificationEventPush } from "./push-server";
-import { dispatchNotificationEventEmail } from "./email-server";
 
 type NotificationRecipientRole = "admin" | "supplier" | "buyer";
 type NotificationEventType =
@@ -8,8 +7,7 @@ type NotificationEventType =
   | "overdue"
   | "status_changed"
   | "cancellation"
-  | "planned_date_changed"
-  | "replacement_set";
+  | "planned_date_changed";
 
 type NotificationEventDraft = {
   eventKey: string;
@@ -148,7 +146,6 @@ export async function createNotificationEvents(events: NotificationEventDraft[])
     }
 
     await dispatchNotificationEventPush(insertedEvent.id);
-    await dispatchNotificationEventEmail(insertedEvent.id);
   }
 }
 
