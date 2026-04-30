@@ -143,6 +143,9 @@ export function OrdersTable({
               orders.map((order) => {
                 const expanded = expandedOrders.includes(order.id);
                 const items = order.order_items || [];
+                const hasCanceledItems = items.some(
+                  (item) => (item.status || "Новый") === "Отменен" || !!item.canceled_date
+                );
                 const orderStatus = getOrderStatus(items);
                 const overdue = isOrderOverdue(items);
                 const progress = getOrderProgress(items);
@@ -521,7 +524,8 @@ export function OrdersTable({
                                         Статус
                                       </div>
 
-                                      {user.role === "viewer" || user.role === "buyer" ? (
+                                      {user.role === "viewer" || user.role === "buyer" || hasCanceledItems ? (
+                                        <div className="space-y-1">
                                         <span
                                           className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${statusClasses(
                                             item.status || "Новый"
@@ -529,6 +533,12 @@ export function OrdersTable({
                                         >
                                           {item.status || "Новый"}
                                         </span>
+                                        {hasCanceledItems ? (
+                                          <div className="text-[10px] font-medium text-amber-700">
+                                            Есть отмены
+                                          </div>
+                                        ) : null}
+                                        </div>
                                       ) : (
                                         <>
                                           <select
@@ -551,8 +561,6 @@ export function OrdersTable({
                                               </option>
                                             ))}
                                           </select>
-
-                                          
                                         </>
                                       )}
                                     </div>

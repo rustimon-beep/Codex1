@@ -148,6 +148,9 @@ export function OrdersListMobile({
       {orders.map((order) => {
         const expanded = expandedOrders.includes(order.id);
         const items = order.order_items || [];
+        const hasCanceledItems = items.some(
+          (item) => (item.status || "Новый") === "Отменен" || !!item.canceled_date
+        );
         const orderStatus = getOrderStatus(items);
         const overdue = isOrderOverdue(items);
         const progress = getOrderProgress(items);
@@ -459,14 +462,21 @@ export function OrdersListMobile({
                                   Статус
                                 </div>
 
-                                {user.role === "viewer" || user.role === "buyer" ? (
-                                  <span
-                                    className={`mt-1 inline-flex rounded-full px-2 py-1 text-[9px] font-medium md:px-2.5 md:text-[10px] ${statusClasses(
-                                      item.status || "Новый"
-                                    )}`}
-                                  >
-                                    {item.status || "Новый"}
-                                  </span>
+                                {user.role === "viewer" || user.role === "buyer" || hasCanceledItems ? (
+                                  <div className="mt-1 space-y-1">
+                                    <span
+                                      className={`inline-flex rounded-full px-2 py-1 text-[9px] font-medium md:px-2.5 md:text-[10px] ${statusClasses(
+                                        item.status || "Новый"
+                                      )}`}
+                                    >
+                                      {item.status || "Новый"}
+                                    </span>
+                                    {hasCanceledItems ? (
+                                      <div className="text-[9px] font-medium text-amber-700">
+                                        Есть отмены
+                                      </div>
+                                    ) : null}
+                                  </div>
                                 ) : (
                                   <select
                                     value={item.status || "Новый"}
