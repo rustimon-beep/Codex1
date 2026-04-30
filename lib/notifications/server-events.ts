@@ -152,14 +152,18 @@ export async function createNotificationEvents(events: NotificationEventDraft[])
       dispatchNotificationEventEmail(insertedEvent.id),
     ]);
 
-    const rejected = dispatchResults.find(
-      (result): result is PromiseRejectedResult => result.status === "rejected"
-    );
-
-    if (rejected) {
-      throw rejected.reason instanceof Error
-        ? rejected.reason
-        : new Error("Не удалось отправить уведомление.");
+    for (const result of dispatchResults) {
+      if (result.status === "rejected") {
+        console.error("Notification dispatch failed", {
+          eventId: insertedEvent.id,
+          eventKey: event.eventKey,
+          eventType: event.eventType,
+          message:
+            result.reason instanceof Error
+              ? result.reason.message
+              : String(result.reason),
+        });
+      }
     }
   }
 }

@@ -24,16 +24,12 @@ type EmailDispatchRow = {
         payload: Record<string, unknown> | null;
       }>
     | null;
-  profiles:
-    | {
-        email: string | null;
-        full_name: string | null;
-      }
-    | Array<{
-        email: string | null;
-        full_name: string | null;
-      }>
-    | null;
+};
+
+type ProfileEmailRow = {
+  id: string;
+  email: string | null;
+  full_name: string | null;
 };
 
 function getRequiredEnv(name: string) {
@@ -158,23 +154,65 @@ export async function dispatchNotificationEventEmail(eventId: string) {
 
   const supabase = getAdminSupabase();
 
-  const { data, error } = await supabase
+  const primary = await supabase
     .from("notification_recipients")
     .select(
-      "id, user_id, emailed_at, notification_events(id, title, body, order_id, event_type, event_key, payload), profiles(email, full_name)"
+      "id, user_id, emailed_at, notification_events(id, title, body, order_id, event_type, event_key, payload)"
     )
     .eq("event_id", eventId)
     .is("emailed_at", null);
 
-  if (error) {
-    throw error;
+  let recipientRows: EmailDispatchRow[] = [];
+  let canMarkEmailed = true;
+
+  if (!primary.error) {
+    recipientRows = (primary.data || []) as EmailDispatchRow[];
+  } else {
+    canMarkEmailed = false;
+    const fallback = await supabase
+      .from("notification_recipients")
+      .select(
+        "id, user_id, notification_events(id, title, body, order_id, event_type, event_key, payload)"
+      )
+      .eq("event_id", eventId);
+
+    if (fallback.error) {
+      throw primary.error;
+    }
+
+    recipientRows = ((fallback.data || []) as Array<
+      Omit<EmailDispatchRow, "emailed_at">
+    >).map((row) => ({
+      ...row,
+      emailed_at: null,
+    }));
   }
+
+  const userIds = Array.from(new Set(recipientRows.map((row) => row.user_id))).filter(Boolean);
+
+  if (userIds.length === 0) return;
+
+  const profilesResult = await supabase
+    .from("profiles")
+    .select("id, email, full_name")
+    .in("id", userIds);
+
+  if (profilesResult.error) {
+    throw profilesResult.error;
+  }
+
+  const profileMap = new Map(
+    ((profilesResult.data || []) as ProfileEmailRow[]).map((profile) => [
+      profile.id,
+      profile,
+    ])
+  );
 
   const appUrl = stripTrailingSlash(getRequiredEnv("NEXT_PUBLIC_APP_URL"));
 
-  for (const row of (data || []) as EmailDispatchRow[]) {
+  for (const row of recipientRows) {
     const eventValue = getSingle(row.notification_events);
-    const profileValue = getSingle(row.profiles);
+    const profileValue = profileMap.get(row.user_id) || null;
     const email = (profileValue?.email || "").trim();
 
     if (!eventValue?.title || !eventValue?.body || !email) {
@@ -202,11 +240,21 @@ export async function dispatchNotificationEventEmail(eventId: string) {
       text: content.text,
     });
 
-    await supabase
-      .from("notification_recipients")
-      .update({
-        emailed_at: new Date().toISOString(),
-      })
-      .eq("id", row.id);
+    if (canMarkEmailed) {
+      const markResult = await supabase
+        .from("notification_recipients")
+        .update({
+          emailed_at: new Date().toISOString(),
+        })
+        .eq("id", row.id);
+
+      if (markResult.error) {
+        console.error("Failed to mark notification emailed", {
+          eventId,
+          recipientId: row.id,
+          message: markResult.error.message,
+        });
+      }
+    }
   }
 }
