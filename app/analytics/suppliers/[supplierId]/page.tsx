@@ -38,7 +38,7 @@ type MonthlyPoint = {
   lines: number;
   delivered: number;
   canceled: number;
-  overdue: number;
+  breachedActive: number;
   averageDelay: number;
 };
 
@@ -158,7 +158,7 @@ function buildMonthlyPoints(
       lines: metrics.totalLines,
       delivered: metrics.deliveredLines,
       canceled: metrics.canceledLines,
-      overdue: metrics.overdueLinesEver,
+      breachedActive: metrics.breachedActiveLines,
       averageDelay: metrics.averageDelay,
     };
   });
@@ -428,16 +428,16 @@ export default function SupplierAnalyticsDetailPage() {
 
   const statusStructure = useMemo(() => {
     const healthyActive = Math.max(
-      metrics.totalLines - metrics.deliveredLines - metrics.canceledLines - metrics.overdueLinesEver,
+      metrics.totalLines - metrics.deliveredLines - metrics.canceledLines - metrics.breachedActiveLines,
       0
     );
     return [
       { label: "В работе", value: healthyActive, color: "#0F766E" },
-      { label: "Нарушение первого срока", value: metrics.overdueLinesEver, color: "#DC2626" },
+      { label: "Нарушение первого срока", value: metrics.breachedActiveLines, color: "#DC2626" },
       { label: "Поставлено", value: metrics.deliveredLines, color: "#16A34A" },
       { label: "Отказано", value: metrics.canceledLines, color: "#64748B" },
     ];
-  }, [metrics.canceledLines, metrics.deliveredLines, metrics.overdueLinesEver, metrics.totalLines]);
+  }, [metrics.breachedActiveLines, metrics.canceledLines, metrics.deliveredLines, metrics.totalLines]);
 
   const compareHref = `/analytics/suppliers/compare?suppliers=${supplierId}&period=${period}`;
 
@@ -593,7 +593,7 @@ export default function SupplierAnalyticsDetailPage() {
               </div>
 
               <div className="grid gap-4 xl:grid-cols-2">
-                <CardSection eyebrow="Качество исполнения" title="Выполнено / отказано / нарушение первого срока" description="Структура линий по месяцам — где теряется качество исполнения и где срывается первый обещанный срок поставки.">
+                <CardSection eyebrow="Качество исполнения" title="Выполнено / отказано / нарушение первого срока" description="Структура линий по месяцам: отдельно активные строки, отдельно активные строки с уже нарушенным первым сроком поставки, поставленные и отказанные.">
                   <MonthlyStackedStatusChart data={monthlyPoints} />
                 </CardSection>
 
@@ -606,7 +606,7 @@ export default function SupplierAnalyticsDetailPage() {
               </div>
 
               <div className="grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
-                <CardSection eyebrow="Структура статусов" title="Текущее состояние линий" description="Компактный срез по текущим статусам строк у поставщика.">
+                <CardSection eyebrow="Структура статусов" title="Текущее состояние линий" description="Компактный срез по текущим взаимоисключающим статусам строк: в работе, с нарушенным первым сроком, поставлено и отказано.">
                   <DonutStatusCard segments={statusStructure} total={metrics.totalLines} />
                 </CardSection>
 
@@ -924,8 +924,8 @@ function MonthlyStackedStatusChart({ data }: { data: MonthlyPoint[] }) {
       {data.map((point) => {
         const delivered = point.delivered;
         const canceled = point.canceled;
-        const overdue = point.overdue;
-        const active = Math.max(point.lines - delivered - canceled - overdue, 0);
+        const breachedActive = point.breachedActive;
+        const active = Math.max(point.lines - delivered - canceled - breachedActive, 0);
 
         return (
           <div key={point.key}>
@@ -936,7 +936,7 @@ function MonthlyStackedStatusChart({ data }: { data: MonthlyPoint[] }) {
             <div className="flex h-3 overflow-hidden rounded-full bg-slate-100">
               {[
                 { value: active, color: "bg-teal-600" },
-                { value: overdue, color: "bg-rose-500" },
+                { value: breachedActive, color: "bg-rose-500" },
                 { value: delivered, color: "bg-emerald-500" },
                 { value: canceled, color: "bg-slate-400" },
               ].map((segment, index) => (

@@ -63,6 +63,7 @@ type SupplierRatingRow = {
   totalOrders: number;
   breachedOrdersEver: number;
   totalLines: number;
+  breachedActiveLines: number;
   deliveredLines: number;
   canceledLines: number;
   overdueLinesEver: number;
@@ -376,6 +377,7 @@ function buildSupplierRatingRows(params: {
         totalOrders: metrics.totalOrders,
         breachedOrdersEver: metrics.breachedOrdersEver,
         totalLines: metrics.totalLines,
+        breachedActiveLines: metrics.breachedActiveLines,
         deliveredLines: metrics.deliveredLines,
         canceledLines: metrics.canceledLines,
         overdueLinesEver: metrics.overdueLinesEver,
@@ -1033,7 +1035,7 @@ export default function SupplierAnalyticsDashboardPage() {
                   <div className="space-y-4">
                     {sortedRows.map((row) => {
                       const healthyActive = Math.max(
-                        row.totalLines - row.deliveredLines - row.canceledLines - row.overdueLinesEver,
+                        row.totalLines - row.deliveredLines - row.canceledLines - row.breachedActiveLines,
                         0
                       );
 
@@ -1063,7 +1065,7 @@ export default function SupplierAnalyticsDashboardPage() {
                             <StackedBar
                               segments={[
                                 { label: "В работе", value: healthyActive, color: "bg-sky-500/85" },
-                                { label: "Нарушение первого срока", value: row.overdueLinesEver, color: "bg-rose-500/90" },
+                                { label: "Нарушение первого срока", value: row.breachedActiveLines, color: "bg-rose-500/90" },
                                 { label: "Поставлено", value: row.deliveredLines, color: "bg-emerald-500/90" },
                                 { label: "Отказано", value: row.canceledLines, color: "bg-slate-400/90" },
                               ]}

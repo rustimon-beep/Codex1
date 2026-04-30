@@ -8,6 +8,7 @@ export type SupplierPeriodMetrics = {
   breachedOrdersEver: number;
   overdueOrdersCurrent: number;
   totalLines: number;
+  breachedActiveLines: number;
   deliveredLines: number;
   canceledLines: number;
   overdueLinesCurrent: number;
@@ -177,6 +178,7 @@ export function collectSupplierPeriodMetrics(
 
   let deliveredLines = 0;
   let canceledLines = 0;
+  let breachedActiveLines = 0;
   let overdueLinesCurrent = 0;
   let overdueLinesEver = 0;
   let deliveredOnTimeLines = 0;
@@ -216,13 +218,18 @@ export function collectSupplierPeriodMetrics(
       currentOverdueOrderIds.add(order.id);
     }
 
-    if (
+    const breachedEver =
       item.deadline_breached_at ||
       (typeof item.id === "number" && historicalOverdueItemIds?.has(item.id)) ||
-      (plannedDate && plannedDate < today && !delivered && !canceled)
-    ) {
+      (plannedDate && plannedDate < today && !delivered && !canceled);
+
+    if (breachedEver) {
       overdueLinesEver += 1;
       breachedOrderIds.add(order.id);
+    }
+
+    if (breachedEver && !delivered && !canceled) {
+      breachedActiveLines += 1;
     }
   }
 
@@ -245,6 +252,7 @@ export function collectSupplierPeriodMetrics(
     breachedOrdersEver: breachedOrderIds.size,
     overdueOrdersCurrent: currentOverdueOrderIds.size,
     totalLines,
+    breachedActiveLines,
     deliveredLines,
     canceledLines,
     overdueLinesCurrent,
