@@ -254,18 +254,23 @@ function projectOrderByLineFilters(
     onlyOverdue: boolean;
     onlyCanceled: boolean;
     onlyActive: boolean;
+    historicalOverdueItemIds: Set<number>;
   }
 ) {
-  const { today, onlyActive, onlyCanceled, onlyOverdue } = params;
+  const { today, onlyActive, onlyCanceled, onlyOverdue, historicalOverdueItemIds } = params;
   const originalItems = order.order_items || [];
 
   const projectedItems = originalItems.filter((item) => {
     const overdue = isCurrentOverdue(item, today);
+    const breachedEver =
+      Boolean(item.deadline_breached_at) ||
+      historicalOverdueItemIds.has(item.id) ||
+      overdue;
     const canceled = isCanceled(item);
     const delivered = isDelivered(item);
     const active = !delivered && !canceled;
 
-    if (onlyOverdue && !overdue) return false;
+    if (onlyOverdue && !breachedEver) return false;
     if (onlyCanceled && !canceled) return false;
     if (onlyActive && !active) return false;
     return true;
@@ -597,10 +602,11 @@ export default function SupplierAnalyticsDashboardPage() {
           onlyOverdue,
           onlyCanceled,
           onlyActive,
+          historicalOverdueItemIds,
         })
       )
       .filter(Boolean) as OrderWithItems[];
-  }, [currentCutoff, onlyActive, onlyCanceled, onlyOverdue, orders, today, typeFilter]);
+  }, [currentCutoff, historicalOverdueItemIds, onlyActive, onlyCanceled, onlyOverdue, orders, today, typeFilter]);
 
   const previousOrders = useMemo(() => {
     if (!previousWindow.previousStart || !previousWindow.previousEnd) return [];
@@ -614,10 +620,11 @@ export default function SupplierAnalyticsDashboardPage() {
           onlyOverdue,
           onlyCanceled,
           onlyActive,
+          historicalOverdueItemIds,
         })
       )
       .filter(Boolean) as OrderWithItems[];
-  }, [onlyActive, onlyCanceled, onlyOverdue, orders, previousWindow.previousEnd, previousWindow.previousStart, today, typeFilter]);
+  }, [historicalOverdueItemIds, onlyActive, onlyCanceled, onlyOverdue, orders, previousWindow.previousEnd, previousWindow.previousStart, today, typeFilter]);
 
   const allRows = useMemo(
     () =>

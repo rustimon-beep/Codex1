@@ -424,7 +424,7 @@ export default function SupplierComparePage() {
                       title="Сравнение по пяти осям"
                       description="Сроки, исполнение, отказы, скорость и стабильность."
                     >
-                      <RadarCompare rows={compareRows} />
+                      <RadarCompare rows={compareRows} period={period} />
                     </CardSection>
 
                     <CardSection
@@ -562,7 +562,7 @@ function InfoMini({ label, value }: { label: string; value: number | string }) {
   );
 }
 
-function RadarCompare({ rows }: { rows: CompareRow[] }) {
+function RadarCompare({ rows, period }: { rows: CompareRow[]; period: AnalyticsPeriod }) {
   const metrics = [
     { label: "Сроки", getter: (row: CompareRow) => row.onTimeDelivery },
     { label: "Исполнение", getter: (row: CompareRow) => row.fillRate },
@@ -636,7 +636,7 @@ function RadarCompare({ rows }: { rows: CompareRow[] }) {
           <div key={row.supplierId} className="rounded-[18px] border border-slate-200 bg-slate-50/70 px-4 py-3">
             <div className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors[index % colors.length] }} />
-              <Link href={`/analytics/suppliers/${row.supplierId}?period=month`} className="text-[15px] font-semibold text-slate-900 transition hover:text-slate-700">
+              <Link href={`/analytics/suppliers/${row.supplierId}?period=${period}`} className="text-[15px] font-semibold text-slate-900 transition hover:text-slate-700">
                 {row.supplierName}
               </Link>
             </div>

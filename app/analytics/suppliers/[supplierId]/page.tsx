@@ -50,6 +50,7 @@ type ProblemArticle = {
   canceledCount: number;
   overdueCount: number;
   averageDelay: number;
+  delaySamplesCount: number;
 };
 
 type DecoratedLine = OrderItem & {
@@ -192,14 +193,16 @@ function buildProblemArticles(orders: OrderWithItems[], historicalOverdueItemIds
         canceledCount: 0,
         overdueCount: 0,
         averageDelay: 0,
+        delaySamplesCount: 0,
       };
 
       current.ordersCount += 1;
       if (canceled) current.canceledCount += 1;
       if (overdue) current.overdueCount += 1;
       if (delayDays) {
-        const totalDelay = current.averageDelay * Math.max(current.overdueCount - 1, 0) + delayDays;
-        current.averageDelay = totalDelay / current.overdueCount;
+        const totalDelay = current.averageDelay * current.delaySamplesCount + delayDays;
+        current.delaySamplesCount += 1;
+        current.averageDelay = totalDelay / current.delaySamplesCount;
       }
 
       groups.set(key, current);
@@ -917,8 +920,6 @@ function MonthlyDualBars({ data }: { data: MonthlyPoint[] }) {
 }
 
 function MonthlyStackedStatusChart({ data }: { data: MonthlyPoint[] }) {
-  const max = Math.max(...data.map((point) => point.lines), 1);
-
   return (
     <div className="space-y-4">
       {data.map((point) => {
@@ -926,6 +927,7 @@ function MonthlyStackedStatusChart({ data }: { data: MonthlyPoint[] }) {
         const canceled = point.canceled;
         const breachedActive = point.breachedActive;
         const active = Math.max(point.lines - delivered - canceled - breachedActive, 0);
+        const safeTotal = Math.max(point.lines, 1);
 
         return (
           <div key={point.key}>
@@ -943,7 +945,7 @@ function MonthlyStackedStatusChart({ data }: { data: MonthlyPoint[] }) {
                 <div
                   key={`${point.key}-${index}`}
                   className={segment.color}
-                  style={{ width: `${(segment.value / max) * 100}%` }}
+                  style={{ width: `${(segment.value / safeTotal) * 100}%` }}
                 />
               ))}
             </div>
