@@ -140,13 +140,21 @@ export function getOrderStatus(items: OrderItem[]) {
   const total = statuses.length;
   const deliveredCount = statuses.filter((s) => s === "Поставлен").length;
   const canceledCount = statuses.filter((s) => s === "Отменен").length;
+  const nonCanceledStatuses = statuses.filter((s) => s !== "Отменен");
+  const nonCanceledTotal = nonCanceledStatuses.length;
+  const deliveredNonCanceledCount = nonCanceledStatuses.filter(
+    (s) => s === "Поставлен"
+  ).length;
 
   if (deliveredCount === total) return "Поставлен";
   if (canceledCount === total) return "Отменен";
-  if (canceledCount > 0) return "Частично отменен";
-  if (deliveredCount > 0) return "Частично поставлен";
-  if (statuses.includes("В пути")) return "В пути";
-  if (statuses.includes("В работе")) return "В работе";
+  if (nonCanceledTotal === 0) return "Отменен";
+  if (deliveredNonCanceledCount === nonCanceledTotal) {
+    return canceledCount > 0 ? "Частично поставлен" : "Поставлен";
+  }
+  if (nonCanceledStatuses.includes("В пути")) return "В пути";
+  if (nonCanceledStatuses.includes("В работе")) return "В работе";
+  if (deliveredNonCanceledCount > 0) return "Частично поставлен";
   return "Новый";
 }
 

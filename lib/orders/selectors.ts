@@ -108,7 +108,7 @@ export function getOrdersStats(orders: OrderWithItems[]) {
   return {
     total: orders.length,
     inProgress: orders.filter((order) =>
-      ["Новый", "В работе", "В пути", "Частично поставлен", "Частично отменен"].includes(
+      ["Новый", "В работе", "В пути", "Частично поставлен"].includes(
         getOrderStatus(order.order_items || [])
       )
     ).length,

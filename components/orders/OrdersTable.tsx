@@ -183,8 +183,6 @@ export function OrdersTable({
                                 ? "bg-emerald-500"
                                 : orderStatus === "Частично поставлен"
                                 ? "bg-teal-500"
-                                : orderStatus === "Частично отменен"
-                                ? "bg-orange-500"
                                 : orderStatus === "Отменен"
                                 ? "bg-rose-400"
                                 : orderStatus === "В пути"
@@ -345,13 +343,20 @@ export function OrdersTable({
                       </td>
 
                       <td className="border-t border-[#E5E7EB] px-5 py-2.5">
-                        <span
-                          className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${statusClasses(
-                            orderStatus
-                          )}`}
-                        >
-                          {orderStatus}
-                        </span>
+                        <div className="space-y-1">
+                          <span
+                            className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${statusClasses(
+                              orderStatus
+                            )}`}
+                          >
+                            {orderStatus}
+                          </span>
+                          {hasCanceledItems ? (
+                            <div className="text-[10px] font-medium text-amber-700">
+                              Есть отмены
+                            </div>
+                          ) : null}
+                        </div>
                       </td>
 
                       <td className="border-t border-[#E5E7EB] px-5 py-2.5">
@@ -525,7 +530,6 @@ export function OrdersTable({
                                       </div>
 
                                       {user.role === "viewer" || user.role === "buyer" || hasCanceledItems ? (
-                                        <div className="space-y-1">
                                         <span
                                           className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${statusClasses(
                                             item.status || "Новый"
@@ -533,12 +537,6 @@ export function OrdersTable({
                                         >
                                           {item.status || "Новый"}
                                         </span>
-                                        {hasCanceledItems ? (
-                                          <div className="text-[10px] font-medium text-amber-700">
-                                            Есть отмены
-                                          </div>
-                                        ) : null}
-                                        </div>
                                       ) : (
                                         <>
                                           <select

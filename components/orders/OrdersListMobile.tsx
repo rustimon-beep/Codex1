@@ -233,8 +233,6 @@ export function OrdersListMobile({
                     ? "bg-teal-500"
                     : orderType === "Срочный"
                     ? "bg-violet-500"
-                    : orderStatus === "Частично отменен"
-                    ? "bg-orange-500"
                     : orderStatus === "Отменен"
                     ? "bg-rose-400"
                     : orderStatus === "В пути"
@@ -282,6 +280,12 @@ export function OrdersListMobile({
                         >
                           {orderStatus}
                         </span>
+
+                        {hasCanceledItems ? (
+                          <span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[8px] font-medium text-amber-700 md:text-[9px]">
+                            Есть отмены
+                          </span>
+                        ) : null}
 
                         {(hasComment(order.comment) || hasReplacementInOrder(items)) && (
                           <span className="inline-flex rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-[8px] font-medium text-stone-700 md:text-[9px]">
@@ -463,20 +467,13 @@ export function OrdersListMobile({
                                 </div>
 
                                 {user.role === "viewer" || user.role === "buyer" || hasCanceledItems ? (
-                                  <div className="mt-1 space-y-1">
                                     <span
-                                      className={`inline-flex rounded-full px-2 py-1 text-[9px] font-medium md:px-2.5 md:text-[10px] ${statusClasses(
+                                      className={`mt-1 inline-flex rounded-full px-2 py-1 text-[9px] font-medium md:px-2.5 md:text-[10px] ${statusClasses(
                                         item.status || "Новый"
                                       )}`}
                                     >
                                       {item.status || "Новый"}
                                     </span>
-                                    {hasCanceledItems ? (
-                                      <div className="text-[9px] font-medium text-amber-700">
-                                        Есть отмены
-                                      </div>
-                                    ) : null}
-                                  </div>
                                 ) : (
                                   <select
                                     value={item.status || "Новый"}
