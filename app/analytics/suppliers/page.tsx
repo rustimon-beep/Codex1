@@ -1037,7 +1037,7 @@ export default function SupplierAnalyticsDashboardPage() {
                 <CardSection
                   eyebrow="Структура поставщиков"
                   title="Рабочая загрузка по линиям"
-                  description="Сколько линий ещё в работе, сколько уже нарушили первый срок, сколько поставлены и сколько отказаны."
+                  description="Сколько линий ещё в работе, сколько активных линий уже нарушили первый срок поставки, сколько поставлены и сколько отказаны."
                 >
                   <div className="space-y-4">
                     {sortedRows.map((row) => {
@@ -1072,7 +1072,7 @@ export default function SupplierAnalyticsDashboardPage() {
                             <StackedBar
                               segments={[
                                 { label: "В работе", value: healthyActive, color: "bg-sky-500/85" },
-                                { label: "Нарушение первого срока", value: row.breachedActiveLines, color: "bg-rose-500/90" },
+                                { label: "Активное нарушение первого срока", value: row.breachedActiveLines, color: "bg-rose-500/90" },
                                 { label: "Поставлено", value: row.deliveredLines, color: "bg-emerald-500/90" },
                                 { label: "Отказано", value: row.canceledLines, color: "bg-slate-400/90" },
                               ]}
@@ -1086,8 +1086,8 @@ export default function SupplierAnalyticsDashboardPage() {
 
                 <CardSection
                   eyebrow="Риски и потери"
-                  title="Нарушение первого срока, отказы и динамика"
-                  description="Здесь видно, у кого чаще нарушается первый обещанный срок, кто чаще уходит в отказ и кто заметно проседает к прошлому периоду."
+                  title="Историческое нарушение первого срока, отказы и динамика"
+                  description="Здесь видно, у кого чаще был нарушен первый обещанный срок поставки, кто чаще уходит в отказ и кто заметно проседает к прошлому периоду."
                 >
                   <div className="space-y-4">
                     {sortedRows.map((row) => (
@@ -1103,12 +1103,12 @@ export default function SupplierAnalyticsDashboardPage() {
                             {row.supplierName}
                           </Link>
                           <span className="text-[11px] text-slate-500">
-                            {row.breachedOrdersEver} заказов и {row.overdueLinesEver} строк с нарушенным первым сроком · {row.canceledLines} отказ.
+                            {row.breachedOrdersEver} заказов и {row.overdueLinesEver} строк, где первый срок уже был нарушен · {row.canceledLines} отказ.
                           </span>
                         </div>
 
                         <div className="mt-3 space-y-3">
-                          <MetricBar label="Доля строк с нарушенным первым сроком" value={row.totalLines ? (row.overdueLinesEver / row.totalLines) * 100 : 0} color="bg-rose-500" />
+                          <MetricBar label="Доля строк, где был нарушен первый срок" value={row.totalLines ? (row.overdueLinesEver / row.totalLines) * 100 : 0} color="bg-rose-500" />
                           <MetricBar label="Отказы" value={row.refusalRate} color="bg-slate-500" />
                         </div>
                       </div>
