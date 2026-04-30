@@ -575,8 +575,8 @@ export default function SupplierAnalyticsDetailPage() {
                   accent={scoreTrend.direction === "down" ? "bg-rose-500" : scoreTrend.direction === "up" ? "bg-emerald-500" : "bg-slate-400"}
                 />
                 <KpiCard title="Активные заказы" value={activeOrders} accent="bg-sky-500" />
-                <KpiCard title="Заказов с нарушенным первым сроком" value={metrics.breachedOrdersEver} accent="bg-rose-400" />
-                <KpiCard title="Строк с нарушенным первым сроком" value={metrics.overdueLinesEver} accent="bg-rose-500" />
+                <KpiCard title="Заказов с историческим нарушением первого срока" value={metrics.breachedOrdersEver} accent="bg-rose-400" />
+                <KpiCard title="Строк с историческим нарушением первого срока" value={metrics.overdueLinesEver} accent="bg-rose-500" />
                 <KpiCard title="Отказы" value={metrics.canceledLines} accent="bg-slate-400" />
                 <KpiCard title="Средний срок" value={metrics.averageLeadTime ? `${metrics.averageLeadTime} дн.` : "—"} accent="bg-amber-500" />
                 <KpiCard title="Период" value={getAnalyticsPeriodLabel(period)} accent="bg-slate-500" />
@@ -596,7 +596,7 @@ export default function SupplierAnalyticsDetailPage() {
               </div>
 
               <div className="grid gap-4 xl:grid-cols-2">
-                <CardSection eyebrow="Качество исполнения" title="Выполнено / отказано / нарушение первого срока" description="Структура линий по месяцам: отдельно активные строки, отдельно активные строки с уже нарушенным первым сроком поставки, поставленные и отказанные.">
+                <CardSection eyebrow="Качество исполнения" title="Выполнено / отказано / активное нарушение первого срока" description="Структура линий по месяцам: отдельно активные строки, отдельно активные строки с уже нарушенным первым сроком поставки, поставленные и отказанные.">
                   <MonthlyStackedStatusChart data={monthlyPoints} />
                 </CardSection>
 
@@ -609,7 +609,7 @@ export default function SupplierAnalyticsDetailPage() {
               </div>
 
               <div className="grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
-                <CardSection eyebrow="Структура статусов" title="Текущее состояние линий" description="Компактный срез по текущим взаимоисключающим статусам строк: в работе, с нарушенным первым сроком, поставлено и отказано.">
+                <CardSection eyebrow="Структура статусов" title="Активное состояние линий" description="Компактный срез по текущим взаимоисключающим статусам строк: в работе, с активным нарушением первого срока, поставлено и отказано.">
                   <DonutStatusCard segments={statusStructure} total={metrics.totalLines} />
                 </CardSection>
 
@@ -633,11 +633,11 @@ export default function SupplierAnalyticsDetailPage() {
 
               <div className="grid gap-4 xl:grid-cols-2">
                 <LinesPanel
-                  title="Строки с нарушенным первым сроком"
-                  description="Все строки, где первый обещанный срок поставки уже был нарушен. Этот факт остаётся в аналитике."
+                  title="Строки с историческим нарушением первого срока"
+                  description="Все строки, где первый обещанный срок поставки уже был нарушен. Этот факт остаётся в аналитике, даже если строка позже была поставлена."
                   tone="rose"
                   lines={breachedLines}
-                  emptyText="Сейчас у поставщика нет строк с нарушенным первым сроком поставки."
+                  emptyText="Сейчас у поставщика нет строк с историческим нарушением первого срока."
                 />
                 <LinesPanel
                   title="Отказанные строки"
