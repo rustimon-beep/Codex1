@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { dispatchNotificationEventEmail } from "./email-server";
 import { dispatchNotificationEventPush } from "./push-server";
 
 type NotificationRecipientRole = "admin" | "supplier" | "buyer";
@@ -7,7 +8,8 @@ type NotificationEventType =
   | "overdue"
   | "status_changed"
   | "cancellation"
-  | "planned_date_changed";
+  | "planned_date_changed"
+  | "replacement_set";
 
 type NotificationEventDraft = {
   eventKey: string;
@@ -145,7 +147,20 @@ export async function createNotificationEvents(events: NotificationEventDraft[])
       }
     }
 
-    await dispatchNotificationEventPush(insertedEvent.id);
+    const dispatchResults = await Promise.allSettled([
+      dispatchNotificationEventPush(insertedEvent.id),
+      dispatchNotificationEventEmail(insertedEvent.id),
+    ]);
+
+    const rejected = dispatchResults.find(
+      (result): result is PromiseRejectedResult => result.status === "rejected"
+    );
+
+    if (rejected) {
+      throw rejected.reason instanceof Error
+        ? rejected.reason
+        : new Error("Не удалось отправить уведомление.");
+    }
   }
 }
 

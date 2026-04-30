@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { dispatchNotificationEventEmail } from "../../../../lib/notifications/email-server";
 import { dispatchNotificationEventPush } from "../../../../lib/notifications/push-server";
 
 export async function POST(request: Request) {
@@ -9,7 +10,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing eventId" }, { status: 400 });
     }
 
-    await dispatchNotificationEventPush(body.eventId);
+    await Promise.all([
+      dispatchNotificationEventPush(body.eventId),
+      dispatchNotificationEventEmail(body.eventId),
+    ]);
 
     return NextResponse.json({ ok: true });
   } catch (error) {

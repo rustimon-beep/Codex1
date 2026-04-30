@@ -9,7 +9,8 @@ type NotificationEventType =
   | "overdue"
   | "status_changed"
   | "cancellation"
-  | "planned_date_changed";
+  | "planned_date_changed"
+  | "replacement_set";
 
 type NotificationEventRow = {
   id: string;
@@ -27,6 +28,7 @@ type NotificationRecipientRow = {
   user_id: string;
   delivered_at: string | null;
   seen_at: string | null;
+  emailed_at?: string | null;
   event_id: string;
   notification_events: NotificationEventRow | null;
 };
@@ -144,6 +146,7 @@ function getStatusDiff(beforeItems: OrderItem[], afterItems: OrderItem[]) {
   let canceledCount = 0;
   let nonCancellationChangedCount = 0;
   let plannedDateChangedCount = 0;
+  let replacementSetCount = 0;
   let singleCancellationChange:
     | {
         article: string | null;
@@ -161,6 +164,13 @@ function getStatusDiff(beforeItems: OrderItem[], afterItems: OrderItem[]) {
   let singlePlannedDateChange:
     | { before: string | null; after: string | null; article: string | null; name: string | null }
     | null = null;
+  let singleReplacementSetChange:
+    | {
+        replacementArticle: string | null;
+        article: string | null;
+        name: string | null;
+      }
+    | null = null;
 
   for (const item of afterItems) {
     const beforeItem = beforeById.get(item.id);
@@ -168,6 +178,8 @@ function getStatusDiff(beforeItems: OrderItem[], afterItems: OrderItem[]) {
     const afterStatus = item.status || "Новый";
     const beforePlannedDate = (beforeItem?.planned_date || "").slice(0, 10);
     const afterPlannedDate = (item.planned_date || "").slice(0, 10);
+    const beforeReplacementArticle = (beforeItem?.replacement_article || "").trim();
+    const afterReplacementArticle = (item.replacement_article || "").trim();
     const becameCanceled = beforeStatus !== "Отменен" && afterStatus === "Отменен";
 
     if (beforeStatus !== afterStatus) {
@@ -200,6 +212,19 @@ function getStatusDiff(beforeItems: OrderItem[], afterItems: OrderItem[]) {
       }
     }
 
+    if (!beforeReplacementArticle && afterReplacementArticle) {
+      replacementSetCount += 1;
+      if (replacementSetCount === 1) {
+        singleReplacementSetChange = {
+          replacementArticle: item.replacement_article || null,
+          article: item.article || beforeItem?.article || null,
+          name: item.name || beforeItem?.name || null,
+        };
+      } else {
+        singleReplacementSetChange = null;
+      }
+    }
+
     if (becameCanceled) {
       canceledCount += 1;
       if (canceledCount === 1) {
@@ -223,6 +248,8 @@ function getStatusDiff(beforeItems: OrderItem[], afterItems: OrderItem[]) {
     singleStatusChange,
     plannedDateChangedCount,
     singlePlannedDateChange,
+    replacementSetCount,
+    singleReplacementSetChange,
   };
 }
 
@@ -242,6 +269,8 @@ export async function notifyOrderChanged(params: {
     singleStatusChange,
     plannedDateChangedCount,
     singlePlannedDateChange,
+    replacementSetCount,
+    singleReplacementSetChange,
   } = getStatusDiff(beforeItems, afterItems);
 
   const events: Array<{
@@ -325,6 +354,43 @@ export async function notifyOrderChanged(params: {
         nextDate:
           plannedDateChangedCount === 1 ? singlePlannedDateChange?.after || null : null,
         lineLabel: plannedDateChangedCount === 1 ? singleLineLabel || "" : "",
+        url: `/orders/${params.afterOrder.id}`,
+      },
+      recipientRoles: ["admin", "buyer"],
+    });
+  }
+
+  if (replacementSetCount > 0) {
+    const replacementLabel = pluralizeRu(replacementSetCount, [
+      "позиции",
+      "позиций",
+      "позиций",
+    ]);
+    const singleLineLabel =
+      singleReplacementSetChange &&
+      [singleReplacementSetChange.article, singleReplacementSetChange.name]
+        .filter(Boolean)
+        .join(" · ");
+
+    events.push({
+      eventKey: `replacement-set:${params.afterOrder.id}:${params.updatedAtKey}:${replacementSetCount}`,
+      eventType: "replacement_set",
+      orderId: params.afterOrder.id,
+      title: "Проставлена замена",
+      body:
+        replacementSetCount === 1 && singleReplacementSetChange
+          ? `В заказе ${getOrderLabel(params.afterOrder)} проставлена замена${
+              singleLineLabel ? ` (${singleLineLabel})` : ""
+            }${singleReplacementSetChange.replacementArticle ? ` → ${singleReplacementSetChange.replacementArticle}` : ""}.`
+          : `В заказе ${getOrderLabel(params.afterOrder)} проставлена замена у ${replacementSetCount} ${replacementLabel}.`,
+      payload: {
+        clientOrder: params.afterOrder.client_order || "",
+        replacementCount: replacementSetCount,
+        lineLabel: replacementSetCount === 1 ? singleLineLabel || "" : "",
+        replacementArticle:
+          replacementSetCount === 1
+            ? singleReplacementSetChange?.replacementArticle || ""
+            : "",
         url: `/orders/${params.afterOrder.id}`,
       },
       recipientRoles: ["admin", "buyer"],
