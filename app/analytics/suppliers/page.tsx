@@ -1037,7 +1037,7 @@ export default function SupplierAnalyticsDashboardPage() {
                 <CardSection
                   eyebrow="Структура поставщиков"
                   title="Активное состояние линий"
-                  description="Сколько линий ещё в работе, сколько активных линий сейчас остаются с уже нарушенным первым сроком, сколько поставлены и сколько отказаны."
+                  description="Сколько линий ещё в работе без нарушения первого срока, сколько активных линий сейчас остаются с уже нарушенным первым сроком, сколько поставлены и сколько отказаны."
                 >
                   <div className="space-y-4">
                     {sortedRows.map((row) => {
@@ -1071,7 +1071,7 @@ export default function SupplierAnalyticsDashboardPage() {
                           <div className="mt-3">
                             <StackedBar
                               segments={[
-                                { label: "В работе", value: healthyActive, color: "bg-sky-500/85" },
+                                { label: "В работе без нарушения", value: healthyActive, color: "bg-sky-500/85" },
                                 { label: "Активное нарушение первого срока", value: row.breachedActiveLines, color: "bg-rose-500/90" },
                                 { label: "Поставлено", value: row.deliveredLines, color: "bg-emerald-500/90" },
                                 { label: "Отказано", value: row.canceledLines, color: "bg-slate-400/90" },

@@ -189,6 +189,7 @@ export function collectSupplierPeriodMetrics(
 
   for (const { item, order } of items) {
     const plannedDate = normalizeDate(item.planned_date);
+    const firstPlannedDate = normalizeDate(item.initial_planned_date || item.planned_date);
     const deliveredDate = normalizeDate(item.delivered_date);
     const orderDate = normalizeDate(order.order_date);
     const delivered = isDelivered(item);
@@ -197,11 +198,11 @@ export function collectSupplierPeriodMetrics(
     if (delivered) {
       deliveredLines += 1;
 
-      if (plannedDate && deliveredDate && deliveredDate <= plannedDate) {
+      if (firstPlannedDate && deliveredDate && deliveredDate <= firstPlannedDate) {
         deliveredOnTimeLines += 1;
-      } else if (plannedDate && deliveredDate && deliveredDate > plannedDate) {
+      } else if (firstPlannedDate && deliveredDate && deliveredDate > firstPlannedDate) {
         deliveredLateLines += 1;
-        delaySamples.push(diffDays(plannedDate, deliveredDate));
+        delaySamples.push(diffDays(firstPlannedDate, deliveredDate));
       }
 
       if (orderDate && deliveredDate) {
@@ -221,6 +222,7 @@ export function collectSupplierPeriodMetrics(
     const breachedEver =
       item.deadline_breached_at ||
       (typeof item.id === "number" && historicalOverdueItemIds?.has(item.id)) ||
+      (firstPlannedDate && firstPlannedDate < today && !delivered && !canceled) ||
       (plannedDate && plannedDate < today && !delivered && !canceled);
 
     if (breachedEver) {

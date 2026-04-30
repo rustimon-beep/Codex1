@@ -435,7 +435,7 @@ export default function SupplierAnalyticsDetailPage() {
       0
     );
     return [
-      { label: "В работе", value: healthyActive, color: "#0F766E" },
+      { label: "В работе без нарушения", value: healthyActive, color: "#0F766E" },
       { label: "Нарушение первого срока", value: metrics.breachedActiveLines, color: "#DC2626" },
       { label: "Поставлено", value: metrics.deliveredLines, color: "#16A34A" },
       { label: "Отказано", value: metrics.canceledLines, color: "#64748B" },
@@ -609,7 +609,7 @@ export default function SupplierAnalyticsDetailPage() {
               </div>
 
               <div className="grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
-                <CardSection eyebrow="Структура статусов" title="Активное состояние линий" description="Компактный срез по текущим взаимоисключающим статусам строк: в работе, с активным нарушением первого срока, поставлено и отказано.">
+                <CardSection eyebrow="Структура статусов" title="Активное состояние линий" description="Компактный срез по текущим взаимоисключающим статусам строк: в работе без нарушения первого срока, с активным нарушением первого срока, поставлено и отказано.">
                   <DonutStatusCard segments={statusStructure} total={metrics.totalLines} />
                 </CardSection>
 
