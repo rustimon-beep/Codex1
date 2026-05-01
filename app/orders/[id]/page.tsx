@@ -413,7 +413,7 @@ export default function OrderDetailsPage() {
       setHighlightedItemId(itemId);
       window.setTimeout(() => {
         setHighlightedItemId((current) => (current === itemId ? null : current));
-      }, 280);
+      }, 760);
     },
   });
 

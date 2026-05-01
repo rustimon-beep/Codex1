@@ -3,6 +3,12 @@
 import { useEffect } from "react";
 import { getFeedbackEventName, installPressFeedback, type FeedbackType } from "@/src/lib/feedback";
 
+const BODY_FEEDBACK_DURATION_MS: Record<Exclude<FeedbackType, "tap">, number> = {
+  success: 560,
+  error: 340,
+  save: 500,
+};
+
 export function FeedbackEffects() {
   useEffect(() => {
     const uninstallPressFeedback = installPressFeedback(document);
@@ -23,7 +29,7 @@ export function FeedbackEffects() {
 
       window.setTimeout(() => {
         document.body.classList.remove(className);
-      }, 260);
+      }, BODY_FEEDBACK_DURATION_MS[feedbackType]);
     };
 
     window.addEventListener(feedbackEventName, handleFeedback as EventListener);
