@@ -107,6 +107,7 @@ import {
 } from "../lib/orders/photo-import";
 
 const EMPTY_ORDER_FORM = createEmptyOrderForm(EMPTY_ITEM);
+const PHOTO_RECOGNITION_TIMEOUT_MS = 35000;
 
 type QuickDateDialogState = {
   open: boolean;
@@ -896,6 +897,8 @@ export default function OrdersPage() {
 
   const processPhotoFile = async (file: File) => {
     setPhotoParsing(true);
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), PHOTO_RECOGNITION_TIMEOUT_MS);
 
     try {
       if (isOffline()) {
@@ -909,9 +912,10 @@ export default function OrdersPage() {
       const response = await fetch("/api/orders/parse-photo", {
         method: "POST",
         body: formData,
+        signal: controller.signal,
       });
 
-      const result = await response.json();
+      const result = await response.json().catch(() => ({}));
 
       if (!response.ok) {
         throw new Error(result?.error || "Не удалось распознать фото.");
@@ -957,13 +961,14 @@ export default function OrdersPage() {
     } catch (error) {
       feedback("error");
       showToast("Ошибка распознавания фото", {
-        description: getFriendlyErrorMessage(
-          error,
-          "Не удалось обработать фото."
-        ),
+        description:
+          error instanceof DOMException && error.name === "AbortError"
+            ? "Распознавание заняло слишком много времени. Попробуй фото меньшего размера или более чёткий кадр."
+            : getFriendlyErrorMessage(error, "Не удалось обработать фото."),
         variant: "error",
       });
     } finally {
+      window.clearTimeout(timeoutId);
       setPhotoParsing(false);
     }
   };

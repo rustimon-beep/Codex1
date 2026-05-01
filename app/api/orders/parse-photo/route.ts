@@ -13,6 +13,12 @@ type OcrSpacePayload = {
   ParsedResults?: OcrSpaceParsedResult[];
 };
 
+const OCR_REQUEST_TIMEOUT_MS = 25000;
+
+function getAbortErrorMessage() {
+  return "OCR service timed out";
+}
+
 async function requestOcr(
   imageFile: File,
   apiKey: string,
@@ -21,6 +27,8 @@ async function requestOcr(
     isTable: boolean;
   }
 ) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), OCR_REQUEST_TIMEOUT_MS);
   const formData = new FormData();
   formData.append("file", imageFile, imageFile.name || "upload.jpg");
   formData.append("language", "rus");
@@ -30,17 +38,28 @@ async function requestOcr(
   formData.append("OCREngine", options.engine);
   formData.append("isTable", options.isTable ? "true" : "false");
 
-  const response = await fetch("https://api.ocr.space/parse/image", {
-    method: "POST",
-    headers: {
-      apikey: apiKey,
-    },
-    body: formData,
-  });
+  try {
+    const response = await fetch("https://api.ocr.space/parse/image", {
+      method: "POST",
+      headers: {
+        apikey: apiKey,
+      },
+      body: formData,
+      signal: controller.signal,
+    });
 
-  const payload = (await response.json()) as OcrSpacePayload;
+    const payload = (await response.json()) as OcrSpacePayload;
 
-  return { response, payload };
+    return { response, payload };
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error(getAbortErrorMessage());
+    }
+
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
 export async function POST(request: Request) {
@@ -63,7 +82,18 @@ export async function POST(request: Request) {
   let bestItems: ReturnType<typeof parseOcrTextToRecognizedItems> = [];
 
   for (const attempt of attempts) {
-    const { response, payload } = await requestOcr(imageFile, apiKey, attempt);
+    let response: Response;
+    let payload: OcrSpacePayload;
+
+    try {
+      const result = await requestOcr(imageFile, apiKey, attempt);
+      response = result.response;
+      payload = result.payload;
+    } catch (error) {
+      lastErrorMessage =
+        error instanceof Error ? error.message : "OCR service request failed";
+      continue;
+    }
 
     if (!response.ok) {
       lastErrorMessage = "OCR service request failed";
