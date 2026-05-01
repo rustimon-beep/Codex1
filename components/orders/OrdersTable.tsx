@@ -351,7 +351,7 @@ export function OrdersTable({
                           >
                             {orderStatus}
                           </span>
-                          {hasCanceledItems ? (
+                          {hasCanceledItems && orderStatus !== "Отменен" ? (
                             <div className="text-[10px] font-medium text-amber-700">
                               Есть отмены
                             </div>
@@ -529,7 +529,7 @@ export function OrdersTable({
                                         Статус
                                       </div>
 
-                                      {user.role === "viewer" || user.role === "buyer" || hasCanceledItems ? (
+                                      {user.role === "viewer" || user.role === "buyer" ? (
                                         <span
                                           className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${statusClasses(
                                             item.status || "Новый"

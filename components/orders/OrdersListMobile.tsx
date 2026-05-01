@@ -281,7 +281,7 @@ export function OrdersListMobile({
                           {orderStatus}
                         </span>
 
-                        {hasCanceledItems ? (
+                        {hasCanceledItems && orderStatus !== "Отменен" ? (
                           <span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[8px] font-medium text-amber-700 md:text-[9px]">
                             Есть отмены
                           </span>
@@ -466,7 +466,7 @@ export function OrdersListMobile({
                                   Статус
                                 </div>
 
-                                {user.role === "viewer" || user.role === "buyer" || hasCanceledItems ? (
+                                {user.role === "viewer" || user.role === "buyer" ? (
                                     <span
                                       className={`mt-1 inline-flex rounded-full px-2 py-1 text-[9px] font-medium md:px-2.5 md:text-[10px] ${statusClasses(
                                         item.status || "Новый"
