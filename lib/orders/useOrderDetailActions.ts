@@ -29,6 +29,7 @@ import {
   mergeComments,
   normalizeDateForCompare,
 } from "./utils";
+import { feedback } from "@/src/lib/feedback";
 
 type ToastFn = (
   title: string,
@@ -63,6 +64,7 @@ export function useOrderDetailActions(params: {
   requestConfirmation: ConfirmFn;
   showToast: ToastFn;
   routerPush: (href: string) => void;
+  onStatusVisualFeedback?: (itemId: number) => void;
 }) {
   const {
     user,
@@ -77,6 +79,7 @@ export function useOrderDetailActions(params: {
     requestConfirmation,
     showToast,
     routerPush,
+    onStatusVisualFeedback,
   } = params;
 
   const updateItemField = useCallback(
@@ -101,6 +104,7 @@ export function useOrderDetailActions(params: {
           !canEditItemPlannedDate(user, originalItem || currentItem) &&
           !hasUnsavedSupplierPlannedDateChange
         ) {
+          feedback("error");
           showToast("Срок нельзя перенести", {
             description:
               "Поставщик может менять плановую дату только после того, как позиция уже ушла в просрочку.",
@@ -125,6 +129,7 @@ export function useOrderDetailActions(params: {
             });
 
             if (!reason || !reason.trim()) {
+              feedback("error");
               showToast("Отмена не выполнена", {
                 description: "Для отмены поставки нужно указать причину.",
                 variant: "error",
@@ -157,6 +162,10 @@ export function useOrderDetailActions(params: {
               };
             });
 
+            feedback("success");
+            if (currentItem?.id) {
+              onStatusVisualFeedback?.(currentItem.id);
+            }
             showToast("Позиция отменена", { variant: "success" });
             return;
           }
@@ -194,9 +203,16 @@ export function useOrderDetailActions(params: {
           updatedItems[index] = nextItem;
           return { ...prev, items: updatedItems };
         });
+
+        if (field === "status") {
+          if (currentItem?.id) {
+            onStatusVisualFeedback?.(currentItem.id);
+          }
+          feedback("save");
+        }
       })();
     },
-    [form.items, order?.order_items, requestPrompt, setForm, showToast, user]
+    [form.items, onStatusVisualFeedback, order?.order_items, requestPrompt, setForm, showToast, user]
   );
 
   const applyBulkPlannedDate = useCallback(() => {
@@ -205,6 +221,7 @@ export function useOrderDetailActions(params: {
     }
 
     if (!form.bulkPlannedDate) {
+      feedback("error");
       showToast("Плановая дата не выбрана", {
         description: "Сначала выбери плановую дату.",
         variant: "error",
@@ -232,6 +249,7 @@ export function useOrderDetailActions(params: {
       }),
     }));
 
+    feedback("save");
     showToast("Дата применена", {
       description:
         user?.role === "supplier"
@@ -247,6 +265,7 @@ export function useOrderDetailActions(params: {
     }
 
     if (!form.bulkStatus) {
+      feedback("error");
       showToast("Статус не выбран", {
         description: "Сначала выбери статус.",
         variant: "error",
@@ -266,6 +285,7 @@ export function useOrderDetailActions(params: {
         });
 
         if (!reason || !reason.trim()) {
+          feedback("error");
           showToast("Отмена не выполнена", {
             description: "Для отмены поставки нужно указать причину.",
             variant: "error",
@@ -296,6 +316,7 @@ export function useOrderDetailActions(params: {
           })),
         }));
 
+        feedback("save");
         showToast("Статус применён", {
           description: "Статус обновлён для всех позиций.",
           variant: "success",
@@ -314,6 +335,7 @@ export function useOrderDetailActions(params: {
       })),
     }));
 
+    feedback("save");
     showToast("Статус применён", {
       description: "Статус обновлён для всех позиций.",
       variant: "success",
@@ -325,6 +347,7 @@ export function useOrderDetailActions(params: {
     if (saving) return;
 
     if (user.role === "viewer") {
+      feedback("error");
       showToast("Действие недоступно", {
         description: "Наблюдатель не может редактировать заказы.",
         variant: "error",
@@ -333,6 +356,7 @@ export function useOrderDetailActions(params: {
     }
 
     if (!form.clientOrder) {
+      feedback("error");
       showToast("Не заполнен номер заказа", {
         description: "Укажи номер клиентского заказа.",
         variant: "error",
@@ -341,6 +365,7 @@ export function useOrderDetailActions(params: {
     }
 
     if (!form.supplierId) {
+      feedback("error");
       showToast("Не выбран поставщик", {
         description: "Укажи поставщика для этого заказа.",
         variant: "error",
@@ -353,6 +378,7 @@ export function useOrderDetailActions(params: {
     try {
       const validItems = getValidItems(form.items);
       if (validItems.length === 0) {
+        feedback("error");
         showToast("Нет позиций", {
           description: "Добавь хотя бы одну позицию.",
           variant: "error",
@@ -379,6 +405,7 @@ export function useOrderDetailActions(params: {
           normalizeDateForCompare(oldItem.planned_date) !== normalizeDateForCompare(item.plannedDate) &&
           !canEditItemPlannedDate(user, oldItem)
         ) {
+          feedback("error");
           showToast("Срок нельзя перенести", {
             description: `Позиция "${getItemLabel(
               item
@@ -389,6 +416,7 @@ export function useOrderDetailActions(params: {
         }
 
         if (item.hasReplacement && !item.replacementArticle.trim()) {
+          feedback("error");
           showToast("Не заполнена замена", {
             description: `Для позиции "${getItemLabel(
               item
@@ -399,6 +427,7 @@ export function useOrderDetailActions(params: {
         }
 
         if (item.status === "Поставлен" && !item.deliveredDate) {
+          feedback("error");
           showToast("Нет даты поставки", {
             description: `Для позиции "${getItemLabel(
               item
@@ -409,6 +438,7 @@ export function useOrderDetailActions(params: {
         }
 
         if (item.status === "Отменен" && !item.canceledDate) {
+          feedback("error");
           showToast("Нет даты отмены", {
             description: `Для позиции "${getItemLabel(
               item
@@ -419,6 +449,7 @@ export function useOrderDetailActions(params: {
         }
 
         if (!item.id) {
+          feedback("error");
           showToast("Нельзя добавлять новые позиции", {
             description: "В уже созданный заказ нельзя добавлять новые позиции.",
             variant: "error",
@@ -447,6 +478,7 @@ export function useOrderDetailActions(params: {
 
       if (orderError) {
         console.error("Ошибка обновления заказа:", orderError);
+        feedback("error");
         showToast("Ошибка обновления заказа", {
           description: orderError.message,
           variant: "error",
@@ -560,6 +592,7 @@ export function useOrderDetailActions(params: {
 
         if (error) {
           console.error("Ошибка обновления позиции:", error);
+          feedback("error");
           showToast("Ошибка обновления позиции", {
             description: error.message,
             variant: "error",
@@ -593,6 +626,7 @@ export function useOrderDetailActions(params: {
       }).catch(() => {});
 
       await loadOrder();
+      feedback("save");
       showToast("Заказ обновлён", { variant: "success" });
     } finally {
       setSaving(false);
@@ -603,6 +637,7 @@ export function useOrderDetailActions(params: {
     if (!user || !order) return;
 
     if (user.role !== "admin") {
+      feedback("error");
       showToast("Удаление недоступно", {
         description: "Удалять заказы может только администратор.",
         variant: "error",
@@ -624,6 +659,7 @@ export function useOrderDetailActions(params: {
       const { error: itemsError } = await deleteItemsByOrderId(order.id);
       if (itemsError) {
         console.error("Ошибка удаления позиций:", itemsError);
+        feedback("error");
         showToast("Ошибка удаления позиций", {
           description: itemsError.message,
           variant: "error",
@@ -634,6 +670,7 @@ export function useOrderDetailActions(params: {
       const { error: orderError } = await deleteOrderById(order.id);
       if (orderError) {
         console.error("Ошибка удаления заказа:", orderError);
+        feedback("error");
         showToast("Ошибка удаления заказа", {
           description: orderError.message,
           variant: "error",
@@ -641,6 +678,7 @@ export function useOrderDetailActions(params: {
         return;
       }
 
+      feedback("success");
       showToast("Заказ удалён", { variant: "success" });
       routerPush("/");
     } finally {

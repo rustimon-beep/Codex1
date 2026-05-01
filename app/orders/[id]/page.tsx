@@ -39,6 +39,7 @@ import type {
 } from "../../../lib/orders/types";
 import { useDialog } from "../../../lib/ui/useDialog";
 import { triggerHapticFeedback } from "../../../lib/ui/haptics";
+import { feedback } from "@/src/lib/feedback";
 import {
   getFriendlyErrorMessage,
   isOffline,
@@ -82,6 +83,7 @@ export default function OrderDetailsPage() {
     "all" | "changed" | "overdue" | "replacement"
   >("all");
   const [itemSearch, setItemSearch] = useState("");
+  const [highlightedItemId, setHighlightedItemId] = useState<number | null>(null);
 
   const { user, setUser, authLoading, profileLoading, setProfileLoading } =
     useProfileAuth();
@@ -407,6 +409,12 @@ export default function OrderDetailsPage() {
     requestConfirmation,
     showToast,
     routerPush: router.push,
+    onStatusVisualFeedback: (itemId) => {
+      setHighlightedItemId(itemId);
+      window.setTimeout(() => {
+        setHighlightedItemId((current) => (current === itemId ? null : current));
+      }, 280);
+    },
   });
 
   const handleLogoutWithHaptic = () => {
@@ -416,6 +424,7 @@ export default function OrderDetailsPage() {
 
   const handleSaveOrder = () => {
     if (isOffline()) {
+      feedback("error");
       showToast("Нет соединения", {
         description: "Сейчас интернет недоступен. Сохранить изменения не получится.",
         variant: "error",
@@ -427,7 +436,7 @@ export default function OrderDetailsPage() {
   };
 
   const handleSaveOrderWithHaptic = () => {
-    triggerHapticFeedback("success");
+    feedback("tap");
     handleSaveOrder();
   };
 
@@ -974,7 +983,7 @@ export default function OrderDetailsPage() {
                                   isHighlightedArticle(item.replacementArticle)
                                 ? "border-amber-300 ring-2 ring-amber-100"
                                 : "border-slate-200"
-                            }`}
+                            } ${highlightedItemId === item.id ? "feedback-row-highlight" : ""}`}
                           >
                             <div
                               className={`border-b px-4 py-3 md:px-5 ${

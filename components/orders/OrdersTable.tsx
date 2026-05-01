@@ -25,6 +25,7 @@ type OrdersTableProps = {
   loading: boolean;
   orders: OrderWithItems[];
   expandedOrders: number[];
+  highlightedItemKey?: string | null;
   copiedArticle: string | null;
   search: string;
   user: UserProfile;
@@ -44,6 +45,7 @@ export function OrdersTable({
   loading,
   orders,
   expandedOrders,
+  highlightedItemKey,
   copiedArticle,
   search,
   user,
@@ -463,7 +465,7 @@ export function OrdersTable({
                                         : itemMatched
                                         ? "border-amber-300 ring-2 ring-amber-100 bg-amber-50/30"
                                         : "border-slate-200"
-                                    }`}
+                                    } ${highlightedItemKey === `${order.id}:${item.id}` ? "feedback-row-highlight" : ""}`}
                                   >
                                     <div>
                                       <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">

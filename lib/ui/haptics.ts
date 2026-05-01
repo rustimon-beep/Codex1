@@ -1,15 +1,14 @@
+import { feedback } from "@/src/lib/feedback";
+
 export type HapticKind = "light" | "medium" | "success" | "warning";
 
-const HAPTIC_PATTERNS: Record<HapticKind, number | number[]> = {
-  light: 10,
-  medium: 18,
-  success: [12, 30, 18],
-  warning: [20, 40, 20],
+const HAPTIC_MAP: Record<HapticKind, Parameters<typeof feedback>[0]> = {
+  light: "tap",
+  medium: "tap",
+  success: "success",
+  warning: "error",
 };
 
 export function triggerHapticFeedback(kind: HapticKind = "light") {
-  if (typeof window === "undefined") return;
-  if (!("vibrate" in navigator)) return;
-
-  navigator.vibrate(HAPTIC_PATTERNS[kind]);
+  feedback(HAPTIC_MAP[kind]);
 }

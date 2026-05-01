@@ -2,6 +2,7 @@
 
 import { AppLogo } from "../ui/AppLogo";
 import { MobileLaunchReveal } from "../ui/MobileLaunchReveal";
+import { feedback } from "@/src/lib/feedback";
 
 type LoginFormProps = {
   loginForm: {
@@ -98,6 +99,7 @@ export function LoginForm({
 
               <button
                 type="submit"
+                onClick={() => feedback("tap")}
                 className="w-full rounded-[18px] bg-slate-900 px-4 py-2.5 text-[12px] font-medium text-white shadow-[0_18px_38px_rgba(15,23,42,0.18)] transition hover:bg-slate-800 md:rounded-2xl md:py-3 md:text-sm"
               >
                 Войти

@@ -26,6 +26,7 @@ type OrdersListMobileProps = {
   loading: boolean;
   orders: OrderWithItems[];
   expandedOrders: number[];
+  highlightedItemKey?: string | null;
   copiedArticle: string | null;
   search: string;
   user: UserProfile;
@@ -43,6 +44,7 @@ export function OrdersListMobile({
   loading,
   orders,
   expandedOrders,
+  highlightedItemKey,
   copiedArticle,
   search,
   user,
@@ -397,7 +399,7 @@ export function OrdersListMobile({
                                 : itemMatched
                                 ? "border-amber-300 ring-2 ring-amber-100 bg-amber-50/30"
                                 : "border-slate-200"
-                            }`}
+                            } ${highlightedItemKey === `${order.id}:${item.id}` ? "feedback-row-highlight" : ""}`}
                           >
                             <div className="flex items-start justify-between gap-3">
                               <div className="min-w-0">

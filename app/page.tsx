@@ -77,6 +77,7 @@ import type {
   SortField,
 } from "../lib/orders/types";
 import { triggerHapticFeedback } from "../lib/ui/haptics";
+import { feedback } from "@/src/lib/feedback";
 import { useDialog } from "../lib/ui/useDialog";
 import { useOrdersNotifications } from "../lib/ui/notifications";
 import {
@@ -143,6 +144,7 @@ export default function OrdersPage() {
   const [copiedArticle, setCopiedArticle] = useState<string | null>(null);
   const [expandedOrders, setExpandedOrders] = useState<number[]>([]);
   const [showAttentionPanel, setShowAttentionPanel] = useState(false);
+  const [highlightedQuickItemKey, setHighlightedQuickItemKey] = useState<string | null>(null);
   const [createMethodOpen, setCreateMethodOpen] = useState(false);
   const [modalInitialSnapshot, setModalInitialSnapshot] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -212,6 +214,14 @@ export default function OrdersPage() {
     const timer = setTimeout(() => setCopiedArticle(null), 1500);
     return () => clearTimeout(timer);
   }, [copiedArticle]);
+
+  const highlightQuickItem = useCallback((orderId: number, itemId: number) => {
+    const nextKey = `${orderId}:${itemId}`;
+    setHighlightedQuickItemKey(nextKey);
+    window.setTimeout(() => {
+      setHighlightedQuickItemKey((current) => (current === nextKey ? null : current));
+    }, 280);
+  }, []);
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
@@ -457,6 +467,7 @@ export default function OrdersPage() {
 
   const handleClipboardImport = async () => {
     if (isOffline()) {
+      feedback("error");
       showToast("Нет соединения", {
         description: "Интернет недоступен. Попробуй импорт из буфера чуть позже.",
         variant: "error",
@@ -465,6 +476,7 @@ export default function OrdersPage() {
     }
 
     if (!navigator.clipboard?.readText) {
+      feedback("error");
       showToast("Буфер недоступен", {
         description: "Браузер не дал доступ к буферу обмена.",
         variant: "error",
@@ -477,6 +489,7 @@ export default function OrdersPage() {
       const importedItems = parseClipboardItems(rawText);
 
       if (importedItems.length === 0) {
+        feedback("error");
         showToast("Буфер не распознан", {
           description:
             "Скопируй строки с артикулом, наименованием и количеством, потом попробуй ещё раз.",
@@ -504,11 +517,13 @@ export default function OrdersPage() {
       });
       setOpen(true);
 
+      feedback("success");
       showToast("Буфер обработан", {
         description: `Добавлено позиций: ${importedItems.length}`,
         variant: "success",
       });
     } catch (error) {
+      feedback("error");
       showToast("Ошибка буфера обмена", {
         description: getFriendlyErrorMessage(
           error,
@@ -653,6 +668,7 @@ export default function OrdersPage() {
     }
 
     if (!form.bulkPlannedDate) {
+      feedback("error");
       showToast("Плановая дата не выбрана", {
         description: "Сначала выбери плановую дату.",
         variant: "error",
@@ -668,6 +684,7 @@ export default function OrdersPage() {
       })),
     }));
 
+    feedback("save");
     showToast("Дата применена", {
       description: "Плановая дата установлена для всех позиций.",
       variant: "success",
@@ -680,6 +697,7 @@ export default function OrdersPage() {
     }
 
     if (!form.bulkStatus) {
+      feedback("error");
       showToast("Статус не выбран", {
         description: "Сначала выбери статус.",
         variant: "error",
@@ -697,6 +715,7 @@ export default function OrdersPage() {
       })),
     }));
 
+    feedback("save");
     showToast("Статус применён", {
       description: "Статус обновлён для всех позиций.",
       variant: "success",
@@ -731,6 +750,7 @@ export default function OrdersPage() {
     });
 
     showToast("Позиция дублирована", { variant: "success" });
+    feedback("success");
   };
 
   const clearItemRow = (index: number) => {
@@ -756,6 +776,7 @@ export default function OrdersPage() {
     });
 
     showToast("Строка очищена", { variant: "info" });
+    feedback("tap");
   };
 
   const keepOnlyProblemItems = () => {
@@ -776,6 +797,7 @@ export default function OrdersPage() {
       description: "В форме остались только позиции, которые требуют проверки.",
       variant: "info",
     });
+    feedback("tap");
   };
 
   const removeItemRow = (index: number) => {
@@ -794,6 +816,7 @@ export default function OrdersPage() {
     });
 
     showToast("Позиция удалена", { variant: "info" });
+    feedback("error");
   };
 
   const handleExcelUpload = async (
@@ -820,6 +843,7 @@ export default function OrdersPage() {
       const importedItems = parseExcelItems(rows);
 
       if (importedItems.length === 0) {
+        feedback("error");
         showToast("Импорт не выполнен", {
           description:
             "Проверь, чтобы в Excel были колонки Артикул, Наименование, Количество.",
@@ -847,12 +871,14 @@ export default function OrdersPage() {
       });
       setOpen(true);
 
+      feedback("success");
       showToast("Импорт выполнен", {
         description: `Загружено позиций: ${importedItems.length}`,
         variant: "success",
       });
     } catch (error) {
       console.error(error);
+      feedback("error");
       showToast("Ошибка импорта", {
         description: getFriendlyErrorMessage(
           error,
@@ -894,6 +920,7 @@ export default function OrdersPage() {
       const recognizedItems = normalizeRecognizedItems(result?.items || []);
 
       if (recognizedItems.length === 0) {
+        feedback("error");
         showToast("Фото не распознано", {
           description: result?.notes
             ? "Текст с фото считался, но строки не удалось уверенно разобрать на артикул, наименование и количество."
@@ -922,11 +949,13 @@ export default function OrdersPage() {
       });
       setOpen(true);
 
+      feedback("success");
       showToast("Фото обработано", {
         description: `Добавлено позиций: ${recognizedItems.length}`,
         variant: "success",
       });
     } catch (error) {
+      feedback("error");
       showToast("Ошибка распознавания фото", {
         description: getFriendlyErrorMessage(
           error,
@@ -972,6 +1001,7 @@ export default function OrdersPage() {
     if (saving) return;
 
     if (isOffline()) {
+      feedback("error");
       showToast("Нет соединения", {
         description: "Сейчас интернет недоступен. Сохранить заказ не получится.",
         variant: "error",
@@ -980,6 +1010,7 @@ export default function OrdersPage() {
     }
 
     if (user.role === "viewer") {
+      feedback("error");
       showToast("Действие недоступно", {
         description: "Наблюдатель не может редактировать заказы.",
         variant: "error",
@@ -988,6 +1019,7 @@ export default function OrdersPage() {
     }
 
     if (user.role === "supplier" && !editingOrderId) {
+      feedback("error");
       showToast("Действие недоступно", {
         description: "Поставщик не может создавать новые заказы.",
         variant: "error",
@@ -996,6 +1028,7 @@ export default function OrdersPage() {
     }
 
     if (!form.clientOrder) {
+      feedback("error");
       showToast("Не заполнен номер заказа", {
         description: "Укажи номер клиентского заказа.",
         variant: "error",
@@ -1004,6 +1037,7 @@ export default function OrdersPage() {
     }
 
     if (!form.supplierId) {
+      feedback("error");
       showToast("Не выбран поставщик", {
         description: "Для заказа нужно выбрать поставщика.",
         variant: "error",
@@ -1017,6 +1051,7 @@ export default function OrdersPage() {
       const validItems = getValidItems(form.items);
 
       if (validItems.length === 0) {
+        feedback("error");
         showToast("Нет позиций", {
           description: "Добавь хотя бы одну позицию.",
           variant: "error",
@@ -1038,6 +1073,7 @@ export default function OrdersPage() {
 
       for (const item of validItems) {
         if (item.hasReplacement && !item.replacementArticle.trim()) {
+          feedback("error");
           showToast("Не заполнена замена", {
             description: `Для позиции "${getItemLabel(
               item
@@ -1048,6 +1084,7 @@ export default function OrdersPage() {
         }
 
         if (item.status === "Поставлен" && !item.deliveredDate) {
+          feedback("error");
           showToast("Нет даты поставки", {
             description: `Для позиции "${getItemLabel(
               item
@@ -1058,6 +1095,7 @@ export default function OrdersPage() {
         }
 
         if (item.status === "Отменен" && !item.canceledDate) {
+          feedback("error");
           showToast("Нет даты отмены", {
             description: `Для позиции "${getItemLabel(
               item
@@ -1071,6 +1109,7 @@ export default function OrdersPage() {
       if (isEditing) {
         const invalidItems = validItems.some((item) => !item.id);
         if (invalidItems) {
+          feedback("error");
           showToast("Нельзя добавить новую позицию", {
             description: "Нельзя добавлять новые позиции в уже созданный заказ.",
             variant: "error",
@@ -1112,6 +1151,7 @@ export default function OrdersPage() {
 
         if (error) {
           console.error("Ошибка обновления заказа:", error);
+          feedback("error");
           showToast("Ошибка обновления заказа", {
             description: getFriendlyErrorMessage(
               error,
@@ -1126,6 +1166,7 @@ export default function OrdersPage() {
 
         if (error) {
           console.error("Ошибка создания заказа:", error);
+          feedback("error");
           showToast("Ошибка создания заказа", {
             description: getFriendlyErrorMessage(
               error,
@@ -1140,6 +1181,7 @@ export default function OrdersPage() {
       }
 
       if (!orderId) {
+        feedback("error");
         showToast("Ошибка", {
           description: "Не удалось определить ID заказа.",
           variant: "error",
@@ -1169,6 +1211,7 @@ export default function OrdersPage() {
 
         if (error) {
           console.error("Ошибка удаления позиций:", error);
+          feedback("error");
           showToast("Ошибка удаления позиций", {
             description: getFriendlyErrorMessage(
               error,
@@ -1188,6 +1231,7 @@ export default function OrdersPage() {
 
           if (error) {
             console.error("Ошибка обновления позиции:", error);
+            feedback("error");
             showToast("Ошибка обновления позиции", {
               description: getFriendlyErrorMessage(
                 error,
@@ -1202,6 +1246,7 @@ export default function OrdersPage() {
 
           if (error) {
             console.error("Ошибка добавления позиции:", error);
+            feedback("error");
             showToast("Ошибка добавления позиции", {
               description: getFriendlyErrorMessage(
                 error,
@@ -1250,6 +1295,7 @@ export default function OrdersPage() {
         }).catch(() => {});
       }
 
+      feedback("save");
       showToast(editingOrderId ? "Заказ обновлён" : "Заказ создан", {
         variant: "success",
       });
@@ -1260,6 +1306,7 @@ export default function OrdersPage() {
 
   const removeOrder = async (id: number) => {
     if (user?.role !== "admin") {
+      feedback("error");
       showToast("Удаление недоступно", {
         description: "Удалять заказы может только администратор.",
         variant: "error",
@@ -1280,6 +1327,7 @@ export default function OrdersPage() {
 
     if (itemsError) {
       console.error("Ошибка удаления позиций:", itemsError);
+      feedback("error");
       showToast("Ошибка удаления позиций", {
         description: getFriendlyErrorMessage(
           itemsError,
@@ -1294,6 +1342,7 @@ export default function OrdersPage() {
 
     if (orderError) {
       console.error("Ошибка удаления заказа:", orderError);
+      feedback("error");
       showToast("Ошибка удаления заказа", {
         description: getFriendlyErrorMessage(
           orderError,
@@ -1306,6 +1355,7 @@ export default function OrdersPage() {
 
     setExpandedOrders((prev) => prev.filter((x) => x !== id));
     await loadOrders();
+    feedback("success");
     showToast("Заказ удалён", { variant: "success" });
   };
 
@@ -1346,6 +1396,7 @@ export default function OrdersPage() {
     const dateValue = quickDateDialog.value?.trim();
 
     if (!dateValue) {
+      feedback("error");
       showToast("Дата не указана", {
         description: 'Для статуса "Поставлен" нужно выбрать дату поставки.',
         variant: "error",
@@ -1355,6 +1406,7 @@ export default function OrdersPage() {
 
     const validDatePattern = /^\d{4}-\d{2}-\d{2}$/;
     if (!validDatePattern.test(dateValue)) {
+      feedback("error");
       showToast("Неверный формат даты", {
         description: "Выбери дату через календарь.",
         variant: "error",
@@ -1379,6 +1431,7 @@ export default function OrdersPage() {
 
     if (error) {
       console.error("Ошибка обновления статуса позиции:", error);
+      feedback("error");
       showToast("Ошибка обновления статуса", {
         description: getFriendlyErrorMessage(
           error,
@@ -1398,6 +1451,7 @@ export default function OrdersPage() {
 
     if (orderError) {
       console.error("Ошибка обновления заказа:", orderError);
+      feedback("error");
       showToast("Ошибка обновления заказа", {
         description: getFriendlyErrorMessage(
           orderError,
@@ -1454,6 +1508,8 @@ export default function OrdersPage() {
     }).catch(() => {});
 
     closeQuickDateDialog();
+    highlightQuickItem(quickDateDialog.orderId, quickDateDialog.itemId);
+    feedback("success");
     showToast("Статус обновлён", { variant: "success" });
   };
 
@@ -1467,6 +1523,7 @@ export default function OrdersPage() {
     const currentOrder = orders.find((x) => x.id === orderId);
 
     if (user.role === "viewer") {
+      feedback("error");
       showToast("Действие недоступно", {
         description: "Наблюдатель не может менять статус.",
         variant: "error",
@@ -1508,6 +1565,7 @@ export default function OrdersPage() {
       });
 
       if (!reason || !reason.trim()) {
+        feedback("error");
         showToast("Отмена не выполнена", {
           description: "Для отмены поставки нужно указать причину.",
           variant: "error",
@@ -1535,6 +1593,7 @@ export default function OrdersPage() {
 
     if (error) {
       console.error("Ошибка обновления статуса позиции:", error);
+      feedback("error");
       showToast("Ошибка обновления статуса", {
         description: getFriendlyErrorMessage(
           error,
@@ -1554,6 +1613,7 @@ export default function OrdersPage() {
 
     if (orderError) {
       console.error("Ошибка обновления заказа:", orderError);
+      feedback("error");
       showToast("Ошибка обновления заказа", {
         description: getFriendlyErrorMessage(
           orderError,
@@ -1609,6 +1669,8 @@ export default function OrdersPage() {
       updatedAtKey: nowTimestamp,
     }).catch(() => {});
 
+    highlightQuickItem(orderId, item.id);
+    feedback("success");
     showToast("Статус обновлён", { variant: "success" });
   };
 
@@ -1618,8 +1680,10 @@ export default function OrdersPage() {
     try {
       await navigator.clipboard.writeText(article);
       setCopiedArticle(article);
+      feedback("success");
       showToast("Артикул скопирован", { variant: "success" });
     } catch {
+      feedback("error");
       showToast("Не удалось скопировать артикул", { variant: "error" });
     }
   };
@@ -1953,6 +2017,7 @@ export default function OrdersPage() {
                   toggleOrderExpand={toggleOrderExpand}
                   removeOrder={removeOrder}
                   updateItemStatusQuick={updateItemStatusQuick}
+                  highlightedItemKey={highlightedQuickItemKey}
                   copyArticle={copyArticle}
                 />
               </div>
@@ -1968,6 +2033,7 @@ export default function OrdersPage() {
                   toggleOrderExpand={toggleOrderExpand}
                   removeOrder={removeOrder}
                   updateItemStatusQuick={updateItemStatusQuick}
+                  highlightedItemKey={highlightedQuickItemKey}
                   copyArticle={copyArticle}
                 />
               </div>

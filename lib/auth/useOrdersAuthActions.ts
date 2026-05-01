@@ -5,6 +5,7 @@ import { supabase } from "../supabase";
 import { clearCachedProfile, fetchUserProfile } from "./profile";
 import type { UserProfile } from "../orders/types";
 import { removePushSubscription } from "../notifications/push-subscriptions";
+import { feedback } from "@/src/lib/feedback";
 
 type LoginFormState = {
   login: string;
@@ -42,6 +43,7 @@ export function useOrdersAuthActions(params: {
     const rawPassword = loginForm.password;
 
     if (!normalizedEmail || !rawPassword) {
+      feedback("error");
       setLoginError("Заполни email и пароль");
       showToast("Не удалось войти", {
         description: "Заполни оба поля перед входом.",
@@ -56,6 +58,7 @@ export function useOrdersAuthActions(params: {
     });
 
     if (error) {
+      feedback("error");
       setLoginError(error.message || "Неверный email или пароль");
       showToast("Не удалось войти", {
         description: error.message || "Проверь email и пароль.",
@@ -69,6 +72,7 @@ export function useOrdersAuthActions(params: {
     } = await supabase.auth.getUser();
 
     if (!authUser) {
+      feedback("error");
       setLoginError("Не удалось получить пользователя");
       showToast("Ошибка авторизации", {
         description: "Не удалось получить пользователя.",
@@ -84,6 +88,7 @@ export function useOrdersAuthActions(params: {
       setLoginError("Профиль пользователя не найден");
       await supabase.auth.signOut();
       setProfileLoading(false);
+      feedback("error");
       showToast("Профиль не найден", {
         description: "Пользователь есть, но профиль не найден.",
         variant: "error",
@@ -94,6 +99,7 @@ export function useOrdersAuthActions(params: {
     setUser(profile);
     setProfileLoading(false);
     setLoginError("");
+    feedback("success");
     showToast("Вход выполнен", { variant: "success" });
   }, [
     loginForm.login,
@@ -113,6 +119,7 @@ export function useOrdersAuthActions(params: {
     await supabase.auth.signOut();
     setUser(null);
     setLoginForm({ login: "", password: "" });
+    feedback("tap");
     showToast("Вы вышли из системы", { variant: "info" });
   }, [currentUser, setLoginForm, setUser, showToast]);
 

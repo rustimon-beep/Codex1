@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { FeedbackEffects } from "../components/ui/FeedbackEffects";
 
 const uiFont = Inter({
   subsets: ["latin", "cyrillic"],
@@ -72,7 +73,10 @@ export default function RootLayout({
           media="(prefers-color-scheme: dark)"
         />
       </head>
-      <body className={uiFont.variable}>{children}</body>
+      <body className={uiFont.variable}>
+        <FeedbackEffects />
+        {children}
+      </body>
     </html>
   );
 }

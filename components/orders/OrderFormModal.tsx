@@ -2,6 +2,7 @@ import type { Dispatch, SetStateAction } from "react";
 import type { ItemForm, OrderFormState, SupplierSummary } from "../../lib/orders/types";
 import { ORDER_TYPE_OPTIONS, STATUS_OPTIONS } from "../../lib/orders/constants";
 import { formatDate, getTodayDate } from "../../lib/orders/utils";
+import { feedback } from "@/src/lib/feedback";
 
 type OrderFormModalProps = {
   open: boolean;
@@ -794,14 +795,20 @@ export function OrderFormModal({
 
               <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <button
-                onClick={() => !saving && void onRequestClose()}
+                onClick={() => {
+                  feedback("tap");
+                  !saving && void onRequestClose();
+                }}
                 disabled={saving || photoParsing}
                 className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
               >
                 Отмена
               </button>
               <button
-                onClick={saveForm}
+                onClick={() => {
+                  feedback("tap");
+                  void saveForm();
+                }}
                 disabled={saveDisabled}
                 className="w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
               >
