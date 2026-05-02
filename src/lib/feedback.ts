@@ -4,11 +4,11 @@ export type FeedbackType = "tap" | "success" | "error" | "save";
 
 const FEEDBACK_EVENT = "app-feedback";
 const FEEDBACK_CLASS_DURATION: Record<FeedbackType | "row-highlight", number> = {
-  tap: 190,
-  success: 520,
-  error: 320,
-  save: 460,
-  "row-highlight": 720,
+  tap: 170,
+  success: 360,
+  error: 260,
+  save: 320,
+  "row-highlight": 420,
 };
 
 const VIBRATION_PATTERNS: Record<FeedbackType, number | number[]> = {

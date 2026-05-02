@@ -4,9 +4,9 @@ import { useEffect } from "react";
 import { getFeedbackEventName, installPressFeedback, type FeedbackType } from "@/src/lib/feedback";
 
 const BODY_FEEDBACK_DURATION_MS: Record<Exclude<FeedbackType, "tap">, number> = {
-  success: 560,
-  error: 340,
-  save: 500,
+  success: 380,
+  error: 280,
+  save: 340,
 };
 
 export function FeedbackEffects() {
