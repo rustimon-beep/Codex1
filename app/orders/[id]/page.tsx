@@ -30,6 +30,10 @@ import {
   canUseBulkStatusActions,
 } from "../../../lib/orders/permissions";
 import { useOrderDetailActions } from "../../../lib/orders/useOrderDetailActions";
+import {
+  fetchOrderNotificationTimeline,
+  type OrderTimelineEvent,
+} from "../../../lib/notifications/order-timeline";
 import type {
   ItemForm,
   OrderItem,
@@ -66,6 +70,54 @@ import {
   statusSelectClasses,
 } from "../../../lib/orders/utils";
 
+function getTimelineEventTone(eventType: string) {
+  if (eventType === "cancellation" || eventType === "overdue") {
+    return "border-rose-200 bg-rose-50 text-rose-700";
+  }
+
+  if (eventType === "planned_date_changed" || eventType === "replacement_set") {
+    return "border-amber-200 bg-amber-50 text-amber-700";
+  }
+
+  if (eventType === "new_order") {
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  }
+
+  return "border-slate-200 bg-slate-50 text-slate-600";
+}
+
+function getTimelineEventLabel(eventType: string) {
+  const labels: Record<string, string> = {
+    new_order: "Новый заказ",
+    overdue: "Просрочка",
+    status_changed: "Статус",
+    cancellation: "Отмена",
+    planned_date_changed: "Срок",
+    replacement_set: "Замена",
+  };
+
+  return labels[eventType] || "Событие";
+}
+
+function getRecipientRoleLabel(role: string | null) {
+  if (role === "admin") return "Админ";
+  if (role === "buyer") return "Покупатель";
+  if (role === "supplier") return "Поставщик";
+  if (role === "viewer") return "Наблюдатель";
+  return "Получатель";
+}
+
+function formatTimelineDate(value: string | null | undefined) {
+  if (!value) return "—";
+
+  return new Intl.DateTimeFormat("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
 export default function OrderDetailsPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -84,6 +136,8 @@ export default function OrderDetailsPage() {
   >("all");
   const [itemSearch, setItemSearch] = useState("");
   const [highlightedItemId, setHighlightedItemId] = useState<number | null>(null);
+  const [timelineEvents, setTimelineEvents] = useState<OrderTimelineEvent[]>([]);
+  const [timelineLoading, setTimelineLoading] = useState(false);
 
   const { user, setUser, authLoading, profileLoading, setProfileLoading } =
     useProfileAuth();
@@ -306,6 +360,24 @@ export default function OrderDetailsPage() {
     [changedItemsCount, form.items, order?.id, orderId]
   );
 
+  const loadTimeline = useCallback(async () => {
+    if (!orderId || Number.isNaN(orderId)) {
+      setTimelineEvents([]);
+      return;
+    }
+
+    setTimelineLoading(true);
+    try {
+      const events = await fetchOrderNotificationTimeline(orderId);
+      setTimelineEvents(events);
+    } catch (error) {
+      console.warn("Не удалось загрузить центр событий заказа", error);
+      setTimelineEvents([]);
+    } finally {
+      setTimelineLoading(false);
+    }
+  }, [orderId]);
+
   const loadOrder = useCallback(async () => {
     if (!orderId || Number.isNaN(orderId)) {
       setLoading(false);
@@ -337,7 +409,8 @@ export default function OrderDetailsPage() {
     }
 
     setLoading(false);
-  }, [orderId, showToast, user]);
+    void loadTimeline();
+  }, [loadTimeline, orderId, showToast, user]);
 
   useEffect(() => {
     if (user) {
@@ -1387,6 +1460,137 @@ export default function OrderDetailsPage() {
                           className="min-h-[140px] w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm text-slate-900 outline-none focus:border-slate-400 focus:bg-white disabled:bg-slate-100 disabled:text-slate-500"
                         />
                       </FieldBlock>
+                    </div>
+                  </section>
+
+                  <section className="premium-shell rounded-[26px] p-4 md:rounded-[28px] md:p-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3">
+                        <PremiumIconTile
+                          tone="sky"
+                          icon={
+                            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
+                              <path d="M12 6V12L16 14" />
+                              <circle cx="12" cy="12" r="8" />
+                            </svg>
+                          }
+                        />
+                        <div>
+                          <div className="premium-kicker text-[10px] text-slate-400 md:text-[11px]">
+                            Центр событий
+                          </div>
+                          <h2 className="premium-ui-title mt-2 text-[24px] text-slate-900">
+                            Уведомления
+                          </h2>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={loadTimeline}
+                        className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-medium text-slate-600 transition hover:border-slate-300 hover:bg-white"
+                      >
+                        Обновить
+                      </button>
+                    </div>
+
+                    <div className="mt-5 max-h-96 space-y-3 overflow-y-auto pr-1">
+                      {timelineLoading ? (
+                        <div className="space-y-3">
+                          {[0, 1, 2].map((item) => (
+                            <div
+                              key={item}
+                              className="skeleton h-24 rounded-2xl border border-slate-200"
+                            />
+                          ))}
+                        </div>
+                      ) : timelineEvents.length === 0 ? (
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3.5 text-sm text-slate-500">
+                          Системных событий по заказу пока нет. Новые уведомления появятся здесь автоматически.
+                        </div>
+                      ) : (
+                        timelineEvents.map((event) => (
+                          <div
+                            key={event.id}
+                            className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3.5"
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span
+                                    className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold ${getTimelineEventTone(
+                                      event.eventType
+                                    )}`}
+                                  >
+                                    {getTimelineEventLabel(event.eventType)}
+                                  </span>
+                                  <span className="text-[11px] text-slate-400">
+                                    {formatTimelineDate(event.createdAt)}
+                                  </span>
+                                </div>
+                                <div className="mt-2 text-sm font-semibold text-slate-900">
+                                  {event.title}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="mt-2 text-[13px] leading-5 text-slate-600">
+                              {event.body}
+                            </div>
+
+                            {event.recipients.length > 0 ? (
+                              <div className="mt-3 space-y-2">
+                                {event.recipients.map((recipient) => {
+                                  const recipientName =
+                                    recipient.profileName ||
+                                    recipient.profileEmail ||
+                                    getRecipientRoleLabel(recipient.role);
+
+                                  return (
+                                    <div
+                                      key={recipient.id}
+                                      className="rounded-xl border border-white bg-white/80 px-3 py-2 text-[11px] text-slate-600 shadow-[0_4px_14px_rgba(15,23,42,0.04)]"
+                                    >
+                                      <div className="flex items-center justify-between gap-2">
+                                        <span className="truncate font-medium text-slate-700">
+                                          {recipientName}
+                                        </span>
+                                        <span className="shrink-0 text-slate-400">
+                                          {getRecipientRoleLabel(recipient.role)}
+                                        </span>
+                                      </div>
+                                      <div className="mt-1 flex flex-wrap gap-1.5">
+                                        <span
+                                          className={`rounded-full px-2 py-0.5 ${
+                                            recipient.deliveredAt
+                                              ? "bg-emerald-50 text-emerald-700"
+                                              : "bg-slate-100 text-slate-500"
+                                          }`}
+                                        >
+                                          Push: {recipient.deliveredAt ? "доставлен" : "ожидает"}
+                                        </span>
+                                        <span
+                                          className={`rounded-full px-2 py-0.5 ${
+                                            recipient.emailedAt
+                                              ? "bg-emerald-50 text-emerald-700"
+                                              : "bg-slate-100 text-slate-500"
+                                          }`}
+                                        >
+                                          Email: {recipient.emailedAt ? "отправлен" : "нет отметки"}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <div className="mt-3 rounded-xl border border-white bg-white/70 px-3 py-2 text-[11px] text-slate-500">
+                                Получатели не отображаются. Само событие создано, но статусы доставки недоступны для чтения.
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      )}
                     </div>
                   </section>
 
