@@ -762,8 +762,8 @@ export default function SupplierAnalyticsDashboardPage() {
       <div className="min-h-screen bg-transparent p-2 text-slate-900 antialiased md:p-8">
         <div className="bottom-nav-safe mx-auto max-w-7xl space-y-4 md:space-y-6 md:pb-0">
           <div className="premium-shell overflow-hidden rounded-[24px]">
-            <div className="relative bg-[linear-gradient(180deg,#151A22_0%,#111827_100%)] px-4 py-4 text-white md:px-8 md:py-7">
-              <div className="absolute inset-y-0 right-0 w-[34%] bg-[radial-gradient(circle_at_top_right,rgba(20,184,166,0.12),transparent_58%)] pointer-events-none" />
+            <div className="hero-premium relative px-4 py-4 text-white md:px-8 md:py-7">
+              <div className="absolute inset-y-0 right-0 w-[34%] bg-[radial-gradient(circle_at_top_right,rgba(180,138,76,0.12),transparent_58%)] pointer-events-none" />
 
               <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="flex items-start gap-4 md:gap-6">
@@ -854,7 +854,7 @@ export default function SupplierAnalyticsDashboardPage() {
                           className={`rounded-[14px] border px-3.5 py-2 text-[13px] font-medium transition ${
                             active
                               ? "border-slate-900 bg-slate-900 text-white shadow-[0_10px_24px_rgba(15,23,42,0.16)]"
-                              : "border-white/80 bg-white/62 text-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] hover:border-white hover:bg-white/82"
+                              : "border-white/80 bg-white/90 text-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] hover:border-white hover:bg-white"
                           }`}
                         >
                           {option.label}
@@ -965,7 +965,7 @@ export default function SupplierAnalyticsDashboardPage() {
                         dir: "desc",
                       })
                     }
-                    className="rounded-[14px] border border-white/80 bg-white/62 px-3.5 py-2 text-[13px] font-medium text-slate-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] transition hover:border-white hover:bg-white/82"
+                    className="rounded-[14px] border border-white/80 bg-white/90 px-3.5 py-2 text-[13px] font-medium text-slate-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] transition hover:border-white hover:bg-white"
                   >
                     Сбросить фильтры
                   </button>
@@ -1049,7 +1049,7 @@ export default function SupplierAnalyticsDashboardPage() {
                       return (
                         <div
                           key={`composition-${row.supplierId}`}
-                          className="premium-card-hover rounded-[18px] border border-white/80 bg-white/64 px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]"
+                          className="premium-card-hover rounded-[18px] border border-white/80 bg-white/90 px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]"
                         >
                           <div className="flex items-center justify-between gap-3">
                             <div className="min-w-0">
@@ -1093,7 +1093,7 @@ export default function SupplierAnalyticsDashboardPage() {
                     {sortedRows.map((row) => (
                       <div
                         key={`risk-${row.supplierId}`}
-                        className="premium-card-hover rounded-[18px] border border-white/80 bg-white/64 px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]"
+                        className="premium-card-hover rounded-[18px] border border-white/80 bg-white/90 px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]"
                       >
                         <div className="flex items-center justify-between gap-3">
                           <Link
@@ -1172,9 +1172,9 @@ export default function SupplierAnalyticsDashboardPage() {
                   <span>Заказов с историческим нарушением первого срока: {overallMetrics.breachedOrdersEver}</span>
                 </div>
 
-                <div className="hidden max-h-[680px] overflow-auto rounded-[22px] border border-white/80 bg-white/54 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] md:block">
+                <div className="hidden max-h-[680px] overflow-auto rounded-[22px] border border-white/80 bg-white/92 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] md:block">
                   <table className="min-w-full divide-y divide-slate-200 text-left">
-                    <thead className="sticky top-0 z-10 bg-white/80 backdrop-blur-xl">
+                    <thead className="sticky top-0 z-10 bg-white/95 backdrop-blur-xl">
                       <tr>
                         <SortableHeader label="#" field="rank" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
                         <SortableHeader label="Поставщик" field="supplier" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
@@ -1196,7 +1196,7 @@ export default function SupplierAnalyticsDashboardPage() {
                     </thead>
                     <tbody className="divide-y divide-slate-200">
                       {sortedRows.map((row) => (
-                        <tr key={row.supplierId} className="bg-white/55 transition hover:bg-white/85">
+                        <tr key={row.supplierId} className="bg-white transition hover:bg-slate-50/80">
                           <td className="px-4 py-3.5 text-sm font-semibold text-slate-900">{row.rank}</td>
                           <td className="px-4 py-3.5">
                             <Link
@@ -1240,7 +1240,7 @@ export default function SupplierAnalyticsDashboardPage() {
 
                 <div className="space-y-3 md:hidden">
                   {sortedRows.map((row) => (
-                    <div key={row.supplierId} className="premium-card-hover rounded-[20px] border border-white/80 bg-white/68 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+                    <div key={row.supplierId} className="premium-card-hover rounded-[20px] border border-white/80 bg-white/92 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <Link
@@ -1279,7 +1279,7 @@ export default function SupplierAnalyticsDashboardPage() {
       <button
         type="button"
         onClick={() => setHelpOpen(true)}
-        className="fixed bottom-[88px] right-4 z-[85] inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/72 px-3 py-2 text-[12px] font-semibold text-slate-700 shadow-[0_18px_44px_rgba(15,23,42,0.14)] backdrop-blur-2xl transition hover:bg-white/88 md:bottom-6 md:right-6 md:px-3.5 md:py-2.5 md:text-[13px]"
+        className="fixed bottom-[88px] right-4 z-[85] inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/92 px-3 py-2 text-[12px] font-semibold text-slate-700 shadow-[0_18px_44px_rgba(15,23,42,0.14)] backdrop-blur-2xl transition hover:bg-white md:bottom-6 md:right-6 md:px-3.5 md:py-2.5 md:text-[13px]"
       >
         <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-900 text-[11px] font-bold text-white">
           i
@@ -1310,14 +1310,14 @@ export default function SupplierAnalyticsDashboardPage() {
                   <button
                     type="button"
                     onClick={() => setHelpOpen(false)}
-                    className="rounded-full border border-white/80 bg-white/62 px-3 py-1.5 text-sm font-medium text-slate-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] transition hover:bg-white/82"
+                    className="rounded-full border border-white/80 bg-white/90 px-3 py-1.5 text-sm font-medium text-slate-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] transition hover:bg-white"
                   >
                     Закрыть
                   </button>
                 </div>
 
                 <div className="mt-5 grid gap-4 md:grid-cols-2">
-                  <div className="rounded-[20px] border border-white/80 bg-white/62 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+                  <div className="rounded-[20px] border border-white/80 bg-white/90 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
                     <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
                       Общий рейтинг
                     </div>
@@ -1328,7 +1328,7 @@ export default function SupplierAnalyticsDashboardPage() {
                       Рейтинг считается по шкале от 0 до 100. Чем выше доля поставок в срок,
                       чем меньше отказов и чем реже нарушается первый обещанный срок поставки, тем выше итоговый балл.
                     </p>
-                    <div className="mt-3 rounded-[16px] border border-white/80 bg-white/70 px-3 py-3 text-[12px] leading-6 text-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+                    <div className="mt-3 rounded-[16px] border border-white/80 bg-white/95 px-3 py-3 text-[12px] leading-6 text-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
                       Основа рейтинга:
                       <br />
                       <span className="font-medium text-slate-800">35%</span> поставка в срок
@@ -1343,7 +1343,7 @@ export default function SupplierAnalyticsDashboardPage() {
                     </div>
                   </div>
 
-                  <div className="rounded-[20px] border border-white/80 bg-white/62 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+                  <div className="rounded-[20px] border border-white/80 bg-white/90 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
                     <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
                       Класс поставщика
                     </div>
@@ -1359,7 +1359,7 @@ export default function SupplierAnalyticsDashboardPage() {
                   </div>
                 </div>
 
-                <div className="mt-4 rounded-[22px] border border-white/80 bg-white/62 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] md:p-5">
+                <div className="mt-4 rounded-[22px] border border-white/80 bg-white/90 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] md:p-5">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
                     Пояснение показателей
                   </div>
@@ -1474,7 +1474,7 @@ function ToggleChip({
       className={`rounded-full border px-3 py-1.5 text-[12px] font-medium transition ${
         active
           ? "border-slate-900 bg-slate-900 text-white"
-          : "border-white/80 bg-white/62 text-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] hover:border-white hover:bg-white/82"
+          : "border-white/80 bg-white/90 text-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] hover:border-white hover:bg-white"
       }`}
     >
       {label}
@@ -1490,7 +1490,7 @@ function HelpMetricCard({
   description: string;
 }) {
   return (
-    <div className="rounded-[16px] border border-white/80 bg-white/66 px-3.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+    <div className="rounded-[16px] border border-white/80 bg-white/92 px-3.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
       <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
         {title}
       </div>
@@ -1575,7 +1575,7 @@ function InfoMini({
   value: number | string;
 }) {
   return (
-    <div className="rounded-[16px] border border-white/80 bg-white/72 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+    <div className="rounded-[16px] border border-white/80 bg-white/92 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
       <div className="text-[10px] font-medium uppercase tracking-[0.08em] text-slate-400">
         {label}
       </div>
@@ -1682,7 +1682,7 @@ function HighlightPanel({
           <Link
             key={row.key}
             href={row.href || "#"}
-            className="block rounded-[18px] border border-white/80 bg-white/90 px-4 py-3 transition hover:bg-white"
+            className="block rounded-[18px] border border-white/80 bg-white/92 px-4 py-3 transition hover:bg-white"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">

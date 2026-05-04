@@ -293,8 +293,8 @@ export default function SupplierComparePage() {
       <div className="min-h-screen bg-transparent p-2 text-slate-900 antialiased md:p-8">
         <div className="bottom-nav-safe mx-auto max-w-7xl space-y-4 md:space-y-6 md:pb-0">
           <div className="premium-shell overflow-hidden rounded-[24px]">
-            <div className="relative bg-[linear-gradient(180deg,#151A22_0%,#111827_100%)] px-4 py-4 text-white md:px-8 md:py-7">
-              <div className="absolute inset-y-0 right-0 w-[34%] bg-[radial-gradient(circle_at_top_right,rgba(20,184,166,0.12),transparent_58%)] pointer-events-none" />
+            <div className="hero-premium relative px-4 py-4 text-white md:px-8 md:py-7">
+              <div className="absolute inset-y-0 right-0 w-[34%] bg-[radial-gradient(circle_at_top_right,rgba(180,138,76,0.12),transparent_58%)] pointer-events-none" />
               <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="flex items-start gap-4 md:gap-6">
                   <div className="shrink-0 pt-1">
@@ -375,7 +375,7 @@ export default function SupplierComparePage() {
                         className={`rounded-[14px] border px-3.5 py-2 text-[13px] font-medium transition ${
                           active
                             ? "border-slate-900 bg-slate-900 text-white"
-                            : "border-white/80 bg-white/62 text-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] hover:border-white hover:bg-white/82"
+                            : "border-white/80 bg-white/90 text-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] hover:border-white hover:bg-white"
                         }`}
                       >
                         {option.label}
@@ -401,7 +401,7 @@ export default function SupplierComparePage() {
                         className={`rounded-full border px-3 py-1.5 text-[12px] font-medium transition ${
                           active
                             ? "border-slate-900 bg-slate-900 text-white"
-                            : "border-white/80 bg-white/62 text-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] hover:border-white hover:bg-white/82"
+                            : "border-white/80 bg-white/90 text-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] hover:border-white hover:bg-white"
                         }`}
                       >
                         {supplier.name}
@@ -434,7 +434,7 @@ export default function SupplierComparePage() {
                     >
                       <div className="grid gap-3 md:grid-cols-2">
                         {compareRows.map((row) => (
-                          <div key={row.supplierId} className="premium-card-hover rounded-[18px] border border-white/80 bg-white/64 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+                          <div key={row.supplierId} className="premium-card-hover rounded-[18px] border border-white/80 bg-white/90 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
                             <div className="flex items-start justify-between gap-3">
                               <div>
                                 <Link href={`/analytics/suppliers/${row.supplierId}?period=${period}`} className="text-[16px] font-semibold text-slate-900 transition hover:text-slate-700">
@@ -444,7 +444,7 @@ export default function SupplierComparePage() {
                                   Класс {row.supplierClass} · рейтинг {Math.round(row.score)}
                                 </div>
                               </div>
-                              <span className="rounded-full border border-white/80 bg-white/75 px-2.5 py-1 text-[11px] font-semibold text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+                              <span className="rounded-full border border-white/80 bg-white/95 px-2.5 py-1 text-[11px] font-semibold text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
                                 {formatPercent(row.onTimeDelivery)}
                               </span>
                             </div>
@@ -551,7 +551,7 @@ function CardSection({
 
 function InfoMini({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="rounded-[16px] border border-white/80 bg-white/72 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+    <div className="rounded-[16px] border border-white/80 bg-white/92 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
       <div className="text-[10px] font-medium uppercase tracking-[0.08em] text-slate-400">
         {label}
       </div>
@@ -573,7 +573,7 @@ function RadarCompare({ rows, period }: { rows: CompareRow[]; period: AnalyticsP
 
   const center = 180;
   const radius = 120;
-  const colors = ["#0F766E", "#14B8A6", "#64748B", "#DC2626", "#2563EB"];
+  const colors = ["#0F766E", "#14B8A6", "#64748B", "#DC2626", "#B48A4C"];
 
   return (
     <div className="grid gap-6 lg:grid-cols-[360px_1fr] lg:items-center">
@@ -633,7 +633,7 @@ function RadarCompare({ rows, period }: { rows: CompareRow[]; period: AnalyticsP
 
       <div className="space-y-3">
         {rows.map((row, index) => (
-          <div key={row.supplierId} className="rounded-[18px] border border-white/80 bg-white/64 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+          <div key={row.supplierId} className="rounded-[18px] border border-white/80 bg-white/90 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
             <div className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors[index % colors.length] }} />
               <Link href={`/analytics/suppliers/${row.supplierId}?period=${period}`} className="text-[15px] font-semibold text-slate-900 transition hover:text-slate-700">
@@ -668,10 +668,10 @@ function CompareTable({ rows }: { rows: CompareRow[] }) {
     active ? "bg-emerald-50 text-emerald-700 font-semibold" : "text-slate-700";
 
   return (
-    <div className="overflow-hidden rounded-[20px] border border-white/80 bg-white/54 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+    <div className="overflow-hidden rounded-[20px] border border-white/80 bg-white/92 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
       <div className="hidden overflow-auto md:block">
         <table className="min-w-full divide-y divide-slate-200 text-left">
-          <thead className="bg-white/80 backdrop-blur-xl">
+          <thead className="bg-white/95 backdrop-blur-xl">
             <tr>
                 {["Поставщик", "Рейтинг", "Класс", "Заказы", "Строки", "Исполнено", "Отказано", "Строк с нарушенным первым сроком", "В срок, %", "Исполнение, %", "Отказы, %", "Срок поставки", "Задержка"].map((label) => (
                 <th key={label} className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
@@ -682,7 +682,7 @@ function CompareTable({ rows }: { rows: CompareRow[] }) {
           </thead>
           <tbody className="divide-y divide-slate-200">
             {rows.map((row) => (
-              <tr key={row.supplierId} className="bg-white/55 transition hover:bg-white/85">
+              <tr key={row.supplierId} className="bg-white transition hover:bg-slate-50/80">
                 <td className="px-4 py-3.5">
                   <Link href={`/analytics/suppliers/${row.supplierId}`} className="font-semibold text-slate-900 transition hover:text-slate-700">
                     {row.supplierName}
@@ -708,7 +708,7 @@ function CompareTable({ rows }: { rows: CompareRow[] }) {
 
       <div className="space-y-3 p-3 md:hidden">
         {rows.map((row) => (
-          <div key={row.supplierId} className="premium-card-hover rounded-[18px] border border-white/80 bg-white/68 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+          <div key={row.supplierId} className="premium-card-hover rounded-[18px] border border-white/80 bg-white/92 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
             <div className="text-[15px] font-semibold text-slate-900">{row.supplierName}</div>
             <div className="mt-1 text-[12px] text-slate-500">
               Рейтинг {Math.round(row.score)} · Класс {row.supplierClass}
