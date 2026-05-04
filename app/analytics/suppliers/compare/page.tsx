@@ -576,8 +576,8 @@ function RadarCompare({ rows, period }: { rows: CompareRow[]; period: AnalyticsP
   const colors = ["#0F766E", "#14B8A6", "#64748B", "#DC2626", "#B48A4C"];
 
   return (
-    <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(300px,360px)_minmax(0,1fr)] xl:items-center">
-      <svg viewBox="0 0 360 360" className="mx-auto h-[260px] w-full max-w-[320px] sm:h-[300px] sm:max-w-[340px] xl:h-[320px]">
+    <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(260px,320px)_minmax(260px,1fr)] xl:items-center">
+      <svg viewBox="0 0 360 360" className="mx-auto h-[260px] w-full max-w-[320px] sm:h-[300px] sm:max-w-[340px] xl:mx-0 xl:h-[320px] xl:max-w-[320px] xl:-translate-x-3">
         {[0.25, 0.5, 0.75, 1].map((ring) => (
           <polygon
             key={ring}
@@ -631,16 +631,16 @@ function RadarCompare({ rows, period }: { rows: CompareRow[]; period: AnalyticsP
         })}
       </svg>
 
-      <div className="min-w-0 space-y-3">
+      <div className="min-w-0 space-y-3 xl:min-w-[260px]">
         {rows.map((row, index) => (
-          <div key={row.supplierId} className="rounded-[18px] border border-white/80 bg-white/90 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+          <div key={row.supplierId} className="rounded-[18px] border border-white/80 bg-white/90 px-5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
             <div className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors[index % colors.length] }} />
-              <Link href={`/analytics/suppliers/${row.supplierId}?period=${period}`} className="min-w-0 truncate text-[15px] font-semibold text-slate-900 transition hover:text-slate-700">
+              <Link href={`/analytics/suppliers/${row.supplierId}?period=${period}`} className="min-w-0 break-words text-[15px] font-semibold text-slate-900 transition hover:text-slate-700">
                 {row.supplierName}
               </Link>
             </div>
-            <div className="mt-2 grid grid-cols-2 gap-2 text-[12px] text-slate-600">
+            <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 text-[12px] text-slate-600">
               <div>Сроки: {formatPercent(row.onTimeDelivery)}</div>
               <div>Исполнение: {formatPercent(row.fillRate)}</div>
               <div>Отказы: {formatPercent(100 - row.refusalRate)}</div>
