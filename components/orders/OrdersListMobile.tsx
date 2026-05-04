@@ -12,7 +12,6 @@ import {
   getOrderPlannedDate,
   getOrderProgress,
   getOrderStatus,
-  canArchiveOrderItems,
   hasComment,
   hasReplacementInOrder,
   isItemOverdue,
@@ -33,8 +32,6 @@ type OrdersListMobileProps = {
   user: UserProfile;
   toggleOrderExpand: (orderId: number) => void;
   removeOrder: (id: number) => Promise<void>;
-  archiveOrder: (id: number) => void | Promise<void>;
-  restoreArchivedOrder: (id: number) => void | Promise<void>;
   updateItemStatusQuick: (
     orderId: number,
     item: OrderItem,
@@ -53,8 +50,6 @@ export function OrdersListMobile({
   user,
   toggleOrderExpand,
   removeOrder,
-  archiveOrder,
-  restoreArchivedOrder,
   updateItemStatusQuick,
   copyArticle,
 }: OrdersListMobileProps) {
@@ -159,11 +154,6 @@ export function OrdersListMobile({
           (item) => (item.status || "Новый") === "Отменен" || !!item.canceled_date
         );
         const orderStatus = getOrderStatus(items);
-        const archived = Boolean(order.archived_at);
-        const canArchiveOrder =
-          !archived &&
-          (user.role === "admin" || user.role === "buyer") &&
-          canArchiveOrderItems(items);
         const overdue = isOrderOverdue(items);
         const progress = getOrderProgress(items);
         const plannedDate = getOrderPlannedDate(items);
@@ -172,8 +162,7 @@ export function OrdersListMobile({
         const supplierName = order.supplier?.name?.trim() || null;
         const actionsCount =
           1 +
-          (user.role === "admin" ? 1 : 0) +
-          (archived || canArchiveOrder ? 1 : 0);
+          (user.role === "admin" ? 1 : 0);
         const actionsWidthClass =
           actionsCount >= 3
             ? "-translate-x-[198px]"
@@ -235,41 +224,6 @@ export function OrdersListMobile({
                 </button>
               ) : null}
 
-              {archived && (user.role === "admin" || user.role === "buyer") ? (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    triggerHapticFeedback("light");
-                    void restoreArchivedOrder(order.id);
-                  }}
-                  className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-700 text-white shadow-[0_12px_24px_rgba(15,23,42,0.18)]"
-                  aria-label="Вернуть заказ из архива"
-                >
-                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M4 7H20" />
-                    <path d="M7 7V19H17V7" />
-                    <path d="M9 11L12 14L15 11" />
-                  </svg>
-                </button>
-              ) : canArchiveOrder ? (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    triggerHapticFeedback("light");
-                    void archiveOrder(order.id);
-                  }}
-                  className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-700 text-white shadow-[0_12px_24px_rgba(15,23,42,0.18)]"
-                  aria-label="Перенести заказ в архив"
-                >
-                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M4 7H20" />
-                    <path d="M7 7V19H17V7" />
-                    <path d="M9 12H15" />
-                  </svg>
-                </button>
-              ) : null}
             </div>
 
             <div
@@ -340,12 +294,6 @@ export function OrdersListMobile({
                         {hasCanceledItems && orderStatus !== "Отменен" ? (
                           <span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[8px] font-medium text-amber-700 md:text-[9px]">
                             Есть отмены
-                          </span>
-                        ) : null}
-
-                        {archived ? (
-                          <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[8px] font-medium text-slate-600 md:text-[9px]">
-                            Архив
                           </span>
                         ) : null}
 
@@ -528,7 +476,7 @@ export function OrdersListMobile({
                                   Статус
                                 </div>
 
-                                {archived || user.role === "viewer" || user.role === "buyer" ? (
+                                {user.role === "viewer" || user.role === "buyer" ? (
                                     <span
                                       className={`mt-1 inline-flex rounded-full px-2 py-1 text-[9px] font-medium md:px-2.5 md:text-[10px] ${statusClasses(
                                         item.status || "Новый"

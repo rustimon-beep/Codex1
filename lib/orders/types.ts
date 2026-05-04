@@ -15,8 +15,6 @@ export type OrderHeader = {
   comment: string | null;
   updated_by: string | null;
   updated_at: string | null;
-  archived_at?: string | null;
-  archived_by?: string | null;
   supplier?: SupplierSummary | null;
 };
 

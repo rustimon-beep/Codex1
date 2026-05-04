@@ -146,26 +146,6 @@ export async function deleteOrderById(orderId: number) {
   return supabase.from("orders_v2").delete().eq("id", orderId);
 }
 
-export async function archiveOrderById(orderId: number, archivedBy: string) {
-  return supabase
-    .from("orders_v2")
-    .update({
-      archived_at: new Date().toISOString(),
-      archived_by: archivedBy,
-    })
-    .eq("id", orderId);
-}
-
-export async function restoreOrderFromArchive(orderId: number) {
-  return supabase
-    .from("orders_v2")
-    .update({
-      archived_at: null,
-      archived_by: null,
-    })
-    .eq("id", orderId);
-}
-
 export async function deleteItemsByOrderId(orderId: number) {
   return supabase.from("order_items").delete().eq("order_id", orderId);
 }

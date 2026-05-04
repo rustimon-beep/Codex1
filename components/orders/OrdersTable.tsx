@@ -11,7 +11,6 @@ import {
   getOrderPlannedDate,
   getOrderProgress,
   getOrderStatus,
-  canArchiveOrderItems,
   hasComment,
   hasReplacementInOrder,
   isItemOverdue,
@@ -32,8 +31,6 @@ type OrdersTableProps = {
   user: UserProfile;
   toggleOrderExpand: (orderId: number) => void;
   removeOrder: (id: number) => void | Promise<void>;
-  archiveOrder: (id: number) => void | Promise<void>;
-  restoreArchivedOrder: (id: number) => void | Promise<void>;
   updateItemStatusQuick: (
     orderId: number,
     item: OrderItem,
@@ -54,8 +51,6 @@ export function OrdersTable({
   user,
   toggleOrderExpand,
   removeOrder,
-  archiveOrder,
-  restoreArchivedOrder,
   updateItemStatusQuick,
   copyArticle,
 }: OrdersTableProps) {
@@ -154,11 +149,6 @@ export function OrdersTable({
                   (item) => (item.status || "Новый") === "Отменен" || !!item.canceled_date
                 );
                 const orderStatus = getOrderStatus(items);
-                const archived = Boolean(order.archived_at);
-                const canArchiveOrder =
-                  !archived &&
-                  (user.role === "admin" || user.role === "buyer") &&
-                  canArchiveOrderItems(items);
                 const overdue = isOrderOverdue(items);
                 const progress = getOrderProgress(items);
                 const plannedDate = getOrderPlannedDate(items);
@@ -321,27 +311,6 @@ export function OrdersTable({
                                 </button>
                               ) : null}
 
-                              {archived && (user.role === "admin" || user.role === "buyer") ? (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    void restoreArchivedOrder(order.id);
-                                  }}
-                                  className="rounded-[12px] border border-slate-200 bg-transparent px-3 py-1.5 text-[12px] font-medium text-slate-600 transition hover:bg-slate-50"
-                                >
-                                  Вернуть
-                                </button>
-                              ) : canArchiveOrder ? (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    void archiveOrder(order.id);
-                                  }}
-                                  className="rounded-[12px] border border-slate-200 bg-transparent px-3 py-1.5 text-[12px] font-medium text-slate-600 transition hover:bg-slate-50"
-                                >
-                                  В архив
-                                </button>
-                              ) : null}
                             </div>
 
                           </div>
@@ -370,11 +339,6 @@ export function OrdersTable({
                             </span>
                           ) : null}
 
-                          {archived ? (
-                            <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-600">
-                              Архив
-                            </span>
-                          ) : null}
                         </div>
                       </td>
 
@@ -569,7 +533,7 @@ export function OrdersTable({
                                         Статус
                                       </div>
 
-                                      {archived || user.role === "viewer" || user.role === "buyer" ? (
+                                      {user.role === "viewer" || user.role === "buyer" ? (
                                         <span
                                           className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${statusClasses(
                                             item.status || "Новый"
