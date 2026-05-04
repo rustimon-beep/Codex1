@@ -1951,7 +1951,7 @@ export default function OrdersPage() {
 
       <div className="min-h-screen bg-transparent p-2 md:p-6">
         <div className="bottom-nav-safe mx-auto max-w-7xl space-y-3 md:space-y-5 md:pb-0">
-          <div className="premium-enter premium-shell overflow-hidden rounded-[20px] md:rounded-[24px]">
+          <div className="premium-enter premium-shell overflow-hidden rounded-[20px] md:-mx-3 md:rounded-[24px] lg:-mx-5">
             <div className="hero-premium relative px-4 py-3 text-white md:px-6 md:py-5">
               <div className="relative flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0">
