@@ -159,8 +159,18 @@ export function getOrderStatus(items: OrderItem[]) {
 }
 
 export function canArchiveOrderItems(items: OrderItem[]) {
+  if (items.length === 0) return false;
+
   const status = getOrderStatus(items);
-  return status === "Поставлен" || status === "Отменен";
+  const allItemsClosed = items.every(
+    (item) => item.status === "Поставлен" || item.status === "Отменен"
+  );
+
+  return (
+    status === "Поставлен" ||
+    status === "Отменен" ||
+    (status === "Частично поставлен" && allItemsClosed)
+  );
 }
 
 export function getOrderPlannedDate(items: OrderItem[]) {
