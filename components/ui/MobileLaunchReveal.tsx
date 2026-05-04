@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
-const SESSION_KEY = "avtodom-mobile-launch-shown";
+let launchShownInRuntime = false;
 
 export function MobileLaunchReveal() {
   const [visible, setVisible] = useState(false);
@@ -13,20 +13,23 @@ export function MobileLaunchReveal() {
     if (typeof window === "undefined") return;
 
     const isMobile = window.matchMedia("(max-width: 767px)").matches;
-    const wasShown = window.sessionStorage.getItem(SESSION_KEY) === "1";
 
-    if (!isMobile || wasShown) {
+    if (!isMobile || launchShownInRuntime) {
       setReady(true);
       return;
     }
 
+    launchShownInRuntime = true;
     setVisible(true);
     setReady(true);
-    window.sessionStorage.setItem(SESSION_KEY, "1");
+
+    if ("vibrate" in navigator) {
+      window.setTimeout(() => navigator.vibrate(18), 180);
+    }
 
     const timer = window.setTimeout(() => {
       setVisible(false);
-    }, 1350);
+    }, 980);
 
     return () => window.clearTimeout(timer);
   }, []);
@@ -38,6 +41,7 @@ export function MobileLaunchReveal() {
       <div className="mobile-launch__backdrop" />
       <div className="mobile-launch__orb mobile-launch__orb--one" />
       <div className="mobile-launch__orb mobile-launch__orb--two" />
+      <div className="mobile-launch__sheen" />
       <div className="mobile-launch__content">
         <div className="mobile-launch__logo-shell">
           <Image
@@ -50,7 +54,8 @@ export function MobileLaunchReveal() {
           />
         </div>
         <div className="mobile-launch__wordmark">AVTODOM</div>
-        <div className="mobile-launch__subtitle">Orders</div>
+        <div className="mobile-launch__subtitle">Orders Control</div>
+        <div className="mobile-launch__line" />
       </div>
     </div>
   );
