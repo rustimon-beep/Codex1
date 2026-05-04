@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { dispatchNotificationEventEmail } from "./email-server";
 import { dispatchNotificationEventPush } from "./push-server";
+import { filterRecipientRolesForEvent } from "./settings-server";
 
 type NotificationRecipientRole = "admin" | "supplier" | "buyer";
 type NotificationEventType =
@@ -117,7 +118,12 @@ export async function createNotificationEvents(events: NotificationEventDraft[])
       throw eventError || new Error("Не удалось создать событие уведомления.");
     }
 
-    const recipients = await fetchProfilesByRoles(event.recipientRoles, event.supplierId);
+    const enabledRecipientRoles = await filterRecipientRolesForEvent(
+      supabase,
+      event.eventType,
+      event.recipientRoles
+    );
+    const recipients = await fetchProfilesByRoles(enabledRecipientRoles, event.supplierId);
     if (event.recipientRoles.includes("supplier")) {
       const { error: staleSupplierRecipientsError } = await supabase
         .from("notification_recipients")

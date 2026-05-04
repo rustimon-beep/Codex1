@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import webpush from "web-push";
+import { isNotificationChannelEnabled } from "./settings-server";
 
 type PushSubscriptionRow = {
   id: number;
@@ -55,7 +56,7 @@ export async function dispatchNotificationEventPush(eventId: string) {
   const { data: recipients, error: recipientsError } = await supabase
     .from("notification_recipients")
     .select(
-      "id, user_id, delivered_at, notification_events(id, title, body, order_id, event_type, event_key, payload)"
+      "id, user_id, role, delivered_at, notification_events(id, title, body, order_id, event_type, event_key, payload)"
     )
     .eq("event_id", eventId)
     .is("delivered_at", null);
@@ -70,6 +71,13 @@ export async function dispatchNotificationEventPush(eventId: string) {
       : recipient.notification_events;
 
     if (!eventValue?.title || !eventValue?.body) continue;
+    const channelEnabled = await isNotificationChannelEnabled(supabase, {
+      eventType: eventValue.event_type,
+      role: recipient.role,
+      channel: "push",
+    });
+    if (!channelEnabled) continue;
+
     const url =
       typeof eventValue.payload?.url === "string"
         ? eventValue.payload.url

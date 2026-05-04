@@ -1,8 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
+import { isNotificationChannelEnabled } from "./settings-server";
 
 type EmailDispatchRow = {
   id: number;
   user_id: string;
+  role?: string | null;
   emailed_at: string | null;
   notification_events:
     | {
@@ -157,7 +159,7 @@ export async function dispatchNotificationEventEmail(eventId: string) {
   const primary = await supabase
     .from("notification_recipients")
     .select(
-      "id, user_id, emailed_at, notification_events(id, title, body, order_id, event_type, event_key, payload)"
+      "id, user_id, role, emailed_at, notification_events(id, title, body, order_id, event_type, event_key, payload)"
     )
     .eq("event_id", eventId)
     .is("emailed_at", null);
@@ -172,7 +174,7 @@ export async function dispatchNotificationEventEmail(eventId: string) {
     const fallback = await supabase
       .from("notification_recipients")
       .select(
-        "id, user_id, notification_events(id, title, body, order_id, event_type, event_key, payload)"
+        "id, user_id, role, notification_events(id, title, body, order_id, event_type, event_key, payload)"
       )
       .eq("event_id", eventId);
 
@@ -218,6 +220,13 @@ export async function dispatchNotificationEventEmail(eventId: string) {
     if (!eventValue?.title || !eventValue?.body || !email) {
       continue;
     }
+
+    const channelEnabled = await isNotificationChannelEnabled(supabase, {
+      eventType: eventValue.event_type,
+      role: row.role,
+      channel: "email",
+    });
+    if (!channelEnabled) continue;
 
     const relativeUrl =
       typeof eventValue.payload?.url === "string"
