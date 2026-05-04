@@ -617,18 +617,18 @@ export default function OrderDetailsPage() {
         onCancel={() => closePromptDialog(null)}
       />
 
-      <div className="min-h-screen bg-transparent p-2 md:p-8 text-slate-900 antialiased">
-        <div className="route-stage bottom-nav-safe mx-auto max-w-7xl space-y-4 md:space-y-6 md:pb-0">
-          <div className="premium-enter premium-shell overflow-hidden rounded-[20px] md:rounded-[28px]">
-            <div className="hero-premium relative px-3.5 py-3.5 text-white md:px-8 md:py-7">
+      <div className="min-h-screen bg-transparent p-2 md:p-6 text-slate-900 antialiased">
+        <div className="route-stage bottom-nav-safe mx-auto max-w-7xl space-y-3 md:space-y-5 md:pb-0">
+          <div className="premium-enter premium-shell overflow-hidden rounded-[20px] md:rounded-[24px]">
+            <div className="hero-premium relative px-4 py-3 text-white md:px-6 md:py-5">
               <div className="absolute inset-y-0 right-0 w-[38%] bg-[radial-gradient(circle_at_top_right,rgba(180,138,76,0.18),transparent_55%)] pointer-events-none" />
               <div className="pointer-events-none absolute -left-8 top-8 h-24 w-24 rounded-full bg-white/5 blur-2xl" />
               <div className="pointer-events-none absolute bottom-0 right-6 h-28 w-28 rounded-full bg-amber-300/10 blur-3xl" />
 
               <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0">
-                  <div className="flex items-start gap-4 md:gap-6">
-                    <div className="shrink-0 pt-1">
+                  <div className="flex items-start gap-3 md:gap-4">
+                    <div className="shrink-0 pt-0.5">
                       <AppLogo compact showText={false} />
                     </div>
 
@@ -637,20 +637,20 @@ export default function OrderDetailsPage() {
                         Карточка заказа
                       </div>
 
-                      <h1 className="mt-2 text-[19px] font-medium tracking-tight text-white md:mt-2.5 md:text-[44px] md:leading-[1.04]">
+                      <h1 className="premium-ui-title mt-2 text-[22px] text-white md:text-[31px] md:leading-[1.04]">
                         {form.clientOrder || "Заказ"}
                       </h1>
 
-                      <p className="mt-1.5 max-w-3xl text-[12px] leading-[1.1rem] text-slate-300 md:mt-3 md:text-base md:leading-6">
+                      <p className="premium-subtitle mt-1 max-w-3xl text-[13px] leading-5 text-slate-300 md:text-[15px] md:leading-6">
                         Полноценная страница редактирования заказа и его позиций.
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="relative flex flex-col gap-2.5 lg:min-w-[340px] lg:items-end">
+                <div className="relative flex flex-col gap-2 lg:min-w-[300px] lg:items-end">
                   <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center lg:justify-end">
-                    <div className="glass-chip rounded-[18px] px-2.5 py-1.5 text-[12px] text-white md:rounded-2xl md:px-4 md:py-2.5 md:text-sm">
+                    <div className="glass-chip rounded-[14px] px-3 py-1.5 text-[12px] text-white md:px-3.5 md:py-2 md:text-[13px]">
                       {profileLoading
                         ? "Загрузка профиля..."
                         : `${user.name} · ${
@@ -666,7 +666,7 @@ export default function OrderDetailsPage() {
 
                     <button
                       onClick={handleLogoutWithHaptic}
-                      className="glass-chip rounded-[18px] px-2.5 py-1.5 text-[12px] font-medium text-slate-100 transition hover:bg-white/10 md:rounded-2xl md:px-4 md:py-2.5 md:text-sm"
+                      className="glass-chip rounded-[14px] px-3 py-1.5 text-[12px] font-medium text-slate-100 transition hover:bg-white/10 md:px-3.5 md:py-2 md:text-[13px]"
                     >
                       Выйти
                     </button>
@@ -676,7 +676,7 @@ export default function OrderDetailsPage() {
                     <Link
                       href="/"
                       onClick={handleBackNavigation}
-                      className="route-link glass-chip rounded-[18px] px-3.5 py-2 text-center text-[12px] font-medium text-white transition hover:bg-white/15 md:rounded-2xl md:px-5 md:py-3 md:text-sm"
+                      className="route-link glass-chip rounded-[14px] px-4 py-2 text-center text-[12px] font-semibold text-white transition hover:bg-white/15 md:px-4 md:py-2.5 md:text-[13px]"
                     >
                       Назад к списку
                     </Link>
@@ -684,7 +684,7 @@ export default function OrderDetailsPage() {
                     {user.role === "admin" ? (
                       <button
                         onClick={handleRemoveOrderWithHaptic}
-                        className="glass-chip rounded-[18px] px-3.5 py-2 text-[12px] font-medium text-white transition hover:bg-white/15 md:rounded-2xl md:px-5 md:py-3 md:text-sm"
+                        className="glass-chip rounded-[14px] px-4 py-2 text-[12px] font-semibold text-white transition hover:bg-white/15 md:px-4 md:py-2.5 md:text-[13px]"
                       >
                         Удалить заказ
                       </button>

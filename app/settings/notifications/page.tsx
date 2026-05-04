@@ -180,7 +180,7 @@ export default function NotificationSettingsPage() {
 
   if (!user || user.role !== "admin") {
     return (
-      <div className="min-h-screen bg-transparent p-4 md:p-8">
+      <div className="min-h-screen bg-transparent p-2 md:p-6">
         <EmptyStateCard
           title="Нет доступа"
           description="Настройки уведомлений доступны только администратору."
@@ -192,41 +192,45 @@ export default function NotificationSettingsPage() {
   return (
     <>
       <MobileLaunchReveal />
-      <div className="min-h-screen bg-transparent p-3 text-slate-900 antialiased md:p-8">
-        <div className="route-stage mx-auto max-w-7xl space-y-5">
-          <section className="hero-premium relative overflow-hidden rounded-[24px] px-4 py-5 text-white shadow-[0_18px_48px_rgba(15,23,42,0.18)] md:rounded-[32px] md:px-8 md:py-7">
-            <div className="absolute inset-y-0 right-0 w-[38%] bg-[radial-gradient(circle_at_top_right,rgba(20,184,166,0.2),transparent_58%)]" />
-            <div className="relative flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-start gap-4">
-                <AppLogo compact showText={false} />
-                <div>
-                  <div className="glass-chip inline-flex rounded-full px-3 py-1 text-[10px] font-semibold tracking-[0.12em] text-slate-200">
-                    Настройки
+      <div className="min-h-screen bg-transparent p-2 text-slate-900 antialiased md:p-6">
+        <div className="route-stage mx-auto max-w-7xl space-y-3 md:space-y-5">
+          <section className="premium-shell overflow-hidden rounded-[20px] md:rounded-[24px]">
+            <div className="hero-premium relative px-4 py-3 text-white md:px-6 md:py-5">
+              <div className="absolute inset-y-0 right-0 w-[38%] bg-[radial-gradient(circle_at_top_right,rgba(180,138,76,0.12),transparent_58%)]" />
+              <div className="relative flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div className="flex items-start gap-3 md:gap-4">
+                  <div className="shrink-0 pt-0.5">
+                    <AppLogo compact showText={false} />
                   </div>
-                  <h1 className="mt-3 text-[28px] font-semibold tracking-tight md:text-[44px]">
-                    Уведомления
-                  </h1>
-                  <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300 md:text-base">
-                    Управляй тем, кому и по какому каналу отправляются системные уведомления.
-                  </p>
+                  <div>
+                    <div className="glass-chip inline-flex rounded-full px-3 py-1 text-[10px] font-semibold tracking-[0.12em] text-slate-200">
+                      Настройки
+                    </div>
+                    <h1 className="premium-ui-title mt-2 text-[22px] text-white md:text-[31px] md:leading-[1.04]">
+                      Уведомления
+                    </h1>
+                    <p className="premium-subtitle mt-1 max-w-3xl text-[13px] leading-5 text-slate-300 md:text-[15px] md:leading-6">
+                      Управляй тем, кому и по какому каналу отправляются системные уведомления.
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <Link
-                  href="/"
-                  className="glass-chip rounded-2xl px-5 py-3 text-center text-sm font-medium text-white transition hover:bg-white/15"
-                >
-                  К заказам
-                </Link>
-                <button
-                  type="button"
-                  onClick={saveSettings}
-                  disabled={saving || tableMissing}
-                  className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow-[0_18px_34px_rgba(15,23,42,0.16)] transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {saving ? "Сохранение..." : "Сохранить"}
-                </button>
+                <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
+                  <Link
+                    href="/"
+                    className="glass-chip rounded-[14px] px-4 py-2 text-center text-[12px] font-semibold text-white transition hover:bg-white/15 md:px-4 md:py-2.5 md:text-[13px]"
+                  >
+                    К заказам
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={saveSettings}
+                    disabled={saving || tableMissing}
+                    className="rounded-[14px] bg-white px-4 py-2 text-[12px] font-semibold text-slate-900 shadow-[0_18px_34px_rgba(15,23,42,0.16)] transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 md:px-4 md:py-2.5 md:text-[13px]"
+                  >
+                    {saving ? "Сохранение..." : "Сохранить"}
+                  </button>
+                </div>
               </div>
             </div>
           </section>

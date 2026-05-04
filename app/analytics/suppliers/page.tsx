@@ -742,7 +742,7 @@ export default function SupplierAnalyticsDashboardPage() {
     return (
       <>
         <ToastViewport toasts={toasts} onClose={closeToast} />
-        <div className="min-h-screen bg-transparent p-3 md:p-8">
+        <div className="min-h-screen bg-transparent p-2 md:p-6">
           <div className="mx-auto max-w-5xl">
             <EmptyStateCard
               title="Сводная аналитика поставщиков недоступна"
@@ -759,32 +759,32 @@ export default function SupplierAnalyticsDashboardPage() {
       <MobileLaunchReveal />
       <ToastViewport toasts={toasts} onClose={closeToast} />
 
-      <div className="min-h-screen bg-transparent p-2 text-slate-900 antialiased md:p-8">
-        <div className="bottom-nav-safe mx-auto max-w-7xl space-y-4 md:space-y-6 md:pb-0">
-          <div className="premium-shell overflow-hidden rounded-[24px]">
-            <div className="hero-premium relative px-4 py-4 text-white md:px-8 md:py-7">
+      <div className="min-h-screen bg-transparent p-2 text-slate-900 antialiased md:p-6">
+        <div className="bottom-nav-safe mx-auto max-w-7xl space-y-3 md:space-y-5 md:pb-0">
+          <div className="premium-shell overflow-hidden rounded-[20px] md:rounded-[24px]">
+            <div className="hero-premium relative px-4 py-3 text-white md:px-6 md:py-5">
               <div className="absolute inset-y-0 right-0 w-[34%] bg-[radial-gradient(circle_at_top_right,rgba(180,138,76,0.12),transparent_58%)] pointer-events-none" />
 
               <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div className="flex items-start gap-4 md:gap-6">
-                  <div className="shrink-0 pt-1">
+                <div className="flex items-start gap-3 md:gap-4">
+                  <div className="shrink-0 pt-0.5">
                     <AppLogo compact showText={false} />
                   </div>
                   <div className="min-w-0">
                     <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-medium text-slate-300">
                       Аналитика поставщиков
                     </div>
-                    <h1 className="mt-2 text-[24px] font-semibold tracking-tight text-white md:text-[32px]">
+                    <h1 className="premium-ui-title mt-2 text-[22px] text-white md:text-[31px] md:leading-[1.04]">
                       Аналитика поставщиков
                     </h1>
-                    <p className="mt-1 max-w-3xl text-[14px] leading-6 text-slate-300">
+                    <p className="premium-subtitle mt-1 max-w-3xl text-[13px] leading-5 text-slate-300 md:text-[15px] md:leading-6">
                       Рейтинг, ключевые показатели, отказные линии, нарушения первого срока, зоны
                       внимания и переход к конкретным заказам.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2 lg:min-w-[340px] lg:items-end">
+                <div className="flex flex-col gap-2 lg:min-w-[300px] lg:items-end">
                   <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center lg:justify-end">
                     <div className="rounded-[14px] border border-white/10 bg-white/5 px-3 py-1.5 text-[12px] text-white md:px-3.5 md:py-2 md:text-[13px]">
                       {profileLoading
