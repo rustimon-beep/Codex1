@@ -214,32 +214,31 @@ img {
 }
 
 .feedback-press {
-  transform: scale(0.968);
-  opacity: 0.95;
+  transform: scale(0.986);
+  opacity: 0.98;
   transition:
-    transform 120ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 120ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 120ms cubic-bezier(0.22, 1, 0.36, 1);
+    transform 90ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 90ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 90ms cubic-bezier(0.22, 1, 0.36, 1);
   box-shadow:
-    0 9px 20px rgba(15, 23, 42, 0.11),
-    0 0 0 1px rgba(15, 118, 110, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    0 6px 14px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
 :where(*:not(body)).feedback-success {
-  animation: feedback-success-glow 360ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: feedback-success-glow 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 :where(*:not(body)).feedback-error {
-  animation: feedback-error-shake 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: feedback-error-shake 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 :where(*:not(body)).feedback-save {
-  animation: feedback-save-pulse 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: feedback-save-pulse 260ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 :where(*:not(body)).feedback-row-highlight {
-  animation: feedback-row-highlight 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: feedback-row-highlight 300ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 body::after {
@@ -253,23 +252,23 @@ body::after {
 
 body.feedback-success::after {
   background:
-    radial-gradient(circle at center, rgba(22, 163, 74, 0.09), transparent 56%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 46%);
-  animation: feedback-overlay-fade 360ms cubic-bezier(0.22, 1, 0.36, 1);
+    radial-gradient(circle at center, rgba(22, 163, 74, 0.045), transparent 54%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 45%);
+  animation: feedback-overlay-fade 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 body.feedback-save::after {
   background:
-    radial-gradient(circle at center, rgba(15, 118, 110, 0.08), transparent 56%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 46%);
-  animation: feedback-overlay-fade 320ms cubic-bezier(0.22, 1, 0.36, 1);
+    radial-gradient(circle at center, rgba(15, 118, 110, 0.04), transparent 54%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 45%);
+  animation: feedback-overlay-fade 260ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 body.feedback-error::after {
   background:
-    radial-gradient(circle at center, rgba(220, 38, 38, 0.08), transparent 52%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 45%);
-  animation: feedback-overlay-fade 260ms cubic-bezier(0.22, 1, 0.36, 1);
+    radial-gradient(circle at center, rgba(220, 38, 38, 0.045), transparent 52%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 45%);
+  animation: feedback-overlay-fade 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .skeleton {
@@ -486,15 +485,15 @@ body.feedback-error::after {
   }
   34% {
     box-shadow:
-      0 0 0 1px rgba(22, 163, 74, 0.11),
-      0 16px 30px rgba(22, 163, 74, 0.11);
-    filter: brightness(1.01);
-  }
-  68% {
-    box-shadow:
       0 0 0 1px rgba(22, 163, 74, 0.06),
       0 10px 20px rgba(22, 163, 74, 0.06);
     filter: brightness(1.004);
+  }
+  68% {
+    box-shadow:
+      0 0 0 1px rgba(22, 163, 74, 0.03),
+      0 6px 12px rgba(22, 163, 74, 0.03);
+    filter: brightness(1.002);
   }
   100% {
     box-shadow: 0 0 0 rgba(22, 163, 74, 0);
@@ -508,16 +507,16 @@ body.feedback-error::after {
     box-shadow: 0 0 0 rgba(15, 118, 110, 0);
   }
   32% {
-    transform: scale(0.992);
-    box-shadow:
-      0 0 0 1px rgba(15, 118, 110, 0.1),
-      0 14px 26px rgba(15, 118, 110, 0.09);
-  }
-  66% {
-    transform: scale(1.001);
+    transform: scale(0.996);
     box-shadow:
       0 0 0 1px rgba(15, 118, 110, 0.05),
-      0 8px 16px rgba(15, 118, 110, 0.05);
+      0 8px 16px rgba(15, 118, 110, 0.04);
+  }
+  66% {
+    transform: scale(1);
+    box-shadow:
+      0 0 0 1px rgba(15, 118, 110, 0.025),
+      0 4px 10px rgba(15, 118, 110, 0.025);
   }
   100% {
     transform: scale(1);
@@ -530,13 +529,13 @@ body.feedback-error::after {
     transform: translateX(0);
   }
   18% {
-    transform: translateX(-4px);
+    transform: translateX(-2px);
   }
   42% {
-    transform: translateX(3px);
+    transform: translateX(2px);
   }
   66% {
-    transform: translateX(-2px);
+    transform: translateX(-1px);
   }
   84% {
     transform: translateX(1px);
@@ -553,15 +552,15 @@ body.feedback-error::after {
   }
   26% {
     box-shadow:
-      inset 2px 0 0 rgba(15, 118, 110, 0.22),
-      0 12px 24px rgba(15, 118, 110, 0.06);
-    background-color: rgba(20, 184, 166, 0.08);
+      inset 1px 0 0 rgba(15, 118, 110, 0.12),
+      0 8px 16px rgba(15, 118, 110, 0.03);
+    background-color: rgba(20, 184, 166, 0.035);
   }
   62% {
     box-shadow:
-      inset 1px 0 0 rgba(15, 118, 110, 0.14),
-      0 8px 16px rgba(15, 118, 110, 0.04);
-    background-color: rgba(20, 184, 166, 0.05);
+      inset 1px 0 0 rgba(15, 118, 110, 0.07),
+      0 4px 10px rgba(15, 118, 110, 0.02);
+    background-color: rgba(20, 184, 166, 0.025);
   }
   100% {
     box-shadow: inset 0 0 0 0 rgba(15, 118, 110, 0);
@@ -577,7 +576,7 @@ body.feedback-error::after {
     opacity: 1;
   }
   58% {
-    opacity: 0.45;
+    opacity: 0.26;
   }
   100% {
     opacity: 0;
