@@ -213,14 +213,16 @@ export default function OrderDetailsPage() {
     [highlightQuery]
   );
 
-  const canEditOrderTextFields = canEditOrderTextFieldsByRole(user);
-  const canEditSupplierAssignment = user?.role === "admin" || user?.role === "buyer";
-  const canEditMainItemFields = canEditItemMainFields(user);
-  const canEditItemStatusFields = canEditItemStatusFieldsByRole(user);
-  const canBulkEditItems = canUseBulkActions(user);
-  const canBulkStatusItems = canUseBulkStatusActions(user);
-  const canBulkPlannedDateItems = canUseBulkPlannedDateActions(user);
-  const canCommentOnOrder = canComment(user);
+  const isArchivedOrder = Boolean(order?.archived_at);
+  const canEditOrderTextFields = !isArchivedOrder && canEditOrderTextFieldsByRole(user);
+  const canEditSupplierAssignment =
+    !isArchivedOrder && (user?.role === "admin" || user?.role === "buyer");
+  const canEditMainItemFields = !isArchivedOrder && canEditItemMainFields(user);
+  const canEditItemStatusFields = !isArchivedOrder && canEditItemStatusFieldsByRole(user);
+  const canBulkEditItems = !isArchivedOrder && canUseBulkActions(user);
+  const canBulkStatusItems = !isArchivedOrder && canUseBulkStatusActions(user);
+  const canBulkPlannedDateItems = !isArchivedOrder && canUseBulkPlannedDateActions(user);
+  const canCommentOnOrder = !isArchivedOrder && canComment(user);
   const isAdmin = user?.role === "admin";
 
   const viewItems: OrderItem[] = useMemo(
@@ -496,6 +498,15 @@ export default function OrderDetailsPage() {
   };
 
   const handleSaveOrder = () => {
+    if (isArchivedOrder) {
+      feedback("error");
+      showToast("Заказ в архиве", {
+        description: "Архивные заказы доступны для просмотра, но их статусы и данные не меняются.",
+        variant: "error",
+      });
+      return;
+    }
+
     if (isOffline()) {
       feedback("error");
       showToast("Нет соединения", {
@@ -709,6 +720,12 @@ export default function OrderDetailsPage() {
                 <StatMini title="Плановая" value={formatDate(plannedDate)} />
                 <StatMini title="Полная поставка" value={formatDate(fullDeliveredDate)} />
               </div>
+
+              {isArchivedOrder ? (
+                <div className="premium-enter premium-enter-delay-1 rounded-[22px] border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-600 shadow-[0_10px_28px_rgba(15,23,42,0.06)] md:rounded-[26px] md:px-5">
+                  Заказ находится в архиве. Он сохранён для истории и аналитики, но редактирование статусов и данных отключено.
+                </div>
+              ) : null}
 
               <div className="premium-enter premium-enter-delay-2 grid gap-4 md:gap-5 xl:grid-cols-[1.72fr_0.82fr]">
                 <div className="space-y-4 md:space-y-5">
@@ -1030,8 +1047,9 @@ export default function OrderDetailsPage() {
                           normalizeDateForCompare(item.plannedDate) !==
                             normalizeDateForCompare(persistedItem.planned_date);
                         const canEditPlannedDateForRow =
-                          canEditItemPlannedDate(user, persistedItem || item) ||
-                          hasUnsavedSupplierPlannedDateChange;
+                          !isArchivedOrder &&
+                          (canEditItemPlannedDate(user, persistedItem || item) ||
+                            hasUnsavedSupplierPlannedDateChange);
                         const showPlannedDateLockHint =
                           user?.role === "supplier" && !canEditPlannedDateForRow;
 
@@ -1606,10 +1624,10 @@ export default function OrderDetailsPage() {
                     )}
                     <button
                       onClick={handleSaveOrderWithHaptic}
-                      disabled={saving}
+                      disabled={saving || isArchivedOrder}
                       className="w-full rounded-2xl bg-slate-900 px-5 py-4 text-sm font-medium text-white shadow-[0_20px_40px_rgba(15,23,42,0.18)] transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {saving ? "Сохранение..." : "Сохранить изменения"}
+                      {isArchivedOrder ? "Заказ в архиве" : saving ? "Сохранение..." : "Сохранить изменения"}
                     </button>
                   </section>
                 </div>
@@ -1641,7 +1659,7 @@ export default function OrderDetailsPage() {
             active: true,
             tone: "accent",
             haptic: "success",
-            disabled: loading || saving,
+            disabled: loading || saving || isArchivedOrder,
             icon: (
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M5 21H19" />

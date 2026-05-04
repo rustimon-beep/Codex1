@@ -26,6 +26,7 @@ import {
   notifyOrderChanged,
 } from "../lib/notifications/api";
 import {
+  archiveOrderById,
   buildOrderItemPayload,
   createOrderHeader,
   createOrderItem,
@@ -35,6 +36,7 @@ import {
   fetchOrders,
   getExistingItemIds,
   markItemAsDelivered,
+  restoreOrderFromArchive,
   updateItemQuickStatus,
   updateOrderHeader,
   updateOrderItem,
@@ -89,6 +91,7 @@ import {
 import { useToast } from "../lib/ui/useToast";
 import {
   appendCommentEntries,
+  canArchiveOrderItems,
   createEmptyOrderForm,
   formatDateTimeForDb,
   getImportedItemIssues,
@@ -130,6 +133,7 @@ export default function OrdersPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [orderTypeFilter, setOrderTypeFilter] = useState("all");
+  const [archiveView, setArchiveView] = useState<"active" | "archive">("active");
   const [open, setOpen] = useState(false);
   const [editingOrderId, setEditingOrderId] = useState<number | null>(null);
   const [form, setForm] = useState<OrderFormState>(EMPTY_ORDER_FORM);
@@ -273,15 +277,25 @@ export default function OrdersPage() {
     void loadSuppliers();
   }, [loadSuppliers, user]);
 
+  const activeOrders = useMemo(
+    () => orders.filter((order) => !order.archived_at),
+    [orders]
+  );
+  const archivedOrders = useMemo(
+    () => orders.filter((order) => !!order.archived_at),
+    [orders]
+  );
+  const workspaceOrders = archiveView === "archive" ? archivedOrders : activeOrders;
+
   const supplierScopedOrders = useMemo(() => {
-    if (user?.role === "supplier") return orders;
-    if (supplierTab === "all") return orders;
+    if (user?.role === "supplier") return workspaceOrders;
+    if (supplierTab === "all") return workspaceOrders;
     if (supplierTab === "unassigned") {
-      return orders.filter((order) => !order.supplier_id);
+      return workspaceOrders.filter((order) => !order.supplier_id);
     }
 
-    return orders.filter((order) => String(order.supplier_id || "") === supplierTab);
-  }, [orders, supplierTab, user?.role]);
+    return workspaceOrders.filter((order) => String(order.supplier_id || "") === supplierTab);
+  }, [supplierTab, user?.role, workspaceOrders]);
 
   const filteredOrders = useMemo(() => {
     return getFilteredAndSortedOrders({
@@ -304,13 +318,13 @@ export default function OrdersPage() {
   });
   const hasAttentionItems = attention.cards.some((card) => card.count > 0);
   const supplierTabs = useMemo(() => {
-    const baseTabs = [{ id: "all", label: "Все поставщики", count: orders.length }];
+    const baseTabs = [{ id: "all", label: "Все поставщики", count: workspaceOrders.length }];
     const assignedTabs = suppliers.map((supplier) => ({
       id: String(supplier.id),
       label: supplier.name,
-      count: orders.filter((order) => order.supplier_id === supplier.id).length,
+      count: workspaceOrders.filter((order) => order.supplier_id === supplier.id).length,
     }));
-    const unassignedCount = orders.filter((order) => !order.supplier_id).length;
+    const unassignedCount = workspaceOrders.filter((order) => !order.supplier_id).length;
 
     if (unassignedCount > 0) {
       assignedTabs.push({
@@ -321,7 +335,7 @@ export default function OrdersPage() {
     }
 
     return [...baseTabs, ...assignedTabs];
-  }, [orders, suppliers]);
+  }, [suppliers, workspaceOrders]);
 
   useEffect(() => {
     if (user?.role === "supplier") {
@@ -1364,6 +1378,84 @@ export default function OrdersPage() {
     showToast("Заказ удалён", { variant: "success" });
   };
 
+  const archiveOrder = async (id: number) => {
+    if (user?.role !== "admin" && user?.role !== "buyer") {
+      feedback("error");
+      showToast("Архив недоступен", {
+        description: "Переносить заказы в архив может администратор или покупатель.",
+        variant: "error",
+      });
+      return;
+    }
+
+    const targetOrder = orders.find((order) => order.id === id);
+    if (!targetOrder || !canArchiveOrderItems(targetOrder.order_items || [])) {
+      feedback("error");
+      showToast("Заказ ещё нельзя архивировать", {
+        description: "В архив можно переносить только полностью поставленные или полностью отменённые заказы.",
+        variant: "error",
+      });
+      return;
+    }
+
+    const confirmed = await requestConfirmation({
+      title: "Перенести заказ в архив?",
+      description:
+        "Заказ исчезнет из рабочей зоны, но останется в аналитике и истории. Статусы позиций не изменятся.",
+      confirmText: "В архив",
+      variant: "default",
+    });
+
+    if (!confirmed) return;
+
+    const { error } = await archiveOrderById(id, user.name);
+
+    if (error) {
+      console.error("Ошибка архивирования заказа:", error);
+      feedback("error");
+      showToast("Не удалось перенести в архив", {
+        description: getFriendlyErrorMessage(
+          error,
+          "Проверь, что в Supabase добавлены поля archived_at и archived_by."
+        ),
+        variant: "error",
+      });
+      return;
+    }
+
+    setExpandedOrders((prev) => prev.filter((x) => x !== id));
+    await loadOrders();
+    feedback("success");
+    showToast("Заказ перенесён в архив", { variant: "success" });
+  };
+
+  const restoreArchivedOrder = async (id: number) => {
+    if (user?.role !== "admin" && user?.role !== "buyer") {
+      feedback("error");
+      showToast("Восстановление недоступно", {
+        description: "Возвращать заказы из архива может администратор или покупатель.",
+        variant: "error",
+      });
+      return;
+    }
+
+    const { error } = await restoreOrderFromArchive(id);
+
+    if (error) {
+      console.error("Ошибка восстановления заказа:", error);
+      feedback("error");
+      showToast("Не удалось вернуть заказ", {
+        description: getFriendlyErrorMessage(error, "Попробуй повторить позже."),
+        variant: "error",
+      });
+      return;
+    }
+
+    await loadOrders();
+    feedback("success");
+    showToast("Заказ возвращён в работу", { variant: "success" });
+  };
+
   const openQuickDateDialog = (params: {
     orderId: number;
     itemId: number;
@@ -1909,6 +2001,26 @@ export default function OrdersPage() {
                   </div>
 
                   <div className="flex w-full flex-col gap-2 lg:w-auto lg:flex-row">
+                    {user.role !== "supplier" ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setArchiveView((current) =>
+                            current === "active" ? "archive" : "active"
+                          )
+                        }
+                        className={`w-full rounded-[14px] border px-4 py-2 text-center text-[12px] font-semibold transition lg:w-auto md:rounded-[14px] md:px-4 md:py-2.5 md:text-[13px] ${
+                          archiveView === "archive"
+                            ? "border-white bg-white text-slate-900"
+                            : "border-white/20 bg-white/10 text-white hover:bg-white/15"
+                        }`}
+                      >
+                        {archiveView === "archive"
+                          ? `Рабочие (${activeOrders.length})`
+                          : `Архив (${archivedOrders.length})`}
+                      </button>
+                    ) : null}
+
                     {user.role === "admin" ? (
                       <Link
                         href="/settings/notifications"
@@ -2030,6 +2142,8 @@ export default function OrdersPage() {
                   user={user}
                   toggleOrderExpand={toggleOrderExpand}
                   removeOrder={removeOrder}
+                  archiveOrder={archiveOrder}
+                  restoreArchivedOrder={restoreArchivedOrder}
                   updateItemStatusQuick={updateItemStatusQuick}
                   highlightedItemKey={highlightedQuickItemKey}
                   copyArticle={copyArticle}
@@ -2046,6 +2160,8 @@ export default function OrdersPage() {
                   user={user}
                   toggleOrderExpand={toggleOrderExpand}
                   removeOrder={removeOrder}
+                  archiveOrder={archiveOrder}
+                  restoreArchivedOrder={restoreArchivedOrder}
                   updateItemStatusQuick={updateItemStatusQuick}
                   highlightedItemKey={highlightedQuickItemKey}
                   copyArticle={copyArticle}
@@ -2054,7 +2170,7 @@ export default function OrdersPage() {
             </>
           )}
 
-          {!loading && orders.length > 0 ? (
+          {!loading && archiveView === "active" && orders.length > 0 ? (
             <OrdersAttentionWidget
               open={showAttentionPanel}
               hasAttentionItems={hasAttentionItems}

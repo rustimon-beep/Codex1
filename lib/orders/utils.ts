@@ -158,6 +158,11 @@ export function getOrderStatus(items: OrderItem[]) {
   return "Новый";
 }
 
+export function canArchiveOrderItems(items: OrderItem[]) {
+  const status = getOrderStatus(items);
+  return status === "Поставлен" || status === "Отменен";
+}
+
 export function getOrderPlannedDate(items: OrderItem[]) {
   const dates = items.map((item) => item.planned_date).filter(Boolean).sort();
   return dates[dates.length - 1] || null;
