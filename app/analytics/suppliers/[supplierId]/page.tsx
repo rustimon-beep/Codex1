@@ -893,7 +893,7 @@ function MonthlyDualBars({ data }: { data: MonthlyPoint[] }) {
     <div className="grid grid-cols-6 gap-3">
       {data.map((point) => (
         <div key={point.key} className="space-y-2">
-          <div className="flex h-40 items-end justify-center gap-2 rounded-[18px] border border-slate-100 bg-slate-50/70 px-3 pb-3 pt-4">
+          <div className="flex h-40 items-end justify-center gap-2 rounded-[18px] border border-white/80 bg-white/64 px-3 pb-3 pt-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
             <div className="flex w-5 items-end">
               <div
                 className="w-full rounded-t-full bg-slate-400"
@@ -985,7 +985,7 @@ function DonutStatusCard({
 
       <div className="space-y-3">
         {segments.map((segment) => (
-          <div key={segment.label} className="flex items-center justify-between gap-3 rounded-[16px] border border-slate-200 bg-slate-50/70 px-4 py-3">
+          <div key={segment.label} className="flex items-center justify-between gap-3 rounded-[16px] border border-white/80 bg-white/64 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
             <div className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: segment.color }} />
               <span className="text-sm font-medium text-slate-700">{segment.label}</span>
@@ -1023,7 +1023,7 @@ function LinesPanel({
       <SectionHeading eyebrow="Строки" title={title} description={description} />
       <div className="mt-4 space-y-3">
         {lines.length === 0 ? (
-          <div className="rounded-[18px] border border-white/80 bg-white/90 px-4 py-6 text-sm text-slate-500">
+          <div className="rounded-[18px] border border-white/80 bg-white/66 px-4 py-6 text-sm text-slate-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
             {emptyText}
           </div>
         ) : (
@@ -1031,7 +1031,7 @@ function LinesPanel({
             <Link
               key={`${line.orderId}-${line.id}`}
               href={`/orders/${line.orderId}`}
-              className="block rounded-[18px] border border-white/80 bg-white/92 px-4 py-3 transition hover:bg-white"
+              className="premium-card-hover block rounded-[18px] border border-white/80 bg-white/68 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] transition hover:bg-white/86"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -1057,17 +1057,17 @@ function LinesPanel({
 function ProblemArticlesTable({ rows }: { rows: ProblemArticle[] }) {
   if (!rows.length) {
     return (
-      <div className="rounded-[18px] border border-dashed border-slate-200 bg-slate-50/70 p-4 text-sm text-slate-500">
+      <div className="rounded-[18px] border border-dashed border-white/80 bg-white/56 p-4 text-sm text-slate-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
         По текущему периоду проблемных артикулов не найдено.
       </div>
     );
   }
 
   return (
-    <div className="rounded-[20px] border border-slate-200">
+    <div className="overflow-hidden rounded-[20px] border border-white/80 bg-white/54 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
       <div className="hidden overflow-auto md:block">
         <table className="min-w-full divide-y divide-slate-200 text-left">
-          <thead className="bg-slate-50/95">
+          <thead className="bg-white/80 backdrop-blur-xl">
             <tr>
               {["Артикул", "Наименование", "Заказов", "Нарушений первого срока", "Отказов", "Средняя задержка"].map((label) => (
                 <th key={label} className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
@@ -1078,7 +1078,7 @@ function ProblemArticlesTable({ rows }: { rows: ProblemArticle[] }) {
           </thead>
           <tbody className="divide-y divide-slate-200">
             {rows.map((row) => (
-              <tr key={row.key} className="bg-white">
+              <tr key={row.key} className="bg-white/55 transition hover:bg-white/85">
                 <td className="px-4 py-3.5 text-sm font-semibold text-slate-900">{row.article}</td>
                 <td className="px-4 py-3.5 text-sm text-slate-700">{row.name}</td>
                 <td className="px-4 py-3.5 text-sm text-slate-700">{row.ordersCount}</td>
@@ -1095,7 +1095,7 @@ function ProblemArticlesTable({ rows }: { rows: ProblemArticle[] }) {
 
       <div className="space-y-3 p-3 md:hidden">
         {rows.map((row) => (
-          <div key={row.key} className="rounded-[18px] border border-slate-200 bg-white p-4">
+          <div key={row.key} className="premium-card-hover rounded-[18px] border border-white/80 bg-white/68 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
             <div className="text-[15px] font-semibold text-slate-900">{row.article}</div>
             <div className="mt-0.5 text-[12px] text-slate-500">{row.name}</div>
             <div className="mt-3 grid grid-cols-2 gap-2">
@@ -1136,10 +1136,10 @@ function RecentOrdersTable({
     .sort((a, b) => normalizeDate(b.order_date).localeCompare(normalizeDate(a.order_date)));
 
   return (
-    <div className="rounded-[20px] border border-slate-200">
+    <div className="overflow-hidden rounded-[20px] border border-white/80 bg-white/54 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
       <div className="hidden max-h-[620px] overflow-auto md:block">
         <table className="min-w-full divide-y divide-slate-200 text-left">
-          <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur">
+          <thead className="sticky top-0 z-10 bg-white/80 backdrop-blur-xl">
             <tr>
               {["Заказ", "Дата", "Тип", "Линий", "Поставлено", "Отказано", "Нарушен первый срок поставки"].map((label) => (
                 <th key={label} className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
@@ -1150,7 +1150,7 @@ function RecentOrdersTable({
           </thead>
           <tbody className="divide-y divide-slate-200">
             {rows.map((order) => (
-              <tr key={order.id} className="bg-white transition hover:bg-slate-50/80">
+              <tr key={order.id} className="bg-white/55 transition hover:bg-white/85">
                 <td className="px-4 py-3.5">
                   <Link href={`/orders/${order.id}`} className="font-semibold text-slate-900 transition hover:text-slate-700">
                     {order.client_order || `Заказ #${order.id}`}
@@ -1170,7 +1170,7 @@ function RecentOrdersTable({
 
       <div className="space-y-3 p-3 md:hidden">
         {rows.map((order) => (
-          <Link key={order.id} href={`/orders/${order.id}`} className="block rounded-[18px] border border-slate-200 bg-white p-4">
+          <Link key={order.id} href={`/orders/${order.id}`} className="premium-card-hover block rounded-[18px] border border-white/80 bg-white/68 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
             <div className="text-[15px] font-semibold text-slate-900">
               {order.client_order || `Заказ #${order.id}`}
             </div>

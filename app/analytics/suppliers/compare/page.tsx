@@ -375,7 +375,7 @@ export default function SupplierComparePage() {
                         className={`rounded-[14px] border px-3.5 py-2 text-[13px] font-medium transition ${
                           active
                             ? "border-slate-900 bg-slate-900 text-white"
-                            : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                            : "border-white/80 bg-white/62 text-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] hover:border-white hover:bg-white/82"
                         }`}
                       >
                         {option.label}
@@ -401,7 +401,7 @@ export default function SupplierComparePage() {
                         className={`rounded-full border px-3 py-1.5 text-[12px] font-medium transition ${
                           active
                             ? "border-slate-900 bg-slate-900 text-white"
-                            : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                            : "border-white/80 bg-white/62 text-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] hover:border-white hover:bg-white/82"
                         }`}
                       >
                         {supplier.name}
@@ -434,7 +434,7 @@ export default function SupplierComparePage() {
                     >
                       <div className="grid gap-3 md:grid-cols-2">
                         {compareRows.map((row) => (
-                          <div key={row.supplierId} className="rounded-[18px] border border-slate-200 bg-slate-50/70 p-4">
+                          <div key={row.supplierId} className="premium-card-hover rounded-[18px] border border-white/80 bg-white/64 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
                             <div className="flex items-start justify-between gap-3">
                               <div>
                                 <Link href={`/analytics/suppliers/${row.supplierId}?period=${period}`} className="text-[16px] font-semibold text-slate-900 transition hover:text-slate-700">
@@ -444,7 +444,7 @@ export default function SupplierComparePage() {
                                   Класс {row.supplierClass} · рейтинг {Math.round(row.score)}
                                 </div>
                               </div>
-                              <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700">
+                              <span className="rounded-full border border-white/80 bg-white/75 px-2.5 py-1 text-[11px] font-semibold text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
                                 {formatPercent(row.onTimeDelivery)}
                               </span>
                             </div>
@@ -633,7 +633,7 @@ function RadarCompare({ rows, period }: { rows: CompareRow[]; period: AnalyticsP
 
       <div className="space-y-3">
         {rows.map((row, index) => (
-          <div key={row.supplierId} className="rounded-[18px] border border-slate-200 bg-slate-50/70 px-4 py-3">
+          <div key={row.supplierId} className="rounded-[18px] border border-white/80 bg-white/64 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
             <div className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors[index % colors.length] }} />
               <Link href={`/analytics/suppliers/${row.supplierId}?period=${period}`} className="text-[15px] font-semibold text-slate-900 transition hover:text-slate-700">
@@ -668,10 +668,10 @@ function CompareTable({ rows }: { rows: CompareRow[] }) {
     active ? "bg-emerald-50 text-emerald-700 font-semibold" : "text-slate-700";
 
   return (
-    <div className="rounded-[20px] border border-slate-200">
+    <div className="overflow-hidden rounded-[20px] border border-white/80 bg-white/54 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
       <div className="hidden overflow-auto md:block">
         <table className="min-w-full divide-y divide-slate-200 text-left">
-          <thead className="bg-slate-50/95">
+          <thead className="bg-white/80 backdrop-blur-xl">
             <tr>
                 {["Поставщик", "Рейтинг", "Класс", "Заказы", "Строки", "Исполнено", "Отказано", "Строк с нарушенным первым сроком", "В срок, %", "Исполнение, %", "Отказы, %", "Срок поставки", "Задержка"].map((label) => (
                 <th key={label} className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
@@ -682,7 +682,7 @@ function CompareTable({ rows }: { rows: CompareRow[] }) {
           </thead>
           <tbody className="divide-y divide-slate-200">
             {rows.map((row) => (
-              <tr key={row.supplierId} className="bg-white">
+              <tr key={row.supplierId} className="bg-white/55 transition hover:bg-white/85">
                 <td className="px-4 py-3.5">
                   <Link href={`/analytics/suppliers/${row.supplierId}`} className="font-semibold text-slate-900 transition hover:text-slate-700">
                     {row.supplierName}
@@ -708,7 +708,7 @@ function CompareTable({ rows }: { rows: CompareRow[] }) {
 
       <div className="space-y-3 p-3 md:hidden">
         {rows.map((row) => (
-          <div key={row.supplierId} className="rounded-[18px] border border-slate-200 bg-white p-4">
+          <div key={row.supplierId} className="premium-card-hover rounded-[18px] border border-white/80 bg-white/68 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
             <div className="text-[15px] font-semibold text-slate-900">{row.supplierName}</div>
             <div className="mt-1 text-[12px] text-slate-500">
               Рейтинг {Math.round(row.score)} · Класс {row.supplierClass}

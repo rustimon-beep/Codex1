@@ -854,7 +854,7 @@ export default function SupplierAnalyticsDashboardPage() {
                           className={`rounded-[14px] border px-3.5 py-2 text-[13px] font-medium transition ${
                             active
                               ? "border-slate-900 bg-slate-900 text-white shadow-[0_10px_24px_rgba(15,23,42,0.16)]"
-                              : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                              : "border-white/80 bg-white/62 text-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] hover:border-white hover:bg-white/82"
                           }`}
                         >
                           {option.label}
@@ -965,7 +965,7 @@ export default function SupplierAnalyticsDashboardPage() {
                         dir: "desc",
                       })
                     }
-                    className="rounded-[14px] border border-slate-200 bg-white px-3.5 py-2 text-[13px] font-medium text-slate-500 transition hover:border-slate-300 hover:bg-slate-50"
+                    className="rounded-[14px] border border-white/80 bg-white/62 px-3.5 py-2 text-[13px] font-medium text-slate-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] transition hover:border-white hover:bg-white/82"
                   >
                     Сбросить фильтры
                   </button>
@@ -974,7 +974,7 @@ export default function SupplierAnalyticsDashboardPage() {
                     <button
                       type="button"
                       onClick={handleExport}
-                      className="rounded-[14px] border border-slate-900 bg-slate-900 px-3.5 py-2 text-[13px] font-medium text-white transition hover:bg-slate-800"
+                      className="premium-button rounded-[14px] px-3.5 py-2 text-[13px] font-medium text-white"
                     >
                       Экспорт в таблицу
                     </button>
@@ -1049,7 +1049,7 @@ export default function SupplierAnalyticsDashboardPage() {
                       return (
                         <div
                           key={`composition-${row.supplierId}`}
-                          className="rounded-[18px] border border-slate-100 bg-slate-50/70 px-4 py-3.5"
+                          className="premium-card-hover rounded-[18px] border border-white/80 bg-white/64 px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]"
                         >
                           <div className="flex items-center justify-between gap-3">
                             <div className="min-w-0">
@@ -1093,7 +1093,7 @@ export default function SupplierAnalyticsDashboardPage() {
                     {sortedRows.map((row) => (
                       <div
                         key={`risk-${row.supplierId}`}
-                        className="rounded-[18px] border border-slate-100 bg-slate-50/70 px-4 py-3.5"
+                        className="premium-card-hover rounded-[18px] border border-white/80 bg-white/64 px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]"
                       >
                         <div className="flex items-center justify-between gap-3">
                           <Link
@@ -1172,9 +1172,9 @@ export default function SupplierAnalyticsDashboardPage() {
                   <span>Заказов с историческим нарушением первого срока: {overallMetrics.breachedOrdersEver}</span>
                 </div>
 
-                <div className="hidden max-h-[680px] overflow-auto rounded-[22px] border border-slate-200 md:block">
+                <div className="hidden max-h-[680px] overflow-auto rounded-[22px] border border-white/80 bg-white/54 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] md:block">
                   <table className="min-w-full divide-y divide-slate-200 text-left">
-                    <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur">
+                    <thead className="sticky top-0 z-10 bg-white/80 backdrop-blur-xl">
                       <tr>
                         <SortableHeader label="#" field="rank" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
                         <SortableHeader label="Поставщик" field="supplier" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
@@ -1196,7 +1196,7 @@ export default function SupplierAnalyticsDashboardPage() {
                     </thead>
                     <tbody className="divide-y divide-slate-200">
                       {sortedRows.map((row) => (
-                        <tr key={row.supplierId} className="bg-white transition hover:bg-slate-50/80">
+                        <tr key={row.supplierId} className="bg-white/55 transition hover:bg-white/85">
                           <td className="px-4 py-3.5 text-sm font-semibold text-slate-900">{row.rank}</td>
                           <td className="px-4 py-3.5">
                             <Link
@@ -1240,7 +1240,7 @@ export default function SupplierAnalyticsDashboardPage() {
 
                 <div className="space-y-3 md:hidden">
                   {sortedRows.map((row) => (
-                    <div key={row.supplierId} className="rounded-[20px] border border-slate-200 bg-white p-4 shadow-[0_4px_12px_rgba(15,23,42,0.04)]">
+                    <div key={row.supplierId} className="premium-card-hover rounded-[20px] border border-white/80 bg-white/68 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <Link
@@ -1279,7 +1279,7 @@ export default function SupplierAnalyticsDashboardPage() {
       <button
         type="button"
         onClick={() => setHelpOpen(true)}
-        className="fixed bottom-[88px] right-4 z-[85] inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/96 px-3 py-2 text-[12px] font-semibold text-slate-700 shadow-[0_12px_30px_rgba(15,23,42,0.14)] backdrop-blur transition hover:bg-white md:bottom-6 md:right-6 md:px-3.5 md:py-2.5 md:text-[13px]"
+        className="fixed bottom-[88px] right-4 z-[85] inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/72 px-3 py-2 text-[12px] font-semibold text-slate-700 shadow-[0_18px_44px_rgba(15,23,42,0.14)] backdrop-blur-2xl transition hover:bg-white/88 md:bottom-6 md:right-6 md:px-3.5 md:py-2.5 md:text-[13px]"
       >
         <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-900 text-[11px] font-bold text-white">
           i
@@ -1290,7 +1290,7 @@ export default function SupplierAnalyticsDashboardPage() {
       {helpOpen ? (
         <div className="fixed inset-0 z-[95] bg-slate-950/45 backdrop-blur-[2px]">
           <div className="flex min-h-screen items-end justify-center p-0 md:items-center md:p-4">
-            <div className="w-full rounded-t-[24px] border border-slate-200 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.18)] md:max-h-[88vh] md:max-w-3xl md:rounded-[28px]">
+            <div className="premium-shell w-full rounded-t-[24px] md:max-h-[88vh] md:max-w-3xl md:rounded-[28px]">
               <div className="max-h-[88vh] overflow-y-auto px-4 py-4 md:px-6 md:py-6">
                 <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-slate-200 md:hidden" />
                 <div className="flex items-start justify-between gap-4">
@@ -1310,14 +1310,14 @@ export default function SupplierAnalyticsDashboardPage() {
                   <button
                     type="button"
                     onClick={() => setHelpOpen(false)}
-                    className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-500 transition hover:bg-slate-50"
+                    className="rounded-full border border-white/80 bg-white/62 px-3 py-1.5 text-sm font-medium text-slate-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] transition hover:bg-white/82"
                   >
                     Закрыть
                   </button>
                 </div>
 
                 <div className="mt-5 grid gap-4 md:grid-cols-2">
-                  <div className="rounded-[20px] border border-slate-200 bg-slate-50/70 p-4">
+                  <div className="rounded-[20px] border border-white/80 bg-white/62 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
                     <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
                       Общий рейтинг
                     </div>
@@ -1328,7 +1328,7 @@ export default function SupplierAnalyticsDashboardPage() {
                       Рейтинг считается по шкале от 0 до 100. Чем выше доля поставок в срок,
                       чем меньше отказов и чем реже нарушается первый обещанный срок поставки, тем выше итоговый балл.
                     </p>
-                    <div className="mt-3 rounded-[16px] border border-white/80 bg-white px-3 py-3 text-[12px] leading-6 text-slate-600">
+                    <div className="mt-3 rounded-[16px] border border-white/80 bg-white/70 px-3 py-3 text-[12px] leading-6 text-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
                       Основа рейтинга:
                       <br />
                       <span className="font-medium text-slate-800">35%</span> поставка в срок
@@ -1343,7 +1343,7 @@ export default function SupplierAnalyticsDashboardPage() {
                     </div>
                   </div>
 
-                  <div className="rounded-[20px] border border-slate-200 bg-slate-50/70 p-4">
+                  <div className="rounded-[20px] border border-white/80 bg-white/62 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
                     <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
                       Класс поставщика
                     </div>
@@ -1359,7 +1359,7 @@ export default function SupplierAnalyticsDashboardPage() {
                   </div>
                 </div>
 
-                <div className="mt-4 rounded-[22px] border border-slate-200 bg-white p-4 md:p-5">
+                <div className="mt-4 rounded-[22px] border border-white/80 bg-white/62 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] md:p-5">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
                     Пояснение показателей
                   </div>
@@ -1439,7 +1439,7 @@ export default function SupplierAnalyticsDashboardPage() {
 }
 
 const filterInputClassName =
-  "h-11 w-full rounded-[14px] border border-slate-200 bg-white px-3.5 text-[13px] text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-200";
+  "premium-input h-11 w-full rounded-[14px] px-3.5 text-[13px] text-slate-700 outline-none placeholder:text-slate-400";
 
 function FilterField({
   label,
@@ -1474,7 +1474,7 @@ function ToggleChip({
       className={`rounded-full border px-3 py-1.5 text-[12px] font-medium transition ${
         active
           ? "border-slate-900 bg-slate-900 text-white"
-          : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+          : "border-white/80 bg-white/62 text-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] hover:border-white hover:bg-white/82"
       }`}
     >
       {label}
@@ -1490,7 +1490,7 @@ function HelpMetricCard({
   description: string;
 }) {
   return (
-    <div className="rounded-[16px] border border-slate-200 bg-slate-50/70 px-3.5 py-3">
+    <div className="rounded-[16px] border border-white/80 bg-white/66 px-3.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
       <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
         {title}
       </div>
