@@ -23,11 +23,11 @@ export function LoginForm({
   return (
     <>
       <MobileLaunchReveal />
-      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-100 p-2.5 md:p-8">
+      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-transparent p-2.5 md:p-8">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(180,138,76,0.08),transparent_32%)]" />
         <div className="pointer-events-none absolute -left-16 top-20 h-44 w-44 rounded-full bg-amber-200/20 blur-3xl" />
         <div className="pointer-events-none absolute right-0 top-0 h-56 w-56 rounded-full bg-slate-900/8 blur-3xl" />
-        <div className="premium-enter w-full max-w-md overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.12)] md:rounded-[32px]">
+        <div className="premium-enter premium-shell w-full max-w-md overflow-hidden rounded-[22px] md:rounded-[32px]">
           <div className="hero-premium px-4 py-5 text-white md:px-8 md:py-10">
             <AppLogo className="mb-5 md:mb-6" />
 
@@ -62,7 +62,7 @@ export function LoginForm({
                   spellCheck={false}
                   inputMode="email"
                   enterKeyHint="next"
-                  className="w-full rounded-[18px] border border-slate-200 bg-white/92 px-3.5 py-2.5 text-[12px] text-slate-900 outline-none focus:border-slate-400 md:rounded-2xl md:px-4 md:py-3 md:text-sm"
+                  className="premium-input w-full rounded-[18px] px-3.5 py-2.5 text-[12px] text-slate-900 outline-none md:rounded-2xl md:px-4 md:py-3 md:text-sm"
                 />
               </div>
 
@@ -82,7 +82,7 @@ export function LoginForm({
                   autoCorrect="off"
                   spellCheck={false}
                   enterKeyHint="go"
-                  className="w-full rounded-[18px] border border-slate-200 bg-white/92 px-3.5 py-2.5 text-[12px] text-slate-900 outline-none focus:border-slate-400 md:rounded-2xl md:px-4 md:py-3 md:text-sm"
+                  className="premium-input w-full rounded-[18px] px-3.5 py-2.5 text-[12px] text-slate-900 outline-none md:rounded-2xl md:px-4 md:py-3 md:text-sm"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       onLogin();
@@ -100,7 +100,7 @@ export function LoginForm({
               <button
                 type="submit"
                 onClick={() => feedback("tap")}
-                className="w-full rounded-[18px] bg-slate-900 px-4 py-2.5 text-[12px] font-medium text-white shadow-[0_18px_38px_rgba(15,23,42,0.18)] transition hover:bg-slate-800 md:rounded-2xl md:py-3 md:text-sm"
+                className="premium-button w-full rounded-[18px] px-4 py-2.5 text-[12px] font-medium text-white md:rounded-2xl md:py-3 md:text-sm"
               >
                 Войти
               </button>

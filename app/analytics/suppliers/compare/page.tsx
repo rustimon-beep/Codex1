@@ -249,7 +249,7 @@ export default function SupplierComparePage() {
 
   if (authLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100">
+      <div className="flex min-h-screen items-center justify-center bg-transparent">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-slate-700" />
       </div>
     );
@@ -292,7 +292,7 @@ export default function SupplierComparePage() {
 
       <div className="min-h-screen bg-transparent p-2 text-slate-900 antialiased md:p-8">
         <div className="bottom-nav-safe mx-auto max-w-7xl space-y-4 md:space-y-6 md:pb-0">
-          <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_14px_36px_rgba(15,23,42,0.08)]">
+          <div className="premium-shell overflow-hidden rounded-[24px]">
             <div className="relative bg-[linear-gradient(180deg,#151A22_0%,#111827_100%)] px-4 py-4 text-white md:px-8 md:py-7">
               <div className="absolute inset-y-0 right-0 w-[34%] bg-[radial-gradient(circle_at_top_right,rgba(20,184,166,0.12),transparent_58%)] pointer-events-none" />
               <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -302,7 +302,7 @@ export default function SupplierComparePage() {
                   </div>
                   <div className="min-w-0">
                     <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-medium text-slate-300">
-                      Supplier Compare
+                      Сравнение поставщиков
                     </div>
                     <h1 className="mt-2 text-[24px] font-semibold tracking-tight text-white md:text-[32px]">
                       Сравнение поставщиков
@@ -347,7 +347,7 @@ export default function SupplierComparePage() {
           </div>
 
           {loading ? (
-            <div className="rounded-[24px] border border-slate-200 bg-white px-6 py-16 text-center shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
+            <div className="premium-shell rounded-[24px] px-6 py-16 text-center">
               <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-slate-700" />
               <div className="mt-3 text-sm text-slate-500">Собираем сравнение поставщиков...</div>
             </div>
@@ -534,7 +534,7 @@ function CardSection({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:px-5 md:py-5">
+    <div className="premium-shell rounded-[24px] px-4 py-4 md:px-5 md:py-5">
       <div>
         <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
           {eyebrow}
@@ -551,7 +551,7 @@ function CardSection({
 
 function InfoMini({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="rounded-[16px] border border-slate-200 bg-white px-3 py-2.5">
+    <div className="rounded-[16px] border border-white/80 bg-white/72 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
       <div className="text-[10px] font-medium uppercase tracking-[0.08em] text-slate-400">
         {label}
       </div>

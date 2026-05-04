@@ -41,7 +41,7 @@ export function StatCard({
 
   return (
     <div
-      className={`rounded-[28px] bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.05)] ring-1 ${styles.ring} transition hover:-translate-y-0.5`}
+      className={`premium-card-hover premium-shell rounded-[28px] p-5 ring-1 ${styles.ring}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div>

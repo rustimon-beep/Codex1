@@ -1795,7 +1795,7 @@ export default function OrdersPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
+      <div className="min-h-screen bg-transparent flex items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-slate-700" />
       </div>
     );
@@ -1951,7 +1951,7 @@ export default function OrdersPage() {
 
       <div className="min-h-screen bg-transparent p-2 md:p-6">
         <div className="bottom-nav-safe mx-auto max-w-7xl space-y-3 md:space-y-5 md:pb-0">
-          <div className="premium-enter overflow-hidden rounded-[20px] border border-[#E5E7EB] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:rounded-[24px]">
+          <div className="premium-enter premium-shell overflow-hidden rounded-[20px] md:rounded-[24px]">
             <div className="hero-premium relative px-4 py-3 text-white md:px-6 md:py-5">
               <div className="relative flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0">

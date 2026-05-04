@@ -563,7 +563,7 @@ export default function OrderDetailsPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
+      <div className="min-h-screen bg-transparent flex items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-slate-700" />
       </div>
     );
@@ -619,7 +619,7 @@ export default function OrderDetailsPage() {
 
       <div className="min-h-screen bg-transparent p-2 md:p-8 text-slate-900 antialiased">
         <div className="route-stage bottom-nav-safe mx-auto max-w-7xl space-y-4 md:space-y-6 md:pb-0">
-          <div className="premium-enter overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-[0_12px_36px_rgba(15,23,42,0.08)] md:rounded-[28px]">
+          <div className="premium-enter premium-shell overflow-hidden rounded-[20px] md:rounded-[28px]">
             <div className="hero-premium relative px-3.5 py-3.5 text-white md:px-8 md:py-7">
               <div className="absolute inset-y-0 right-0 w-[38%] bg-[radial-gradient(circle_at_top_right,rgba(180,138,76,0.18),transparent_55%)] pointer-events-none" />
               <div className="pointer-events-none absolute -left-8 top-8 h-24 w-24 rounded-full bg-white/5 blur-2xl" />
@@ -722,7 +722,7 @@ export default function OrderDetailsPage() {
               </div>
 
               {isArchivedOrder ? (
-                <div className="premium-enter premium-enter-delay-1 rounded-[22px] border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-600 shadow-[0_10px_28px_rgba(15,23,42,0.06)] md:rounded-[26px] md:px-5">
+                <div className="premium-enter premium-enter-delay-1 premium-shell rounded-[22px] px-4 py-3 text-sm leading-6 text-slate-600 md:rounded-[26px] md:px-5">
                   Заказ находится в архиве. Он сохранён для истории и аналитики, но редактирование статусов и данных отключено.
                 </div>
               ) : null}

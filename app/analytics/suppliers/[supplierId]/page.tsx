@@ -450,7 +450,7 @@ export default function SupplierAnalyticsDetailPage() {
 
   if (authLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100">
+      <div className="flex min-h-screen items-center justify-center bg-transparent">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-slate-700" />
       </div>
     );
@@ -493,7 +493,7 @@ export default function SupplierAnalyticsDetailPage() {
 
       <div className="min-h-screen bg-transparent p-2 text-slate-900 antialiased md:p-8">
         <div className="bottom-nav-safe mx-auto max-w-7xl space-y-4 md:space-y-6 md:pb-0">
-          <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_14px_36px_rgba(15,23,42,0.08)]">
+          <div className="premium-shell overflow-hidden rounded-[24px]">
             <div className="relative bg-[linear-gradient(180deg,#151A22_0%,#111827_100%)] px-4 py-4 text-white md:px-8 md:py-7">
               <div className="absolute inset-y-0 right-0 w-[34%] bg-[radial-gradient(circle_at_top_right,rgba(20,184,166,0.12),transparent_58%)] pointer-events-none" />
               <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -555,7 +555,7 @@ export default function SupplierAnalyticsDetailPage() {
           </div>
 
           {loading ? (
-            <div className="rounded-[24px] border border-slate-200 bg-white px-6 py-16 text-center shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
+            <div className="premium-shell rounded-[24px] px-6 py-16 text-center">
               <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-slate-700" />
               <div className="mt-3 text-sm text-slate-500">Собираем детализацию поставщика...</div>
             </div>
@@ -740,7 +740,7 @@ function KpiCard({
   subtitle?: string;
 }) {
   return (
-    <div className="rounded-[22px] border border-slate-200 bg-white px-4 py-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:px-5 md:py-5">
+    <div className="premium-card-hover premium-shell rounded-[22px] px-4 py-4 md:px-5 md:py-5">
       <div className="flex min-h-[58px] items-start justify-between gap-3">
         <div className="max-w-[80%] text-[12px] font-medium uppercase tracking-[0.06em] leading-5 text-slate-500 md:text-[13px]">
           {title}
@@ -767,7 +767,7 @@ function CardSection({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:px-5 md:py-5">
+    <div className="premium-shell rounded-[24px] px-4 py-4 md:px-5 md:py-5">
       <SectionHeading eyebrow={eyebrow} title={title} description={description} />
       <div className="mt-5">{children}</div>
     </div>
@@ -804,7 +804,7 @@ function InfoMini({
   value: number | string;
 }) {
   return (
-    <div className="rounded-[16px] border border-slate-200 bg-white px-3 py-2.5">
+    <div className="rounded-[16px] border border-white/80 bg-white/72 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
       <div className="text-[10px] font-medium uppercase tracking-[0.08em] text-slate-400">
         {label}
       </div>

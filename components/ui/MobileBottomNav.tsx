@@ -24,7 +24,7 @@ export function MobileBottomNav({ items }: MobileBottomNavProps) {
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[40] px-3 pb-[calc(env(safe-area-inset-bottom)+0.9rem)] md:hidden">
-      <div className="pointer-events-auto mx-auto max-w-md rounded-[24px] border border-white/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.88),rgba(248,250,252,0.82))] p-1.5 shadow-[0_18px_48px_rgba(15,23,42,0.18)] backdrop-blur-xl">
+      <div className="pointer-events-auto mx-auto max-w-md rounded-[24px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.78),rgba(248,250,252,0.66))] p-1.5 shadow-[0_18px_54px_rgba(15,23,42,0.16)] backdrop-blur-2xl">
         <div className={`grid gap-1.5`} style={{ gridTemplateColumns: `repeat(${visibleItems.length}, minmax(0, 1fr))` }}>
           {visibleItems.map((item) => {
             const toneClass =
@@ -42,7 +42,7 @@ export function MobileBottomNav({ items }: MobileBottomNavProps) {
 
             const content = (
               <span
-                className={`flex min-h-[58px] flex-col items-center justify-center gap-1 rounded-[18px] px-2 text-center text-[10px] font-medium transition duration-300 active:scale-[0.98] ${toneClass} ${
+                className={`flex min-h-[58px] flex-col items-center justify-center gap-1 rounded-[18px] px-2 text-center text-[10px] font-medium transition duration-300 active:scale-[0.99] ${toneClass} ${
                   item.disabled ? "opacity-40" : "hover:bg-slate-100/60"
                 }`}
               >

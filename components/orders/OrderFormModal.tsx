@@ -204,7 +204,7 @@ export function OrderFormModal({
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/45 backdrop-blur-[2px]">
       <div className="flex min-h-screen items-end justify-center p-0 md:items-center md:p-4">
-        <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden rounded-none bg-white shadow-[0_24px_80px_rgba(15,23,42,0.18)] md:my-8 md:h-auto md:max-h-[92vh] md:max-w-6xl md:rounded-[30px]">
+        <div className="premium-shell relative flex h-[100dvh] w-full flex-col overflow-hidden rounded-none md:my-8 md:h-auto md:max-h-[92vh] md:max-w-6xl md:rounded-[30px]">
           {saving || photoParsing ? (
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/75 backdrop-blur-[2px]">
               <div className="flex flex-col items-center gap-3 rounded-3xl border border-slate-200 bg-white px-7 py-6 shadow-xl">

@@ -172,7 +172,7 @@ export default function NotificationSettingsPage() {
 
   if (authLoading || profileLoading) {
     return (
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
+      <div className="min-h-screen bg-transparent flex items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-slate-700" />
       </div>
     );
@@ -180,7 +180,7 @@ export default function NotificationSettingsPage() {
 
   if (!user || user.role !== "admin") {
     return (
-      <div className="min-h-screen bg-slate-100/80 p-4 md:p-8">
+      <div className="min-h-screen bg-transparent p-4 md:p-8">
         <EmptyStateCard
           title="Нет доступа"
           description="Настройки уведомлений доступны только администратору."
@@ -239,7 +239,7 @@ export default function NotificationSettingsPage() {
           ) : null}
 
           {message ? (
-            <section className="rounded-[22px] border border-slate-200 bg-white px-5 py-4 text-sm text-slate-700 shadow-[0_10px_28px_rgba(15,23,42,0.06)]">
+            <section className="premium-shell rounded-[22px] px-5 py-4 text-sm text-slate-700">
               {message}
             </section>
           ) : null}
