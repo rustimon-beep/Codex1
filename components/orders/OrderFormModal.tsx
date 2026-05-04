@@ -1,4 +1,4 @@
-import type { Dispatch, SetStateAction } from "react";
+import { useEffect, type Dispatch, type SetStateAction } from "react";
 import type { ItemForm, OrderFormState, SupplierSummary } from "../../lib/orders/types";
 import { ORDER_TYPE_OPTIONS, STATUS_OPTIONS } from "../../lib/orders/constants";
 import { formatDate, getTodayDate } from "../../lib/orders/utils";
@@ -128,6 +128,46 @@ export function OrderFormModal({
   removeItemRow,
   saveForm,
 }: OrderFormModalProps) {
+  useEffect(() => {
+    if (!open) return;
+
+    const scrollY = window.scrollY;
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    const originalBodyStyles = {
+      position: document.body.style.position,
+      top: document.body.style.top,
+      left: document.body.style.left,
+      right: document.body.style.right,
+      width: document.body.style.width,
+      overflow: document.body.style.overflow,
+      paddingRight: document.body.style.paddingRight,
+    };
+
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.width = "100%";
+    document.body.style.overflow = "hidden";
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
+    return () => {
+      document.documentElement.style.overflow = originalHtmlOverflow;
+      document.body.style.position = originalBodyStyles.position;
+      document.body.style.top = originalBodyStyles.top;
+      document.body.style.left = originalBodyStyles.left;
+      document.body.style.right = originalBodyStyles.right;
+      document.body.style.width = originalBodyStyles.width;
+      document.body.style.overflow = originalBodyStyles.overflow;
+      document.body.style.paddingRight = originalBodyStyles.paddingRight;
+      window.scrollTo(0, scrollY);
+    };
+  }, [open]);
+
   if (!open) return null;
 
   const isEditing = !!editingOrderId;
