@@ -742,7 +742,7 @@ export default function SupplierAnalyticsDashboardPage() {
     return (
       <>
         <ToastViewport toasts={toasts} onClose={closeToast} />
-        <div className="min-h-screen bg-slate-100/80 p-3 md:p-8">
+        <div className="min-h-screen bg-transparent p-3 md:p-8">
           <div className="mx-auto max-w-5xl">
             <EmptyStateCard
               title="Сводная аналитика поставщиков недоступна"
@@ -759,7 +759,7 @@ export default function SupplierAnalyticsDashboardPage() {
       <MobileLaunchReveal />
       <ToastViewport toasts={toasts} onClose={closeToast} />
 
-      <div className="min-h-screen bg-[#F5F7FA] p-2 text-slate-900 antialiased md:p-8">
+      <div className="min-h-screen bg-transparent p-2 text-slate-900 antialiased md:p-8">
         <div className="bottom-nav-safe mx-auto max-w-7xl space-y-4 md:space-y-6 md:pb-0">
           <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_14px_36px_rgba(15,23,42,0.08)]">
             <div className="relative bg-[linear-gradient(180deg,#151A22_0%,#111827_100%)] px-4 py-4 text-white md:px-8 md:py-7">

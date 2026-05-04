@@ -1949,7 +1949,7 @@ export default function OrdersPage() {
         confirmDialog={confirmQuickDateDialog}
       />
 
-      <div className="min-h-screen bg-[#F3F5F7] p-2 md:p-6">
+      <div className="min-h-screen bg-transparent p-2 md:p-6">
         <div className="bottom-nav-safe mx-auto max-w-7xl space-y-3 md:space-y-5 md:pb-0">
           <div className="premium-enter overflow-hidden rounded-[20px] border border-[#E5E7EB] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)] md:rounded-[24px]">
             <div className="hero-premium relative px-4 py-3 text-white md:px-6 md:py-5">

@@ -192,7 +192,7 @@ export default function NotificationSettingsPage() {
   return (
     <>
       <MobileLaunchReveal />
-      <div className="min-h-screen bg-slate-100/80 p-3 text-slate-900 antialiased md:p-8">
+      <div className="min-h-screen bg-transparent p-3 text-slate-900 antialiased md:p-8">
         <div className="route-stage mx-auto max-w-7xl space-y-5">
           <section className="hero-premium relative overflow-hidden rounded-[24px] px-4 py-5 text-white shadow-[0_18px_48px_rgba(15,23,42,0.18)] md:rounded-[32px] md:px-8 md:py-7">
             <div className="absolute inset-y-0 right-0 w-[38%] bg-[radial-gradient(circle_at_top_right,rgba(20,184,166,0.2),transparent_58%)]" />

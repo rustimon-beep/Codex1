@@ -617,7 +617,7 @@ export default function OrderDetailsPage() {
         onCancel={() => closePromptDialog(null)}
       />
 
-      <div className="min-h-screen bg-slate-100/80 p-2 md:p-8 text-slate-900 antialiased">
+      <div className="min-h-screen bg-transparent p-2 md:p-8 text-slate-900 antialiased">
         <div className="route-stage bottom-nav-safe mx-auto max-w-7xl space-y-4 md:space-y-6 md:pb-0">
           <div className="premium-enter overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-[0_12px_36px_rgba(15,23,42,0.08)] md:rounded-[28px]">
             <div className="hero-premium relative px-3.5 py-3.5 text-white md:px-8 md:py-7">
