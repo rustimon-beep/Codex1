@@ -576,8 +576,8 @@ function RadarCompare({ rows, period }: { rows: CompareRow[]; period: AnalyticsP
   const colors = ["#0F766E", "#14B8A6", "#64748B", "#DC2626", "#B48A4C"];
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[360px_1fr] lg:items-center">
-      <svg viewBox="0 0 360 360" className="mx-auto h-[320px] w-[320px]">
+    <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(300px,360px)_minmax(0,1fr)] xl:items-center">
+      <svg viewBox="0 0 360 360" className="mx-auto h-[260px] w-full max-w-[320px] sm:h-[300px] sm:max-w-[340px] xl:h-[320px]">
         {[0.25, 0.5, 0.75, 1].map((ring) => (
           <polygon
             key={ring}
@@ -631,12 +631,12 @@ function RadarCompare({ rows, period }: { rows: CompareRow[]; period: AnalyticsP
         })}
       </svg>
 
-      <div className="space-y-3">
+      <div className="min-w-0 space-y-3">
         {rows.map((row, index) => (
           <div key={row.supplierId} className="rounded-[18px] border border-white/80 bg-white/90 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
             <div className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors[index % colors.length] }} />
-              <Link href={`/analytics/suppliers/${row.supplierId}?period=${period}`} className="text-[15px] font-semibold text-slate-900 transition hover:text-slate-700">
+              <Link href={`/analytics/suppliers/${row.supplierId}?period=${period}`} className="min-w-0 truncate text-[15px] font-semibold text-slate-900 transition hover:text-slate-700">
                 {row.supplierName}
               </Link>
             </div>

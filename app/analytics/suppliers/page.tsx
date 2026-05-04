@@ -974,7 +974,7 @@ export default function SupplierAnalyticsDashboardPage() {
                     <button
                       type="button"
                       onClick={handleExport}
-                      className="premium-button rounded-[14px] px-3.5 py-2 text-[13px] font-medium text-white"
+                      className="premium-button rounded-[14px] bg-slate-900 px-3.5 py-2 text-[13px] font-medium text-white transition hover:bg-slate-800"
                     >
                       Экспорт в таблицу
                     </button>

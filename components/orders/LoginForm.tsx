@@ -100,7 +100,7 @@ export function LoginForm({
               <button
                 type="submit"
                 onClick={() => feedback("tap")}
-                className="premium-button w-full rounded-[18px] px-4 py-2.5 text-[12px] font-medium text-white md:rounded-2xl md:py-3 md:text-sm"
+                className="premium-button w-full rounded-[18px] bg-slate-900 px-4 py-2.5 text-[12px] font-medium text-white transition hover:bg-slate-800 md:rounded-2xl md:py-3 md:text-sm"
               >
                 Войти
               </button>
